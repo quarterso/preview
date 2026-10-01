@@ -1,0 +1,46 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,41811,e=>{e.v({check:"EarlyAccessForm-module__PMlNEa__check",checks:"EarlyAccessForm-module__PMlNEa__checks",done:"EarlyAccessForm-module__PMlNEa__done",errorBox:"EarlyAccessForm-module__PMlNEa__errorBox",field:"EarlyAccessForm-module__PMlNEa__field",fieldError:"EarlyAccessForm-module__PMlNEa__fieldError",fieldset:"EarlyAccessForm-module__PMlNEa__fieldset",fine:"EarlyAccessForm-module__PMlNEa__fine",form:"EarlyAccessForm-module__PMlNEa__form",honeypot:"EarlyAccessForm-module__PMlNEa__honeypot",label:"EarlyAccessForm-module__PMlNEa__label",notice:"EarlyAccessForm-module__PMlNEa__notice",optional:"EarlyAccessForm-module__PMlNEa__optional",row:"EarlyAccessForm-module__PMlNEa__row",submit:"EarlyAccessForm-module__PMlNEa__submit"})},79210,e=>{"use strict";var a=e.i(15014),r=e.i(37244),t=e.i(13251),l=e.i(21988),s=e.i(63103);let i=["Backend or platform engineer","Integrations lead","Engineering leadership","Security or reliability","Other"],n=[...s.supported.map(e=>e.name),"Other"];var o=e.i(41811);e.s(["EarlyAccessForm",0,function(){let[e,s]=(0,r.useState)({kind:"idle"}),[c,d]=(0,r.useState)({});async function u(e){e.preventDefault();let a=new FormData(e.currentTarget);return a.get("name"),a.get("email"),a.get("company"),a.get("role"),a.getAll("providers"),a.get("message"),a.get("website"),s({kind:"closed"})}if("sent"===e.kind)return(0,a.jsxs)("div",{className:o.default.done,role:"status",children:[(0,a.jsx)(l.IconTile,{name:"check",tone:"mint",size:"lg"}),(0,a.jsx)("h2",{className:"h3",children:"Request received"}),(0,a.jsx)("p",{children:"Thank you. We read every request and will reply to the email you gave us."})]});let m=e=>c[e]?`${e}-error`:void 0,f=e=>c[e]?(0,a.jsx)("span",{id:`${e}-error`,className:o.default.fieldError,children:c[e]}):null;return(0,a.jsxs)("form",{className:o.default.form,onSubmit:u,noValidate:!1,children:[(0,a.jsxs)("div",{className:o.default.row,children:[(0,a.jsxs)("label",{className:o.default.field,children:[(0,a.jsx)("span",{className:o.default.label,children:"Name"}),(0,a.jsx)("input",{name:"name",required:!0,maxLength:120,autoComplete:"name","aria-invalid":!!c.name,"aria-describedby":m("name")}),f("name")]}),(0,a.jsxs)("label",{className:o.default.field,children:[(0,a.jsx)("span",{className:o.default.label,children:"Work email"}),(0,a.jsx)("input",{name:"email",type:"email",required:!0,maxLength:200,autoComplete:"email","aria-invalid":!!c.email,"aria-describedby":m("email")}),f("email")]})]}),(0,a.jsxs)("div",{className:o.default.row,children:[(0,a.jsxs)("label",{className:o.default.field,children:[(0,a.jsx)("span",{className:o.default.label,children:"Company"}),(0,a.jsx)("input",{name:"company",required:!0,maxLength:160,autoComplete:"organization","aria-invalid":!!c.company,"aria-describedby":m("company")}),f("company")]}),(0,a.jsxs)("label",{className:o.default.field,children:[(0,a.jsx)("span",{className:o.default.label,children:"Role"}),(0,a.jsxs)("select",{name:"role",required:!0,defaultValue:"","aria-invalid":!!c.role,"aria-describedby":m("role"),children:[(0,a.jsx)("option",{value:"",disabled:!0,children:"Choose one"}),i.map(e=>(0,a.jsx)("option",{value:e,children:e},e))]}),f("role")]})]}),(0,a.jsxs)("fieldset",{className:o.default.fieldset,"aria-describedby":m("providers"),children:[(0,a.jsx)("legend",{className:o.default.label,children:"Which providers do you write to?"}),(0,a.jsx)("div",{className:o.default.checks,children:n.map(e=>(0,a.jsxs)("label",{className:o.default.check,children:[(0,a.jsx)("input",{type:"checkbox",name:"providers",value:e}),(0,a.jsx)("span",{children:e})]},e))}),f("providers")]}),(0,a.jsxs)("label",{className:o.default.field,children:[(0,a.jsxs)("span",{className:o.default.label,children:["What goes wrong today? ",(0,a.jsx)("span",{className:o.default.optional,children:"Optional"})]}),(0,a.jsx)("textarea",{name:"message",rows:4,maxLength:2e3,placeholder:"A duplicate refund, a missing CRM update, a retry loop you do not trust...","aria-invalid":!!c.message,"aria-describedby":m("message")}),f("message")]}),(0,a.jsx)("div",{className:o.default.honeypot,"aria-hidden":"true",children:(0,a.jsxs)("label",{children:["Leave this empty",(0,a.jsx)("input",{name:"website",tabIndex:-1,autoComplete:"off"})]})}),"closed"===e.kind&&(0,a.jsx)("p",{className:o.default.notice,role:"alert",children:"This is a static preview of the site, so the form cannot send requests yet."}),"error"===e.kind&&(0,a.jsx)("p",{className:o.default.errorBox,role:"alert",children:e.message}),(0,a.jsxs)("button",{type:"submit",className:`btn btn-primary ${o.default.submit}`,disabled:"submitting"===e.kind,children:["submitting"===e.kind?"Sending...":"Request early access","submitting"!==e.kind&&(0,a.jsx)(t.Icon,{name:"arrow",size:16})]}),(0,a.jsx)("p",{className:o.default.fine,children:"We use these details only to reply to your request."})]})}],79210)},82738,e=>{e.v({canvas:"GradientCanvas-module__GR17Kq__canvas",wrap:"GradientCanvas-module__GR17Kq__wrap"})},55339,e=>{"use strict";var a=e.i(15014),r=e.i(37244),t=e.i(82738);let l=`
+attribute vec2 a_pos;
+void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+`,s=`
+precision mediump float;
+uniform float u_time;
+uniform vec2 u_res;
+uniform vec3 u_colors[5];
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_res;
+  float aspect = u_res.x / u_res.y;
+  vec2 p = vec2(uv.x * aspect, uv.y);
+  float t = u_time * 0.06;
+
+  p += 0.22 * vec2(noise(p * 1.4 + t), noise(p * 1.4 - t + 9.1)) - 0.11;
+  p.y += 0.06 * sin(p.x * 2.2 + t * 3.0);
+
+  vec3 color = vec3(0.0);
+  float total = 0.0;
+  for (int i = 0; i < 5; i++) {
+    float fi = float(i);
+    vec2 center = vec2(
+      (0.1 + 0.22 * fi) * aspect + 0.28 * aspect * sin(t * (0.9 + fi * 0.23) + fi * 1.7),
+      0.5 + 0.42 * cos(t * (0.7 + fi * 0.19) + fi * 2.3)
+    );
+    float d = distance(p, center);
+    float w = 1.0 / (pow(d, 2.4) + 0.015);
+    color += u_colors[i] * w;
+    total += w;
+  }
+  color /= total;
+  color += (hash(gl_FragCoord.xy + u_time) - 0.5) * 0.018;
+  gl_FragColor = vec4(color, 1.0);
+}
+`,i=["#1F3BFF","#6050DC","#C9B8FF","#38BDF8","#E340FF"];function n(e){let a=parseInt(e.slice(1),16);return[(a>>16&255)/255,(a>>8&255)/255,(255&a)/255]}function o(e,a,r){let t=e.createShader(a);return t?(e.shaderSource(t,r),e.compileShader(t),e.getShaderParameter(t,e.COMPILE_STATUS)?t:null):null}e.s(["GradientCanvas",0,function({className:e}){let c=(0,r.useRef)(null);return(0,r.useEffect)(()=>{let e=c.current;if(!e)return;let a=e.getContext("webgl",{antialias:!1,premultipliedAlpha:!1});if(!a)return;let r=o(a,a.VERTEX_SHADER,l),t=o(a,a.FRAGMENT_SHADER,s),d=a.createProgram();if(!r||!t||!d||(a.attachShader(d,r),a.attachShader(d,t),a.linkProgram(d),!a.getProgramParameter(d,a.LINK_STATUS)))return;a.useProgram(d);let u=a.createBuffer();a.bindBuffer(a.ARRAY_BUFFER,u),a.bufferData(a.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),a.STATIC_DRAW);let m=a.getAttribLocation(d,"a_pos");a.enableVertexAttribArray(m),a.vertexAttribPointer(m,2,a.FLOAT,!1,0,0);let f=a.getUniformLocation(d,"u_time"),h=a.getUniformLocation(d,"u_res");a.uniform3fv(a.getUniformLocation(d,"u_colors"),new Float32Array(i.flatMap(n)));let p=()=>{let{width:r,height:t}=e.getBoundingClientRect();e.width=Math.max(1,Math.round(.5*r)),e.height=Math.max(1,Math.round(.5*t)),a.viewport(0,0,e.width,e.height),a.uniform2f(h,e.width,e.height)};p();let _=window.matchMedia("(prefers-reduced-motion: reduce)").matches,v=performance.now()-4e4,x=0,y=!0,b=e=>{a.uniform1f(f,(e-v)/1e3),a.drawArrays(a.TRIANGLES,0,3)},g=e=>{b(e),x=y&&!document.hidden?requestAnimationFrame(g):0},E=()=>{_||!y||document.hidden||x||(x=requestAnimationFrame(g))};b(performance.now()),e.dataset.ready="true",E();let N=new ResizeObserver(()=>{p(),b(performance.now())});N.observe(e);let A=new IntersectionObserver(([e])=>{y=e?.isIntersecting??!0,E()});return A.observe(e),document.addEventListener("visibilitychange",E),()=>{cancelAnimationFrame(x),N.disconnect(),A.disconnect(),document.removeEventListener("visibilitychange",E)}},[]),(0,a.jsx)("div",{className:`${t.default.wrap} ${e??""}`,"aria-hidden":"true",children:(0,a.jsx)("canvas",{ref:c,className:t.default.canvas})})}])},73195,e=>{"use strict";var a=e.i(15014),r=e.i(37244);e.s(["Reveal",0,function({children:e,as:t="div",delay:l=0,className:s,id:i}){let n=(0,r.useRef)(null);return(0,r.useEffect)(()=>{let e=n.current;if(!e)return;let a=new IntersectionObserver(e=>{for(let r of e)r.isIntersecting&&(r.target.setAttribute("data-visible","true"),a.unobserve(r.target))},{rootMargin:"0px 0px -10% 0px",threshold:0});return a.observe(e),()=>a.disconnect()},[]),(0,a.jsx)(t,{ref:n,id:i,"data-reveal":"",className:s,style:l?{"--reveal-delay":`${l}ms`}:void 0,children:e})}])}]);

@@ -1,0 +1,22 @@
+1:"$Sreact.fragment"
+3:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+8:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+9:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+a:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+c:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+d:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+7:X
+f:X
+f:C
+0:{"buildId":"xECSzn_3vZ5gg70jAuqrM","data":[{"rsc":["$","$1","c",{"children":["$L2",null,["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":"$@6","staleTime":"$7","varyParams":null},{"rsc":["$","$1","h",{"children":[null,["$","$L8",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$L9",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Quarter: Built for Certainty"}],["$","meta","1",{"name":"description","content":"Send refunds, cancels and emails through Quarter instead of straight to Stripe or Resend. When a response is lost, Quarter asks the provider what happened before anything is retried."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","meta","3",{"property":"og:title","content":"Quarter: Built for Certainty"}],["$","meta","4",{"property":"og:description","content":"Send refunds, cancels and emails through Quarter instead of straight to Stripe or Resend. When a response is lost, Quarter asks the provider what happened before anything is retried."}],["$","meta","5",{"property":"og:site_name","content":"Quarter"}],["$","meta","6",{"property":"og:image","content":"http://localhost:3000/preview/opengraph-image.png?opengraph-image.2po1z49xebs7l.png"}],["$","meta","7",{"property":"og:image:type","content":"image/png"}],["$","meta","8",{"property":"og:image:width","content":"1200"}],["$","meta","9",{"property":"og:image:height","content":"1200"}],["$","meta","10",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","11",{"property":"og:type","content":"website"}],["$","meta","12",{"name":"twitter:card","content":"summary"}],["$","meta","13",{"name":"twitter:title","content":"Quarter: Built for Certainty"}],["$","meta","14",{"name":"twitter:description","content":"Send refunds, cancels and emails through Quarter instead of straight to Stripe or Resend. When a response is lost, Quarter asks the provider what happened before anything is retried."}],["$","meta","15",{"name":"twitter:image","content":"http://localhost:3000/preview/twitter-image.png?twitter-image.2po1z49xebs7l.png"}],["$","meta","16",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","17",{"name":"twitter:image:type","content":"image/png"}],["$","meta","18",{"name":"twitter:image:width","content":"1200"}],["$","meta","19",{"name":"twitter:image:height","content":"1200"}],["$","link","20",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","21",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","22",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$La","23",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"isPartial":"$@b","staleTime":"$7","varyParams":null},{"rsc":["$","$1","c",{"children":[null,["$","$Lc",null,{"parallelRouterKey":"children","template":["$","$Ld",null,{}]}]]}],"isPartial":"$@e","staleTime":"$7","varyParams":"$f"},{"rsc":["$","$1","c",{"children":[null,["$","$Lc",null,{"parallelRouterKey":"children","template":["$","$Ld",null,{}]}]]}],"isPartial":"$@10","staleTime":"$7","varyParams":"$f"}],"isUpgradeableISRFallback":false,"a":"$@11","rootVaryParams":null,"needsRuntimeRequest":"$@12"}
+2:E{"digest":"NEXT_REDIRECT;replace;/product/outcome-proof#console;308;"}
+5:null
+12:true
+7:300
+7:C
+11:0
+b:"$undefined"
+e:"$undefined"
+10:"$undefined"
+6:"$undefined"

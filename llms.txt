@@ -1,0 +1,60 @@
+# Quarter
+
+> Quarter runs important writes to provider APIs (payments, commerce, CRM, email, support) with an id you choose, at most once, and returns a state backed by evidence, with a signed Outcome Proof. When a provider response is lost, Quarter checks the provider instead of retrying blind.
+
+Every docs page below is plain Markdown. The whole set is one file at [/llms-full.txt](/llms-full.txt). API examples use `https://api.example.test` as a placeholder base URL. Sandbox keys start with `qk_test_` and run against simulated providers, so no provider account is needed.
+
+## Get started
+
+- [Overview](/docs.md): Try Quarter in the simulated sandbox in five minutes, then send provider writes through it, read the state it returns, and react to outcomes.
+- [Quickstart](/docs/quickstart.md): Five minutes in the simulated sandbox: run a Stripe refund, lose its response on purpose, and watch Quarter prove it happened once.
+- [Send an action from code](/docs/from-code.md): Install the SDK, send a Stripe refund through Quarter from your backend, and read the state it returns.
+- [Python SDK](/docs/python-sdk.md): Install the Python client, execute an action with the lost-response pattern, and use async, shadow mode, webhook and proof verification, listing and export.
+- [Concepts](/docs/concepts.md): Action identity and fingerprints, the state machine, reliability classes, evidence and assurance, reconciliation, and Outcome Proof.
+- [Handling states](/docs/handling-states.md): What your code should do for each state `execute` can return, and for a lost response from Quarter itself.
+
+## Build
+
+- [Operations](/docs/operations.md): Run several protected actions in order as one operation, reverse confirmed steps when a later one fails, and pause for review instead of guessing.
+- [Recipes](/docs/recipes.md): Run a named business action, such as refunding an order or deleting an account, as one operation of protected steps with one signed proof.
+- [SDK integrations](/docs/integrations.md): `wrapStripe` for existing Stripe code, `executeAndWait` for Temporal, Inngest and Trigger.dev steps, and a verified webhook route for Next.js.
+- [Workflow engines](/docs/workflows.md): `@quarterso/workflows` turns one provider write into a step that Temporal, Inngest, Trigger.dev, Restate, DBOS or AWS Lambda durable functions can retry safely.
+- [Agent tools](/docs/agent-tools.md): Give an AI agent a refund, cancel or email tool keyed to a stable id, so a reworded retry runs once: `quarter_tool` in Python, `quarterTool` in TypeScript, with human approval before dispatch.
+- [Simulated sandbox and test helpers](/docs/sandbox.md): Sandbox projects run against provider simulators. Inject faults into the next provider call and read what the provider really did.
+- [Idempotency keys](/docs/idempotency.md): Send `Idempotency-Key` on any mutating request to Quarter's API, so a lost response from Quarter itself is safe to retry.
+- [Spec Import](/docs/spec-import.md): Draft an ActionSpec from an OpenAPI operation or a Postman collection request with `quarter specs draft`. The draft covers dispatch and identity; a person writes the evidence rules before it can pass validation.
+- [Using Quarter with Postman](/docs/postman.md): Postman at design and test time, Quarter at run time. Spec Import drafts an ActionSpec from a collection request; Evidence Export turns a settled action into a collection you can rerun as a regression test.
+- [Use Quarter from AI coding tools](/docs/ai-tools.md): Give Claude Code, Cursor and other MCP clients Quarter's ActionSpecs, a linter and a sandbox, and point them at these docs as Markdown.
+
+## Outcomes
+
+- [Verdicts](/docs/verdicts.md): Every action and operation step carries a verdict: a failure class, whether a new attempt is safe, and the next step, derived only from evidence Quarter already recorded.
+- [Capture and observed calls](/docs/observed-calls.md): Record metadata about the provider calls your process already makes, in process and off the request path, and read them back labelled by call class. Observed calls are not protected.
+- [OTLP import](/docs/otlp.md): Send OpenTelemetry traces to Quarter and every HTTP client span becomes an observed call, with no SDK change. Only call metadata is kept.
+- [Response drift](/docs/drift.md): Quarter learns the shape of each provider route's successful responses and raises a lead when a field is removed, retyped or added.
+- [Provider health](/docs/provider-health.md): Quarter judges each provider as healthy, degraded or failing over 5-minute windows, from your observed calls and your protected actions, and says why.
+- [Incidents](/docs/incidents.md): An incident opens when a provider stays degraded or failing for several windows in a row, and closes after a run of healthy ones. Both send an event.
+- [Webhooks](/docs/webhooks.md): Receive a signed POST when an action changes state. Verify the signature, answer fast, and dedupe by event id.
+- [Events and live streaming](/docs/events.md): List project events with cursor pagination, or stream them over server-sent events as they commit.
+- [Signed proofs](/docs/proofs.md): Fetch an action's Outcome Proof signed by Quarter, verify it offline, and keep it as a receipt that survives key rotation.
+- [Ledger search and export](/docs/ledger.md): Find actions by state, provider, subject, time or your own metadata, and export the ledger as CSV.
+
+## Operate
+
+- [Customer-side executor](/docs/executor.md): Run provider calls inside your own network. The executor pulls signed plans, runs installed adapters with local credentials, and returns signed facts.
+- [Shadow mode and ActionLint](/docs/shadow-mode.md): Find risky provider writes in your code with ActionLint, record how they behave in production with shadow mode, and combine both into a reliability report.
+- [Policies, API keys, audit log](/docs/administration.md): Gate actions with a versioned policy, manage project API keys, and read the audit log of administrative changes.
+- [Tenant isolation](/docs/security.md): How Quarter keeps one tenant's data from another: service-layer checks, with PostgreSQL row-level security underneath.
+- [Errors](/docs/errors.md): Every error code the API and SDK return, with its HTTP status and what to do.
+
+## Reference
+
+- [API reference](/docs/api.md): Every endpoint of the Quarter HTTP API, with parameters, request examples and response examples.
+- [Actions reference](/docs/actions.md): Every supported action with its reliability class, status, strategies, evidence rules, input schema and known limitations.
+- [Certification](/docs/certification.md): How Quarter tests each ActionSpec against provider simulators and, with test-mode credentials, against the provider itself, and what each status means.
+- [CLI reference](/docs/cli.md): Every `quarter` command and flag: actions, events, proofs, live event forwarding, fault injection, lint, Spec Import, Evidence Export, and the MCP server.
+- [How providers are supported](/docs/providers.md): The three ways Quarter proves a provider write after a lost response, how it treats a conflict on its own id, and what the provider stages mean.
+
+## Optional
+
+- [Full docs in one file](/llms-full.txt): every page above, concatenated.
