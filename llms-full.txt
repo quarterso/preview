@@ -1,124 +1,512 @@
 # Quarter docs
 
-> Turn every Stripe, App Store and Google Play payment in your app into the right access, exactly once, and spend credits atomically.
+> Check every outgoing vendor payment before it leaves your bank. Hold the suspicious ones for a person, with the reason in plain words.
 
-Your app sells a plan or credits through Stripe on the web, the App Store or Google Play. Quarter checks each payment with the store, unlocks the plan or adds the credits once, and takes access away on cancel, refund or a failed renewal. Your app asks one question: what does this user have right now?
+Quarter is a payment firewall. You give it a payment run, as a NACHA file, a CSV or a list of payments, before you upload it to your bank. Quarter matches each payment to a vendor you know, checks it, and holds anything wrong for a person to approve or reject. When every held payment has a decision, Quarter gives the file back without the rejected payments, and you upload that file to your bank as usual.
 
-## What you build
+## How a payment run flows
 
-1. Connect your stores: [Stripe](/docs/stripe.md), the [App Store](/docs/app-store.md) or [Google Play](/docs/google-play.md).
-2. Say what each store product grants, with [products](/docs/products.md): an entitlement such as `pro`, credits, or both.
-3. Report purchases from your app with [`POST /v1/apps/{app}/purchases`](/docs/purchases.md).
-4. Ask what a user has with [`GET /v1/apps/{app}/customers/{user}/access`](/docs/customers.md), or read the [mirror table](/docs/mirror.md) in your own database.
-5. If you sell credits for AI calls, [hold them while each call runs](/docs/credits.md) and spend what it used. A failed call costs nothing.
-
-## Start here
-
-- [Quickstart](/docs/quickstart.md): a Stripe test payment to an unlocked plan and a credit spend.
-- [Concepts](/docs/concepts.md): apps, products, entitlements, credits, customers and statuses.
-- [Webhooks](/docs/webhooks.md): event types, signature verification and retries.
-- [TypeScript SDK](/docs/sdk.md): the same calls from your backend, with last known access during an outage.
-- Building with an AI tool? Give it [/llms-full.txt](/llms-full.txt), the whole of these docs in one Markdown file. The exact API contract is `GET /openapi.json` on your API URL.
+1. **Know your vendors.** Add each vendor and its bank details with [`POST /v1/vendors`](/docs/vendors.md#post-v1-vendors). New or changed bank details hold payments until someone confirms them with the vendor.
+2. **Confirm bank details.** Send the vendor a [verification link](/docs/verification.md), where they log in to their own bank, or record a [call-back](/docs/callbacks.md) to a phone number you already had.
+3. **Upload the run.** Send the file to [`POST /v1/payment_runs`](/docs/payment-runs.md#post-v1-payment-runs). Each payment comes back `clear` or `held`, with [findings](/docs/checks.md) that say what is wrong.
+4. **Decide.** A person approves or rejects each held payment, with a reason. Large payments need a [second, different approver](/docs/releases.md#two-person-approval).
+5. **Release.** [`POST /v1/payment_runs/{run}/release`](/docs/releases.md#post-v1-payment-runs-run-release) returns the file to send, without the rejected payments. Every step is in the [audit log](/docs/procedure.md#get-v1-audit-log).
 
 ## What Quarter never does
 
-- It never holds or moves money. Payments stay in your own Stripe, Apple or Google account.
-- It never sees card data.
-- It uses only a read-only Stripe restricted key.
-- It stores only your own user ids, not names or emails.
+- It never holds, moves or sends money. The file goes back to you, and you upload it to your own bank.
+- It never keeps a full account number in the clear. Account numbers are sealed at rest. Responses show the last 4 digits only.
+- It never tells one customer which other customer verified or reported an account. The [network](/docs/account-checks.md) shares counts only.
+- It does not promise to catch every fraud. It holds what its [checks](/docs/checks.md) find, and a person decides.
 
-## Status
+## Keys and the API URL
 
-> **Note:** Quarter is pre-launch. Stripe, App Store and Google Play purchases, access, credits with holds, the mirror, webhooks, erasure and export are built and tested against simulated stores. The TypeScript SDK is built and coming to npm. The console and self-serve sign-up are planned. During early access, Quarter issues your API keys and your API URL.
+Send your API key as a Bearer token on every `/v1` request. Test keys start with `qk_test_` and live keys with `qk_live_`. A test key never sees live data, and a live key never sees test data. Keep keys on your server.
 
----
-
-# Quickstart
-
-> Take a Stripe test payment to an unlocked plan, credits added, and one credit spent.
-
-This walks one Stripe test payment through Quarter with a test key. It takes a handful of requests and a Stripe account in test mode.
-
-## Before you start
-
-You need a test API key, which starts with `qk_test_`, and your API URL. During early access, Quarter gives you both. A test key only ever sees test data.
+During early access, Quarter issues your keys and your API URL. The examples use `$QUARTER_API_URL` and `$QUARTER_API_KEY`.
 
 ```bash
 export QUARTER_API_URL="<your API URL>"
 export QUARTER_API_KEY="qk_test_..."
 ```
 
-## 1. Create an app
+The routes under `/verify` are for your vendor, not for you. They take no key: the token in the verification link is the only credential. See [Verification links](/docs/verification.md).
 
-An app is one product you sell, with its stores, its products and its users. Keep its `id`. The response also carries `setup_urls`: the addresses Stripe and the App Store should call, known before you connect either.
+## For AI tools
+
+- The exact contract of every route is an OpenAPI 3.1 document at `GET $QUARTER_API_URL/openapi.json`. It needs no key.
+- These docs are plain Markdown at [/llms.txt](/llms.txt) (an index) and [/llms-full.txt](/llms-full.txt) (every page in one file). Every page also has a `.md` twin.
+
+## Start here
+
+- [Quickstart](/docs/quickstart.md): add a vendor, upload a run, decide a held payment and get the file back.
+- [Checks](/docs/checks.md): every check, what it means, and the exact message it gives.
+- [Webhooks](/docs/webhooks.md): events, signatures and retries.
+- [Errors](/docs/errors.md): the error shape and every code.
+
+## Status
+
+> **Note:** Quarter is pre-launch and has no customers yet. The api described here is built and tested. The network is built, and it fills as customers join. During early access, Quarter issues your API keys and your API URL.
+
+---
+
+# Quickstart
+
+> Add a vendor, confirm its bank details, upload a small payment run, decide the held payment and get the file back.
+
+This walks one small payment run through Quarter with a test key. It takes six requests. Every response below is the full JSON the api returns.
+
+## Before you start
+
+You need a test API key, which starts with `qk_test_`, and your API URL. During early access, Quarter gives you both. You also need `curl` and `jq`.
 
 ```bash
-curl -X POST "$QUARTER_API_URL/v1/apps" \
+export QUARTER_API_URL="<your API URL>"
+export QUARTER_API_KEY="qk_test_..."
+```
+
+## 1. Add a vendor with bank details
+
+A vendor is someone you pay. Give its name, the domain of its email addresses and the bank details you have on file. The details start `unverified`: nobody has confirmed them with the vendor yet, so payments to them would be held.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/vendors" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"name":"My AI app"}'
-# { "id": "app_xaGQYbk1WUpsjtVDFgDV", "object": "app", "name": "My AI app", "sources": {},
-#   "setup_urls": { "stripe": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks", ... } }
-
-export QUARTER_APP_ID="app_xaGQYbk1WUpsjtVDFgDV"
+  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
 ```
 
-## 2. Connect Stripe
+Response:
 
-1. In the Stripe dashboard, in test mode, add a webhook endpoint with the URL from `setup_urls.stripe` and the events listed in [Connecting Stripe](/docs/stripe.md). Stripe then shows its signing secret, which starts with `whsec_`.
-2. Create a restricted key with **Read** access to Checkout Sessions and Subscriptions, and nothing else. It starts with `rk_test_`.
-3. Give both to Quarter.
+```json
+{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "unverified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "unverified",
+      "verified_at": null,
+      "verified_method": null,
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": []
+}
+```
+
+The response never repeats the account number. Quarter seals it and shows the last 4 digits. Keep the vendor `id` and the bank account `id`.
 
 ```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/sources/stripe" \
+export VENDOR="ven_7Qm2KxR9pLwT4nVb8YcD"
+export ACCOUNT="ba_3HfJ6tWq1ZsN8kPm2RxA"
+```
+
+## 2. Confirm the bank details
+
+In production you would send the vendor a [verification link](/docs/verification.md), where they log in to their own bank. Here, record a [call-back](/docs/callbacks.md) instead: someone at your company called the vendor at a number you already had, and the vendor confirmed the details.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/vendors/$VENDOR/bank_accounts/$ACCOUNT/attestations" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"restricted_key":"rk_test_...","webhook_secret":"whsec_..."}'
-# { "id": "app_xaGQYbk1WUpsjtVDFgDV", "object": "app", ..., "webhook_url": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks" }
+  -d '{"result":"pass","phone_number":"+1 312 555 0148","phone_source":"vendor_master_before_change","contact_name":"Maria Okafor, accounts receivable","reviewer":"dana@yourcompany","notes":"Called the number on file since 2024. Maria read back the routing number and the last four digits."}'
 ```
 
-## 3. Say what your plan grants
+Response:
 
-A product ties a store product to what it grants. Here a Stripe price unlocks the `pro` entitlement and adds 200 credits each period, which expire at the end of it.
+```json
+{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "verified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "verified",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}
+```
+
+## 3. Upload a payment run
+
+Here is a CSV with two payments: one to Harbor Point, and one to a payee you have never added. Save it as `run.csv`.
+
+run.csv:
+
+```shell
+payee,routing_number,account_number,amount,payment_date,invoice
+Harbor Point Logistics LLC,091408501,4021887365,"48,250.00",2026-10-06,INV-20931
+J. Reyes Consulting,063174290,88412007,"9,800.00",2026-10-06,INV-0412
+```
+
+The api takes the file as text inside a JSON body. `jq` builds that body from the file.
+
+Request:
 
 ```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/products" \
+jq -n --rawfile file run.csv '{format: "csv", name: "Week 41 vendor payments", file: $file}' |
+  curl -X POST "$QUARTER_API_URL/v1/payment_runs" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"source":"stripe","store_product_id":"price_...","kind":"subscription","entitlements":["pro"],"credits":{"currency":"credits","amount":200,"expires":"period_end"}}'
-# { "id": "prod_uQXxdaWaD3DMuEDeum1T", "object": "product" }
+  -d @-
 ```
 
-## 4. Take a test payment
+Response:
 
-Create the Checkout Session with your own user id in `client_reference_id`, and pay it with one of Stripe's test cards.
-
-```ts
-// Create the Checkout Session with your own user id, so Quarter knows who paid.
-const session = await stripe.checkout.sessions.create({
-  mode: "subscription",
-  line_items: [{ price: "price_pro_monthly", quantity: 1 }],
-  client_reference_id: user.id,
-  subscription_data: { metadata: { quarter_user: user.id } },
-  success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-});
+```json
+{
+  "id": "run_4VbN8qLs2TjW6hPx9RkM",
+  "object": "payment_run",
+  "name": "Week 41 vendor payments",
+  "format": "csv",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-05T14:02:11.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 2,
+    "total": 58050,
+    "held": 1,
+    "held_amount": 9800,
+    "rejected": 0,
+    "rejected_amount": 0
+  },
+  "items": [
+    {
+      "id": "itm_9JcR4mXv7NpB2tKw5LqS",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "Harbor Point Logistics LLC",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 48250,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20931",
+      "status": "clear",
+      "findings": [
+        {
+          "code": "first_payment",
+          "severity": "warn",
+          "message": "first payment to Harbor Point Logistics LLC"
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "itm_1TzH6kQb3WmF8rNy4PdV",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": null,
+      "payee_name": "J. Reyes Consulting",
+      "routing_number": "063174290",
+      "last4": "2007",
+      "amount": 9800,
+      "effective_date": "2026-10-06",
+      "reference": "INV-0412",
+      "status": "held",
+      "findings": [
+        {
+          "code": "unknown_payee",
+          "severity": "hold",
+          "message": "J. Reyes Consulting is not a vendor on file"
+        }
+      ],
+      "decision": null
+    }
+  ]
+}
 ```
 
-## 5. Report the purchase
+Harbor Point is `clear`. It carries a `warn` finding because it is the first payment to this vendor; a warning never holds. J. Reyes Consulting is `held`, because the payee is not a vendor you know. Every finding has a `code` you can look up in [Checks](/docs/checks.md) and a `message` you can show as it is.
 
-On your success page, send the session id to Quarter. Quarter fetches the session from Stripe, unlocks `pro`, adds the credits, and answers with the user's access. When the Stripe webhook arrives later, it changes nothing.
+## 4. Decide the held payment
+
+A person approves or rejects each held payment and says why. The reason and the person go into the audit trail.
+
+Request:
 
 ```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/purchases" \
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM/items/itm_1TzH6kQb3WmF8rNy4PdV/decision" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"user":"user_8412","source":"stripe","checkout_session_id":"cs_test_..."}'
+  -d '{"decision":"reject","reason":"Not a vendor of ours. The invoice came from an address we do not know.","reviewer":"dana@yourcompany"}'
 ```
 
-## 6. Ask what the user has
+Response:
+
+```json
+{
+  "id": "run_4VbN8qLs2TjW6hPx9RkM",
+  "object": "payment_run",
+  "name": "Week 41 vendor payments",
+  "format": "csv",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-05T14:02:11.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 2,
+    "total": 58050,
+    "held": 0,
+    "held_amount": 0,
+    "rejected": 1,
+    "rejected_amount": 9800
+  },
+  "items": [
+    {
+      "id": "itm_9JcR4mXv7NpB2tKw5LqS",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "Harbor Point Logistics LLC",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 48250,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20931",
+      "status": "clear",
+      "findings": [
+        {
+          "code": "first_payment",
+          "severity": "warn",
+          "message": "first payment to Harbor Point Logistics LLC"
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "itm_1TzH6kQb3WmF8rNy4PdV",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": null,
+      "payee_name": "J. Reyes Consulting",
+      "routing_number": "063174290",
+      "last4": "2007",
+      "amount": 9800,
+      "effective_date": "2026-10-06",
+      "reference": "INV-0412",
+      "status": "rejected",
+      "findings": [
+        {
+          "code": "unknown_payee",
+          "severity": "hold",
+          "message": "J. Reyes Consulting is not a vendor on file"
+        }
+      ],
+      "decision": {
+        "by": "dana@yourcompany",
+        "at": "2026-10-05T14:09:31.000Z",
+        "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
+        "second_by": null
+      }
+    }
+  ]
+}
+```
+
+## 5. Release the run
+
+Release works once no payment is still held. It returns the file to upload to your bank: the same CSV, without the rejected row.
+
+Request:
 
 ```bash
-curl "$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/customers/user_8412/access" \
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM/release" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"reviewer":"dana@yourcompany"}'
+```
+
+Response:
+
+```json
+{
+  "object": "payment_run_release",
+  "run_id": "run_4VbN8qLs2TjW6hPx9RkM",
+  "format": "csv",
+  "file": "payee,routing_number,account_number,amount,payment_date,invoice\nHarbor Point Logistics LLC,091408501,4021887365,\"48,250.00\",2026-10-06,INV-20931\n"
+}
+```
+
+Save the file:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM/release" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"reviewer":"dana@yourcompany"}' | jq -r .file > run-released.csv
+```
+
+> **Note:** A run can be released once. Run the release request one way or the other, not both: the second call gets `run_closed`. To read the run again later, use [`GET /v1/payment_runs/{run}`](/docs/payment-runs.md#get-v1-payment-runs-run).
+
+## Next
+
+- [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
+- [Checks](/docs/checks.md): all thirteen checks and how to set each one.
+- [Releases](/docs/releases.md): two-person approval, cancel, and what release guarantees.
+- [Webhooks](/docs/webhooks.md): hear about held payments as they happen.
+
+---
+
+# Vendors and bank details
+
+> Add the people you pay, record their bank details, and see why a change of bank details holds payments until it is confirmed.
+
+A vendor is someone you pay. Quarter matches every payment in a run to a vendor, so the vendor list is what the checks compare against: a payee that is not on it is held as [`unknown_payee`](/docs/checks.md#unknown-payee).
+
+## Bank details and their history
+
+A vendor has one current set of bank details. Recording new details does not overwrite the old ones. The old details stay on file with status `replaced`, so you can always see what changed and when.
+
+| Bank account status | Meaning |
+| --- | --- |
+| `unverified` | Current, and not yet confirmed with the vendor. Payments to it are held. |
+| `verified` | Current, and confirmed through the vendor bank login or a call-back. `verified_method` says which: `bank_link` or `callback`. |
+| `rejected` | A call-back said these details are wrong. They are no longer current. |
+| `replaced` | Newer details were recorded. Kept as history. |
+
+The vendor `status` follows its current details: `unverified` or `verified`. You can also set it to `blocked` yourself.
+
+> **Warning:** Setting a vendor to `blocked` records your decision on the vendor, but today no check holds a payment because its vendor is blocked. To stop paying a vendor, keep its payments out of the run, or reject them when they come up.
+
+## Why a change of bank details holds payments
+
+The most common payment fraud is a message that looks like it comes from a vendor and asks you to pay a new account. So any new bank details put the vendor back to `unverified`, and payments to the new details are held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) until someone confirms the change with the vendor. A run that still pays the old details is held as [`account_not_on_file`](/docs/checks.md#account-not-on-file).
+
+Confirm the change with a [verification link](/docs/verification.md) or a [call-back](/docs/callbacks.md) to a number you already had. Never confirm it with the phone number or email in the change request itself.
+
+## What Quarter keeps
+
+- The routing number, in full. It names a bank, not an account.
+- The account number, sealed. Quarter matches accounts by a keyed fingerprint and shows only `last4`.
+- Recording the same details twice changes nothing. Leading zeros do not make a different account.
+
+## Endpoints
+
+### Add a vendor
+
+`POST /v1/vendors` (auth: API key)
+
+Creates a vendor and, when you send bank details, records them as its current details with `source: "api"`. Returns the vendor with its bank details and evidence.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | Yes | The vendor name, up to 200 characters. Legal suffixes, case and punctuation are ignored when matching. |
+| `email_domain` | string | No | The domain the vendor emails from, such as `harborpoint.example`. A verification code sent anywhere else is recorded as a failed check. |
+| `external_id` | string | No | Your own id for the vendor, unique among your vendors. A CSV run can match payments by it. |
+| `routing_number` | string | No | The 9-digit ABA routing number. Spaces are ignored. |
+| `account_number` | string | No | 4 to 17 letters or digits. Spaces and dashes are ignored. Sealed at rest; never returned. |
+| `holder_name` | string | No | The name on the bank account, if you have it. Used when matching payee names. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/vendors" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
+```
+
+Response:
+
+```json
+{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "unverified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "unverified",
+      "verified_at": null,
+      "verified_method": null,
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": []
+}
+```
+
+### List vendors
+
+`GET /v1/vendors` (auth: API key)
+
+Vendors in name order, each with the last 4 digits and status of its current bank details.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `unverified`, `verified` or `blocked`. |
+| `search` | string | No | Part of a name. Matched the same way payee names are. |
+| `limit` | integer | No | 1 to 1000. Default 100. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/vendors?status=verified&limit=2" \
   -H "authorization: Bearer $QUARTER_API_KEY"
 ```
 
@@ -126,2086 +514,2282 @@ Response:
 
 ```json
 {
-  "object": "access",
-  "app_user_id": "user_8412",
-  "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-  "entitlements": {
-    "pro": {
-      "active": true,
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "product_id": "price_...",
-      "source": "stripe",
-      "status": "active",
-      "period_type": "normal",
-      "will_renew": true
-    }
-  },
-  "credits": {
-    "credits": 200
-  },
-  "purchases": [
+  "object": "list",
+  "data": [
     {
-      "id": "grant_3B2DJiADNTB1GcwmqUAC",
-      "source": "stripe",
-      "kind": "subscription",
-      "product_id": "price_...",
-      "status": "active",
-      "period_type": "normal",
-      "started_at": "2026-10-14T09:14:02.000Z",
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "will_renew": true,
-      "unconfigured_product": false
+      "id": "ven_2PwK7nTq4XmB9vLr6JcH",
+      "object": "vendor",
+      "name": "Cedar Ridge Supply Co.",
+      "email_domain": "cedarridgesupply.example",
+      "external_id": "V-0388",
+      "status": "verified",
+      "bank_account": {
+        "last4": "1904",
+        "status": "verified"
+      }
+    },
+    {
+      "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "object": "vendor",
+      "name": "Harbor Point Logistics LLC",
+      "email_domain": "harborpoint.example",
+      "external_id": "V-1042",
+      "status": "verified",
+      "bank_account": {
+        "last4": "7365",
+        "status": "verified"
+      }
     }
   ]
 }
 ```
 
-## 7. Spend a credit
+### Retrieve a vendor
 
-Use an id from your own system as the idempotency key, such as the id of the AI generation. Sending the same request again spends nothing more and answers `"replayed": true`.
+`GET /v1/vendors/{vendor}` (auth: API key)
 
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/customers/user_8412/credits/spend" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"currency":"credits","amount":1,"idempotency_key":"gen_4821"}'
-# { "object": "credit_spend", "balance": 199, "replayed": false }
-```
+The vendor with every set of bank details it ever had, newest first, and every piece of verification evidence: email codes, bank logins and call-backs, with who did it and when. Evidence is never edited or deleted.
 
-## Next
+**Path parameters**
 
-- Register a [webhook endpoint](/docs/webhooks.md) to hear about renewals, cancels and refunds as they happen.
-- Turn on the [mirror](/docs/mirror.md) to check access with a query against your own database.
-- Connect the [App Store](/docs/app-store.md) or [Google Play](/docs/google-play.md).
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor` | string | Yes | The vendor id, starting with `ven_`. |
 
----
-
-# Concepts
-
-> Apps, products, entitlements, credits and customers, the statuses a purchase moves through, and the rules Quarter keeps.
-
-## The objects
-
-| Object | Id prefix | What it is |
-| --- | --- | --- |
-| App | `app_` | One product you sell, with its stores, its products and its users. |
-| Source |  | A store connected to an app: `stripe`, `app_store` or `play_store`. |
-| Product | `prod_` | A store product, such as a Stripe price or an App Store product id, and what it grants. |
-| Entitlement |  | A name your app checks, such as `pro`. A product can grant several. |
-| Credits |  | A balance in a currency you name, such as `credits` or `tokens`. A user can hold several currencies. |
-| Customer | `cus_` | One of your users, known by your own user id. Quarter never needs a name or email. |
-| Purchase | `grant_` | One subscription or one-time purchase from a store, and the access it gives. |
-| Event | `evt_` | An append-only record of something that changed. Every event is also sent to your webhook endpoints. |
-
-## Test and live
-
-API keys start with `qk_test_` or `qk_live_`, and each key belongs to a project in one environment. A test key never reads or writes live data, and the reverse. A test project takes only a Stripe `rk_test_` key, and a live project only an `rk_live_` key.
-
-## Your user ids
-
-Every call names the user with your own id: the id in your auth system, or an anonymous id before sign-in. Quarter creates the customer the first time it sees a purchase for that id. When an anonymous user signs in, [link the two ids](/docs/customers.md#post-v1-apps-app-customers-user-aliases) and their purchases and credits move with them.
-
-## Products
-
-| Kind | What it is | What it can grant |
-| --- | --- | --- |
-| `subscription` | Renews each period until cancelled. | Entitlements, and credits each period. |
-| `non_consumable` | Bought once, kept for good. | Entitlements, credits, or both. |
-| `consumable` | Bought again and again, such as a credit pack. | Credits only. |
-
-A purchase of a store product you have not configured is still recorded, with `unconfigured_product: true`, and grants nothing. Configure every product before you sell it.
-
-## Purchase statuses
-
-| Status | Gives access | Meaning |
-| --- | --- | --- |
-| `active` | Yes | Paid for the current period, or a one-time purchase. |
-| `in_grace_period` | Yes | A renewal payment failed, and the store's grace period has not ended. |
-| `in_billing_retry` | No | The grace period ended and the store is still trying to collect. |
-| `paused` | No | The subscription is paused in the store. |
-| `expired` | No | The period ended without a renewal, for example after a cancel. |
-| `revoked` | No | Refunded or revoked by the store. |
-
-Status comes from the stored facts and the clock, so access ends on time even if the store never sends another notification. An entitlement is active while any purchase that grants it gives access.
-
-## The rules Quarter keeps
-
-- Nothing grants access unless the store confirmed it: Apple signed it, or Quarter fetched it from Google or Stripe.
-- Every store record is stored once and never changed. Access is always derived from the records.
-- A record older than the newest one applied for the same subscription never moves access backwards.
-- Applying the same facts twice changes nothing and sends no events.
-- A credit balance is the sum of its unexpired lots and is never negative. A spend with the same idempotency key happens once.
-- Credits bought on the App Store never expire, as Apple requires.
-
----
-
-# TypeScript SDK
-
-> Access checks, credit holds for AI calls, purchase reports and webhook verification from your backend, with last known access during an outage.
-
-> **Note:** The SDK is coming to npm. During early access, Quarter shares it with you directly.
-
-Use the SDK from your backend only. Your API key must never reach a browser or a phone.
-
-```ts
-import { Quarter } from "@quarterso/sdk";
-
-const quarter = new Quarter({
-  apiKey: process.env.QUARTER_API_KEY!,
-  app: process.env.QUARTER_APP_ID!,
-  baseUrl: process.env.QUARTER_API_URL,
-});
-```
-
-## Check access
-
-```ts
-// What does this user have right now?
-if (await quarter.hasAccess(user.id, "pro")) showProFeatures();
-
-const access = await quarter.access(user.id);
-console.log(access.credits.credits, access.stale); // 120, undefined
-```
-
-`quarter.accessMany(users)` answers for up to 100 users in one request.
-
-### When Quarter cannot be reached
-
-If Quarter does not answer, `access` and `hasAccess` return the last answer they had for that user, for up to an hour, marked `stale: true`. An outage never locks out a paying user. Writes such as spends and holds never fall back: they fail with an error. Set `whenUnreachable: "deny"` to fail instead, or `lastKnownForSeconds` to change the hour.
-
-## Charge for AI calls
-
-`withReservation` holds up to `max` credits, runs your function, and spends the `used` it returns. If your function throws, everything held goes back. See [Credits](/docs/credits.md).
-
-```ts
-import { Quarter } from "@quarterso/sdk";
-
-const quarter = new Quarter({
-  apiKey: process.env.QUARTER_API_KEY!,
-  app: process.env.QUARTER_APP_ID!,
-  baseUrl: process.env.QUARTER_API_URL,
-});
-
-// Hold up to 10 credits while the model runs, then spend what it used.
-// If the call throws, everything held goes back. Parallel calls cannot overspend.
-const answer = await quarter.credits.withReservation(
-  user.id,
-  { currency: "credits", max: 10, idempotencyKey: request.id },
-  async () => {
-    const completion = await runModel(prompt);
-    return { used: completion.creditsUsed, result: completion.text };
-  },
-);
-```
-
-`quarter.credits.spend`, `grant`, `reserve`, `settle` and `release` are there too, for when you need them one by one. A short balance throws a `QuarterError` with the code `insufficient_credits`.
-
-## Report purchases
-
-```ts
-// From your Checkout success page, or your app's purchase handler.
-await quarter.purchases.report(user.id, { source: "stripe", checkoutSessionId: sessionId });
-await quarter.purchases.report(user.id, { source: "app_store", signedTransaction: jws });
-await quarter.purchases.report(user.id, { source: "play_store", purchaseToken: token, productId: "credits_500" });
-```
-
-## Support and promotions
-
-```ts
-// "I paid but I'm locked out": ask every store again.
-const { checked, access } = await quarter.customers.sync(user.id);
-
-// Give Pro for 30 days, then end it early. Paid access is never touched.
-await quarter.entitlements.give(user.id, { entitlement: "pro", durationDays: 30, idempotencyKey: ticket.id });
-await quarter.entitlements.end(user.id, "pro");
-
-// An anonymous buyer signs in.
-await quarter.customers.alias(user.id, anonymousId);
-```
-
-## Verify webhooks
-
-```ts
-import { verifyWebhook } from "@quarterso/sdk";
-
-// Pass the raw body, before any JSON parsing.
-const event = await verifyWebhook(rawBody, request.headers.get("quarter-signature"), process.env.QUARTER_WEBHOOK_SECRET!);
-```
-
----
-
-# Connecting Stripe
-
-> Connect Stripe with a read-only restricted key and a webhook, and pass your user id on every Checkout Session.
-
-Payments stay in your own Stripe account. Quarter reads what happened with a restricted key that can only read, and never creates charges, refunds or payouts.
-
-Stripe shows a webhook secret only after it knows the URL, so add the webhook first. The URL is ready before Stripe is connected: it is `setup_urls.stripe` on [your app](/docs/apps.md#get-v1-apps-app).
-
-## 1. Add the webhook
-
-In the Stripe dashboard, add a webhook endpoint with the URL from `setup_urls.stripe`, and send it these events:
-
-- `checkout.session.completed` and `checkout.session.async_payment_succeeded`
-- `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
-- `customer.subscription.paused`, `customer.subscription.resumed`, `customer.subscription.trial_will_end`
-- `invoice.paid` and `invoice.payment_failed`
-- `charge.refunded`
-
-Quarter checks each webhook's signature against the exact body, then fetches the subscription or session from Stripe with your key. The fetched state is what counts, so events that arrive late, twice or out of order never move access backwards. Other event types are ignored.
-
-Copy the endpoint's signing secret, which starts with `whsec_`.
-
-## 2. Create a restricted key
-
-Create a restricted key with **Read** access to Checkout Sessions and Subscriptions, and no other permissions. A test project takes only an `rk_test_` key, and a live project only an `rk_live_` key.
-
-## 3. Give Quarter both
+Request:
 
 ```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/sources/stripe" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"restricted_key":"rk_test_...","webhook_secret":"whsec_..."}'
-```
-
-## 4. Pass your user id
-
-Create every Checkout Session with `client_reference_id` set to your user id. For subscriptions, also set `subscription_data.metadata.quarter_user`, so renewals and cancels made later in Stripe still find the user.
-
-```ts
-// Create the Checkout Session with your own user id, so Quarter knows who paid.
-const session = await stripe.checkout.sessions.create({
-  mode: "subscription",
-  line_items: [{ price: "price_pro_monthly", quantity: 1 }],
-  client_reference_id: user.id,
-  subscription_data: { metadata: { quarter_user: user.id } },
-  success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-});
-```
-
-On your success page, [report the session](/docs/purchases.md) so access is there before the webhook arrives.
-
-## Products
-
-For Stripe, a product's `store_product_id` is the Stripe price id, such as `price_...`. Add one [product](/docs/products.md) for each price you sell.
-
-## Refunds and failed payments
-
-- A full refund ends the access that payment bought, and takes back its unspent credits. A partial refund changes nothing.
-- When a renewal invoice fails, Stripe starts the next period anyway. Quarter keeps access for that period as a grace period, and ends it if the invoice is still unpaid when the period ends.
-
----
-
-# Connecting the App Store
-
-> Connect the App Store, report Apple's signed transactions from your app, and point App Store Server Notifications at Quarter.
-
-Quarter trusts only what Apple signed. Every transaction and notification is checked against Apple's certificates and your bundle id before anything unlocks.
-
-## 1. Add the App Store source
-
-Give Quarter your bundle id. Add your App Store Server API key, key id and issuer id too, so Quarter can ask Apple for the latest state of a subscription when it needs to. `app_apple_id` is required by Apple for production data.
-
-```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/sources/app_store" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"bundle_id":"your.bundle.id","app_apple_id":1234567890,"key_id":"ABC123DEFG","issuer_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n..."}'
-# { "id": "app_xaGQYbk1WUpsjtVDFgDV", "object": "app", ..., "notifications_url": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications" }
-```
-
-## 2. Point notifications at Quarter
-
-In App Store Connect, set the App Store Server Notifications URL (version 2) to the `notifications_url` from the response, for production and for sandbox. It is the same as `setup_urls.app_store`.
-
-## 3. Report purchases from your app
-
-When StoreKit completes a purchase, and again when the user restores purchases, send the signed transaction (its JWS representation) to your backend, and from there to Quarter with your user id.
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/purchases" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"user":"user_8412","source":"app_store","signed_transaction":"eyJhbGciOiJFUzI1NiIs..."}'
-```
-
-> **Note:** Keep your API key on your server. Never put it in the app itself.
-
-## Products and credits
-
-A product's `store_product_id` is the App Store product id. Credits bought through the App Store never expire, whatever the product says, because Apple requires that in-app purchases of credits do not.
-
----
-
-# Connecting Google Play
-
-> Connect Google Play subscriptions and one-time products with a service account and real-time developer notifications.
-
-Google Play notifications carry only a purchase token. Quarter fetches every purchase from the Google Play Developer API before anything unlocks, then acknowledges it, so Google does not refund it after three days.
-
-## 1. Create a service account
-
-In Google Cloud, create a service account and a JSON key for it. In the Play Console, invite it with permission to view financial data and to manage orders and subscriptions.
-
-## 2. Add the Google Play source
-
-```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/sources/play_store" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"package_name":"your.package.name","service_account_json":"{\"type\":\"service_account\",...}"}'
-# { "id": "app_xaGQYbk1WUpsjtVDFgDV", "object": "app", ..., "push_url": "<your API URL>/sources/play_store/app_xaGQYbk1WUpsjtVDFgDV/notifications?token=..." }
-```
-
-The `push_url` carries a secret token. It is shown once, so keep it.
-
-## 3. Turn on real-time notifications
-
-Create a Pub/Sub topic for real-time developer notifications and set it in the Play Console, with notifications for subscriptions, one-time products and voided purchases. Add a push subscription to the topic with the `push_url` as its endpoint.
-
-## 4. Report purchases from your app
-
-Launch every Play purchase with `obfuscatedAccountId` set to your user id, so a purchase Quarter first hears about from a notification still finds its user. When the purchase completes, send its purchase token to your backend, and from there to Quarter. For a one-time product, also send its `product_id`.
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/purchases" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"user":"user_8412","source":"play_store","purchase_token":"...","product_id":"credits_500"}'
-```
-
-## Products
-
-- A product's `store_product_id` is the Play subscription id or the one-time product id.
-- A credit pack (`consumable`) is granted once per order, then consumed, so the user can buy it again.
-- A lifetime unlock (`non_consumable`) is granted once and acknowledged.
-- A pending purchase, such as a cash payment not yet made, grants nothing until it is paid.
-- A voided purchase takes away what it granted, and takes back its unspent credits.
-- Subscription upgrades and downgrades replace the earlier purchase, so access moves to the new plan.
-
----
-
-# Credits
-
-> Charge for what each AI call used with credit holds, spend credits atomically, and sell credits with a plan or as packs.
-
-Credits are balances in currencies you name, such as `credits` or `tokens`. Your app sells them through the stores, and Quarter keeps the ledger. A balance can never go below zero, and a charge can never happen twice.
-
-## Charge for an AI call
-
-You rarely know what an AI call costs until it ends. So hold the most it can cost before it runs, and when it ends, spend what it used. The rest goes back.
-
-- A failed call costs nothing: release the hold, and everything held goes back.
-- Parallel calls cannot overspend, because held credits leave the balance at once.
-- A retry with the same idempotency key holds once and charges once.
-- A hold that is never settled is released when it expires, 15 minutes by default.
-
-TypeScript SDK:
-
-```ts
-import { Quarter } from "@quarterso/sdk";
-
-const quarter = new Quarter({
-  apiKey: process.env.QUARTER_API_KEY!,
-  app: process.env.QUARTER_APP_ID!,
-  baseUrl: process.env.QUARTER_API_URL,
-});
-
-// Hold up to 10 credits while the model runs, then spend what it used.
-// If the call throws, everything held goes back. Parallel calls cannot overspend.
-const answer = await quarter.credits.withReservation(
-  user.id,
-  { currency: "credits", max: 10, idempotencyKey: request.id },
-  async () => {
-    const completion = await runModel(prompt);
-    return { used: completion.creditsUsed, result: completion.text };
-  },
-);
-```
-
-curl:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/reservations" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"currency":"credits","amount":10,"idempotency_key":"gen_4821"}'
-# { "id": "res_...", "object": "credit_reservation", "status": "held", "held": 10, "spent": null, "balance": 110, ... }
-
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/reservations/res_.../settle" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"amount":3.5}'
-# { "id": "res_...", "object": "credit_reservation", "status": "settled", "held": 10, "spent": 3.5, "balance": 116.5, ... }
-
-# If the call failed, release the hold instead.
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/reservations/res_.../release" \
+curl "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD" \
   -H "authorization: Bearer $QUARTER_API_KEY"
 ```
 
-When the balance cannot cover the hold, it fails with 409 `insufficient_credits` and nothing changes. See the [Credits API](/docs/credits-api.md) for every field.
+Response:
 
-## Spend a known amount
-
-When the cost is fixed, spend it in one call. Send an `idempotency_key` from your own system, such as the id of the request. If the request is retried, Quarter answers with the same result and `"replayed": true`, and spends nothing more.
-
-```ts
-// Spend one credit per AI generation. A retry with the same key is the same spend.
-const res = await fetch(
-  `${process.env.QUARTER_API_URL}/v1/apps/${process.env.QUARTER_APP_ID}/customers/${user.id}/credits/spend`,
-  {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${process.env.QUARTER_API_KEY}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ currency: "credits", amount: 1, idempotency_key: generation.id }),
-  },
-);
-const body = await res.json();
-if (body.error?.code === "insufficient_credits") return showBuyCredits();
-if (!res.ok) throw new Error(body.error.message);
-console.log(body.balance); // 119
+```json
+{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "verified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "verified",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}
 ```
 
-When the balance is too low, the spend fails with 409 `insufficient_credits` and nothing changes. Amounts can have up to six decimals.
+### Change a vendor
 
-## Where credits come from
+`PATCH /v1/vendors/{vendor}` (auth: API key)
 
-- A subscription [product](/docs/products.md) can add credits every period. With `expires: "period_end"` they expire when the period ends, and with `"never"` they stay.
-- A one-time product, such as a credit pack, adds credits once per purchase.
-- Your backend can [grant credits](/docs/credits-api.md#post-v1-apps-app-customers-user-credits-grant) directly, for a bonus or a support gesture.
-- Credits bought through the App Store never expire, because Apple requires that in-app purchases of credits do not.
+Changes the name, the email domain or the status. Fields you leave out are kept. Bank details change only through the bank details route below.
 
-Each grant is a separate lot with its own expiry. Spends and holds take from the lot that expires soonest, so users never lose credits they could have used.
+**Path parameters**
 
-## Refunds
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor` | string | Yes | The vendor id, starting with `ven_`. |
 
-When a purchase is fully refunded or voided, Quarter takes back the credits it added that are still unspent, and sends `credits.clawed_back`. Credits already spent stay spent, and the balance never goes below zero.
+**Body**
 
-## Events
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | No | The new name. |
+| `email_domain` | string | No | The new email domain. |
+| `status` | string | No | `blocked`, or `unverified` to lift a block. |
 
-Every change to a balance is an event: `credits.granted`, `credits.spent`, `credits.expired`, `credits.clawed_back`, `credits.reserved` and `credits.released`. See [Webhooks](/docs/webhooks.md).
-
----
-
-# Mirror to your database
-
-> Keep one row per user with their current access in your own Postgres or Supabase, and check access with a plain query.
-
-With the mirror on, Quarter writes each user's current access into a table in your own Postgres or Supabase database whenever it changes. Your app, and the AI tool that writes its code, can check access with a query instead of an API call.
-
-## Turn it on
-
-Give Quarter a Postgres connection string for a database user that can create and write one table. For Supabase, use the connection string from your project settings. The database must be reachable on a public address. Quarter tests the connection, creates the table, named `quarter_access` unless you choose another name, and writes a row for every user who already exists.
+Request:
 
 ```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/mirror" \
+curl -X PATCH "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"connection_string":"postgres://quarter_writer:...@<your database host>:5432/postgres","table":"quarter_access"}'
-# { "object": "mirror", "table": "quarter_access" }
+  -d '{"email_domain":"harborpointlogistics.example"}'
 ```
 
-The connection string is stored encrypted, and is never shown again.
+Response:
 
-## The table
-
-```sql
-create table quarter_access (
-  user_id text primary key,
-  entitlements text[] not null,
-  credits jsonb not null,
-  access jsonb not null,
-  updated_at timestamptz not null
-);
+```json
+{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpointlogistics.example",
+  "external_id": "V-1042",
+  "status": "verified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "verified",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}
 ```
 
-| Column | What it holds |
-| --- | --- |
-| `user_id` | Your own user id. |
-| `entitlements` | The names of the entitlements that are active now, sorted. |
-| `credits` | Balances by currency, such as `{"credits": 120}`. |
-| `access` | The full [access response](/docs/customers.md#get-v1-apps-app-customers-user-access). |
-| `updated_at` | When Quarter last wrote the row. |
+### Import a vendor list
 
-## Check access
+`POST /v1/vendors/import` (auth: API key)
 
-```sql
--- Quarter keeps one row per user in your own Postgres or Supabase.
-select 'pro' = any(entitlements) as is_pro, credits
-from quarter_access
-where user_id = auth.uid()::text;
+Loads your vendor master in one request, up to 5,000 vendors, all or nothing. Each row has the same fields as [Add a vendor](/docs/vendors.md#post-v1-vendors). Bank details from an import are recorded with `source: "import"` and start `unverified`.
+
+A row whose `external_id` matches an existing vendor counts as `updated`: its name is kept, and bank details that differ from the current ones are recorded as a change, which holds its payments until confirmed. Every other row creates a vendor. Export your vendor list as CSV from your accounting tool and send its rows as JSON.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `routing_number`, `account_number`, `holder_name`. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/vendors/import" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"vendors":[{"name":"Cedar Ridge Supply Co.","email_domain":"cedarridgesupply.example","external_id":"V-0388","routing_number":"102103384","account_number":"55021904"},{"name":"Bluestem Office Products","external_id":"V-0412"}]}'
 ```
 
-A user who has never bought anything has no row. Treat a missing row as no access.
+Response:
 
-### With Supabase row-level security
-
-```sql
--- Only Pro users can read reports.
-create policy "pro users read reports" on reports for select
-using (
-  exists (
-    select 1 from quarter_access
-    where user_id = auth.uid()::text and 'pro' = any(entitlements)
-  )
-);
+```json
+{
+  "object": "vendor_import",
+  "created": 2,
+  "updated": 0
+}
 ```
 
-### Telling your AI tool
+### Record new bank details
 
-```shell
-Before showing a paid feature, read the quarter_access table.
-The user has Pro when 'pro' is in entitlements for their user_id.
-Their credit balance is credits->>'credits'.
+`POST /v1/vendors/{vendor}/bank_accounts` (auth: API key)
+
+Records new bank details for a vendor, with `source: "manual"`. The previous details become `replaced`, the vendor becomes `unverified`, and the `vendor.bank_account_changed` [event](/docs/webhooks.md#event-types) fires. Payments to the new details are held until someone confirms them. A blocked vendor stays blocked.
+
+Sending the details already on file changes nothing.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor` | string | Yes | The vendor id, starting with `ven_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `routing_number` | string | Yes | The 9-digit ABA routing number. |
+| `account_number` | string | Yes | 4 to 17 letters or digits. |
+| `holder_name` | string | No | The name on the bank account. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/bank_accounts" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"routing_number":"263391271","account_number":"99300418226","holder_name":"Harbor Point Logistics"}'
 ```
 
-## What the mirror is not
+Response:
 
-- It is a copy, written a moment after each change. Use it to decide what to show, not to spend credits. Spend through the [API](/docs/credits.md), which is atomic.
-- Quarter only writes to it. Changes you make to the table are overwritten by the next change for that user.
-- When a user is erased, Quarter deletes their row too.
-
-[`GET /v1/apps/{app}/mirror`](/docs/apps.md#get-v1-apps-app-mirror) shows when the mirror last wrote and the last error, if any.
+```json
+{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "unverified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+      "object": "bank_account",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "holder_name": "Harbor Point Logistics",
+      "source": "manual",
+      "status": "unverified",
+      "verified_at": null,
+      "verified_method": null,
+      "created_at": "2026-10-07T10:21:44.000Z",
+      "replaced_at": null
+    },
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "replaced",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": "2026-10-07T10:21:44.000Z"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}
+```
 
 ---
 
-# Webhooks
+# Verification links
 
-> Event types, the signed delivery format, how to verify Quarter-Signature, and how retries and replays work.
+> Send a vendor a link where they confirm their own bank details by logging in to their bank.
 
-Quarter records every change as an [event](/docs/events.md) and sends it to your webhook endpoints. The event and its deliveries are written in the same transaction, so an event is never recorded without its webhooks, and a webhook is never sent for a change that did not happen.
+A verification link asks the vendor to prove that the bank details you have on file are theirs. You create the link, the vendor opens it, confirms a code sent to their email, and logs in to their own bank through Plaid. If the bank returns the same account and the owner name matches the vendor, the details become `verified` and payments to them stop being held.
 
-Most apps need only `access.changed`. It fires whenever the set of active entitlements for a user changes, whatever the store and whatever the reason.
+## Why a bank login proves control
+
+Someone who sends you fake bank details can also answer an email or a phone call from the change request. They cannot log in to the real vendor's bank account. When the vendor logs in, the bank itself returns the account numbers and the owner name. Quarter checks two things: one of the returned accounts is exactly the account on file, and the owner name is close to the vendor name (a score of 0.8 or more, after ignoring case, punctuation and suffixes such as LLC).
+
+Quarter never sees the vendor's bank password. Plaid handles the login and returns the account details.
+
+## Why the code goes to the contact email you set
+
+The email code goes only to the `contact_email` you gave when you created the link. The person on the page cannot change it; the page shows it masked. Choose an address on the vendor's known email domain, which is the `email_domain` on the vendor. If the contact email is not on that domain, the code step still works, but the evidence is recorded with `result: "fail"` so a reviewer sees it.
+
+Email alone never verifies anything. Most of this fraud starts in an email inbox, so the code step only shows the person controls the contact address. The bank login is what verifies.
+
+## What the vendor sees
+
+1. A page that names your company and the vendor, and asks them to confirm their bank details. The link works for 14 days.
+2. A button that sends a six-digit code to the contact email. The code works for 15 minutes. After 5 wrong codes, the link stops working and you need to create a new one.
+3. Their own bank's login, in Plaid.
+4. A result: confirmed, or not confirmed. Either way, the evidence is recorded on the vendor.
+
+Quarter hosts this page. Its routes are public and listed below, in the order the page calls them, so you can also build your own page.
+
+## Create a link
+
+### Create a verification link
+
+`POST /v1/vendors/{vendor}/verification_requests` (auth: API key)
+
+Creates a link for the vendor. Any open link for the same vendor is cancelled. The token in the `url` is shown only here; Quarter keeps only its hash.
+
+With `send: true`, Quarter emails the link to the contact. Otherwise, send the `url` yourself.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor` | string | Yes | The vendor id, starting with `ven_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `contact_email` | string | Yes | The vendor contact who confirms. Use an address on the vendor's email domain. |
+| `send` | boolean | No | `true` to have Quarter email the link. Default `false`. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/verification_requests" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"contact_email":"ap@harborpoint.example","send":true}'
+```
+
+Response:
+
+```json
+{
+  "id": "vrq_6KnT3pWz8RbL2xQm5YcJ",
+  "object": "verification_request",
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "contact_email": "ap@harborpoint.example",
+  "url": "<Quarter console URL>/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va",
+  "expires_in_days": 14
+}
+```
+
+## Public routes, in order
+
+These take no API key. The token is the only credential, and every lookup starts from it. A cancelled link answers `404 verification_request_not_found`; an expired one answers `400 link_expired`; a finished one answers `409 request_closed`.
+
+### 1. Read the request
+
+`GET /verify/{token}` (auth: None (the token in the link))
+
+What the vendor is asked to confirm, and which steps are done. The contact email is masked.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `token` | string | Yes | The 32-character token at the end of the verification link. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va"
+```
+
+Response:
+
+```json
+{
+  "object": "verification",
+  "vendor_name": "Harbor Point Logistics LLC",
+  "customer_name": "Lakeshore Fabrication Inc.",
+  "contact_email": "a***@harborpoint.example",
+  "status": "open",
+  "steps": {
+    "email": false,
+    "bank": false
+  }
+}
+```
+
+### 2. Send the email code
+
+`POST /verify/{token}/email` (auth: None (the token in the link))
+
+Sends a six-digit code to the contact email. Sending again replaces the code.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `token` | string | Yes | The 32-character token at the end of the verification link. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va/email"
+```
+
+Response:
+
+```json
+{
+  "object": "verification",
+  "email_code_sent": true
+}
+```
+
+### 3. Confirm the code
+
+`POST /verify/{token}/email/confirm` (auth: None (the token in the link))
+
+Checks the code. A wrong or expired code answers `400 code_invalid` and counts as an attempt. After 5 attempts, every call answers `429 too_many_attempts`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `token` | string | Yes | The 32-character token at the end of the verification link. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `code` | string | Yes | The six digits from the email. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va/email/confirm" \
+  -H "content-type: application/json" \
+  -d '{"code":"418302"}'
+```
+
+Response:
+
+```json
+{
+  "object": "verification",
+  "steps": {
+    "email": true,
+    "bank": false
+  }
+}
+```
+
+### 4. Start the bank login
+
+`POST /verify/{token}/bank/link_token` (auth: None (the token in the link))
+
+Returns a Plaid Link token. Open Plaid Link with it; when the vendor finishes, Plaid gives the page a `public_token`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `token` | string | Yes | The 32-character token at the end of the verification link. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va/bank/link_token"
+```
+
+Response:
+
+```json
+{
+  "object": "link_token",
+  "link_token": "link-sandbox-3f9c2e71-8a4d-4b6e-9d1f-27c5a0e8b412"
+}
+```
+
+### 5. Confirm the bank account
+
+`POST /verify/{token}/bank` (auth: None (the token in the link))
+
+Sends the Plaid `public_token`. The email step must be done first, or the answer is `409 email_first`. Quarter compares the accounts the bank returned with the current details on file and the owner name with the vendor name.
+
+On a match, the details become `verified` with `verified_method: "bank_link"`, the vendor becomes `verified`, the link is completed, and the `vendor.verified` and `verification_request.completed` [events](/docs/webhooks.md#event-types) fire. Otherwise the answer says why: `account_not_on_file` (the vendor logged in to a bank that does not hold the account on file) or `owner_name_mismatch`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `token` | string | Yes | The 32-character token at the end of the verification link. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `public_token` | string | Yes | From Plaid Link. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va/bank" \
+  -H "content-type: application/json" \
+  -d '{"public_token":"public-sandbox-5b0e3d8a-61c2-4f7a-a9e4-0c3d72b1f985"}'
+```
+
+Response:
+
+```json
+{
+  "object": "verification",
+  "verified": true
+}
+```
+
+When it does not match:
+
+```json
+{
+  "object": "verification",
+  "verified": false,
+  "reason": "owner_name_mismatch"
+}
+```
+
+## The evidence it leaves
+
+Each step adds evidence to the vendor, newest first, and nothing is edited or deleted. [`GET /v1/vendors/{vendor}`](/docs/vendors.md#get-v1-vendors-vendor) returns it. The bank step records which accounts came back (last 4 digits only), whether one matched, and the owner name score.
+
+evidence:
+
+```json
+[
+  {
+    "id": "evd_2WsD7fPk4QyH9mTn6VbG",
+    "bank_account_id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+    "kind": "bank_link",
+    "result": "pass",
+    "details": {
+      "accounts_returned": [
+        {
+          "routing_number": "263391271",
+          "last4": "8226"
+        }
+      ],
+      "matches_account_on_file": true,
+      "owner_name_score": 1,
+      "institution": "First Harborview Bank"
+    },
+    "actor": "vendor:ap@harborpoint.example",
+    "created_at": "2026-10-07T15:04:19.000Z",
+    "object": "evidence"
+  },
+  {
+    "id": "evd_8RtB2nXw5KqJ3vMp9LcF",
+    "bank_account_id": null,
+    "kind": "email_domain",
+    "result": "pass",
+    "details": {
+      "email": "ap@harborpoint.example",
+      "on_vendor_domain": true
+    },
+    "actor": "vendor:ap@harborpoint.example",
+    "created_at": "2026-10-07T15:02:51.000Z",
+    "object": "evidence"
+  }
+]
+```
+
+> **Note:** A bank login result stays between you, the vendor and Quarter. It does not count toward the [network](/docs/account-checks.md): only call-backs do.
+
+---
+
+# Call-backs
+
+> Record that someone at your company phoned the vendor at a number you already had and confirmed the bank details.
+
+A call-back is the classic control against changed bank details: before paying new details, call the vendor and ask. Quarter records who called, which number, where that number came from, who answered and what they said. A call that confirms the details marks them `verified`. A call that does not marks them `rejected`.
+
+## Where the number came from
+
+A call proves something only if you dialed a number the fraudster could not have given you. A change request by email usually comes with a phone number, and that number reaches the fraudster. So Quarter asks where the number came from and accepts only these sources:
+
+| `phone_source` | Meaning |
+| --- | --- |
+| `vendor_master_before_change` | The number was in your vendor records before the change was requested. |
+| `signed_contract` | The number is in a contract you signed with the vendor. |
+| `public_website` | You looked the number up yourself on the vendor's public website. |
+| `previous_invoice` | The number is on an invoice you received and paid before the change. |
+
+Sending `phone_source: "change_request"` is refused with `400 callback_number_untrusted`. Any other value is refused with `400 phone_source_invalid`.
+
+## What a call-back changes
+
+- The call is recorded as evidence of kind `callback` on the vendor, with `actor` set to the reviewer. Evidence is never edited or deleted.
+- With `result: "pass"`, the bank details become `verified` with `verified_method: "callback"`, the vendor becomes `verified` (unless it is blocked), and the `vendor.verified` [event](/docs/webhooks.md#event-types) fires.
+- With `result: "fail"`, the bank details become `rejected`. Payments to them stay held.
+- A confirmed call-back counts once toward the [network](/docs/account-checks.md): other Quarter customers see that one more business confirmed this account, never which one.
+
+### Record a call-back
+
+`POST /v1/vendors/{vendor}/bank_accounts/{account}/attestations` (auth: API key)
+
+Records the call against one set of bank details. They must be the current details: details that were replaced or rejected answer `400 bank_account_inactive`. Returns the vendor.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor` | string | Yes | The vendor id, starting with `ven_`. |
+| `account` | string | Yes | The bank account id, starting with `ba_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `result` | string | Yes | `pass` if the vendor confirmed the details, `fail` if not. |
+| `phone_source` | string | Yes | Where the number came from. See [above](/docs/callbacks.md#phone-source). |
+| `reviewer` | string | Yes | The person who made the call. Kept in the audit trail. |
+| `phone_number` | string | No | The number you called. |
+| `contact_name` | string | No | Who answered. |
+| `notes` | string | No | What was said, up to 2,000 characters. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/bank_accounts/ba_3HfJ6tWq1ZsN8kPm2RxA/attestations" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"result":"pass","phone_number":"+1 312 555 0148","phone_source":"vendor_master_before_change","contact_name":"Maria Okafor, accounts receivable","reviewer":"dana@yourcompany","notes":"Called the number on file since 2024. Maria read back the routing number and the last four digits."}'
+```
+
+Response:
+
+```json
+{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "verified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "verified",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}
+```
+
+---
+
+# Payment runs
+
+> Upload a NACHA file, a CSV or a list of payments, and get every payment back clear or held, with its findings.
+
+A payment run is one batch of outgoing payments: the file you are about to upload to your bank. Send it to Quarter first. Quarter matches each payment to a vendor, runs the [checks](/docs/checks.md), and marks each payment `clear` or `held`. Nothing is sent anywhere. You decide the held payments and [release](/docs/releases.md) the run to get the file back.
+
+## Formats
+
+The body is JSON. `format` says what the run is: `nacha` or `csv`, with the file as text in `file`, or `json`, with the payments in `items`. The body can be up to 10 MB.
+
+### NACHA files
+
+A standard NACHA file of 94-character records, as your accounting system or bank portal writes it. Quarter checks every credit entry, which is every payment out. Debits and prenotes are not checked, and they stay in the released file as they were.
+
+| Item field | Taken from |
+| --- | --- |
+| `payee_name` | The entry name (positions 55 to 76). NACHA keeps 22 characters, so long names arrive cut short; the sanctions check allows for that. |
+| `routing_number` | The receiving bank routing number and check digit. |
+| `last4` | The last 4 characters of the account number. |
+| `amount` | The entry amount, in dollars. |
+| `reference` | The identification number (positions 40 to 54), often an invoice number. |
+| `effective_date` | The batch effective entry date. |
+
+october-6.ach:
+
+```shell
+101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  
+5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001
+6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001
+62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002
+62226339127199300418226      0001200000INV-20981      HARBOR POINT LOGISTICS  0091000010000003
+822000000300456903150000000000000000052322401234567890                         091000010000001
+9000001000001000000030045690315000000000000000005232240                                       
+9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+```
+
+### CSV files
+
+Accounting tools and bank portals export payments as CSV, each with its own column names. Quarter reads three common shapes: a generic export, an accounting tool bill pay export, and a bank portal upload template. It finds columns by name, not by position. Names are matched after lowercasing and turning spaces and punctuation into `_`, so `Routing Number` and `routing_number` are the same.
+
+| Column | Required | Accepted names |
+| --- | --- | --- |
+| Payee | Yes | `payee`, `payee_name`, `name`, `vendor`, `vendor_name`, `beneficiary`, `beneficiary_name`, `receiver`, `recipient` |
+| Routing number | Yes | `routing`, `routing_number`, `aba`, `aba_number`, `bank_routing`, `routing_no` |
+| Account number | Yes | `account`, `account_number`, `bank_account`, `account_no`, `beneficiary_account` |
+| Amount | Yes | `amount`, `payment_amount`, `total`, `amount_usd` |
+| Date | No | `date`, `effective_date`, `payment_date`, `pay_date` |
+| Reference | No | `reference`, `memo`, `invoice`, `invoice_number`, `description`, `bill_number` |
+| Vendor id | No | `vendor_id`, `vendor_number`, `supplier_id`, `external_id`. Matched to the vendor `external_id`. |
+
+- The first row is the header. Other columns are ignored and kept in the released file.
+- Amounts are positive dollars, with or without `$` and thousands separators: `48250`, `48,250.00` and `$48,250.00` all work. A bad amount refuses the whole file with `400 file_invalid` and the row number.
+- Quoted fields may hold commas, quotes and line breaks.
+- A date is kept as `effective_date` when it is written `YYYY-MM-DD`.
+
+Headers Quarter reads:
+
+```shell
+payee,routing_number,account_number,amount,payment_date,invoice
+Vendor Name,Bill Number,Payment Date,Amount,Routing Number,Account Number,Memo
+Beneficiary Name,ABA,Beneficiary Account,Payment Amount,Effective Date,Reference
+```
+
+### JSON items
+
+Send the payments directly, for example from your own payables system. The released file is the same list, as JSON, without the rejected items.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `payee_name` | string | Who is paid. |
+| `routing_number` | string | The 9-digit routing number. |
+| `account_number` | string | The account number. Never returned. |
+| `amount` | number | Positive, in dollars. |
+| `effective_date` | string | `YYYY-MM-DD`. Optional. |
+| `reference` | string | An invoice number or memo. Optional. |
+| `vendor_id` | string | Your id for the vendor, matched to its `external_id`. Optional. |
+
+## How a payment finds its vendor
+
+1. By your vendor id (`vendor_id` in JSON or the vendor id column in a CSV), matched to the vendor `external_id`.
+2. Otherwise by the bank account: a vendor whose current bank details are this account.
+3. Otherwise by a close name: the payee name, after ignoring case, punctuation and suffixes such as LLC, at 0.85 or more alike.
+
+A payment that finds no vendor is held as [`unknown_payee`](/docs/checks.md#unknown-payee). A payment that finds a vendor by name but at a different account is held as [`account_not_on_file`](/docs/checks.md#account-not-on-file).
+
+## Statuses
+
+| Item `status` | Meaning |
+| --- | --- |
+| `clear` | No finding holds it. It may still carry `warn` findings. |
+| `held` | At least one finding holds it. It needs a decision before the run can be released. |
+| `approved` | A person approved it, with a reason. It goes in the released file. |
+| `rejected` | A person rejected it, with a reason. It is left out of the released file. |
+
+| Run `status` | Meaning |
+| --- | --- |
+| `scanned` | Checked and waiting for decisions or release. |
+| `released` | The file was returned. The run and its items no longer change. |
+| `cancelled` | Cancelled before release. Its file can be uploaded again. |
+
+`summary` counts the run: `payments` and `total` for everything, `held` and `held_amount` for payments still waiting for a decision, `rejected` and `rejected_amount` for payments left out. Amounts are dollars.
+
+## The same file twice
+
+Uploading a file that is byte for byte the same as a run that was not cancelled answers `409 duplicate_file`, with the id of the earlier run. Sending the same file to the bank twice pays everyone twice.
+
+## Endpoints
+
+### Upload a payment run
+
+`POST /v1/payment_runs` (auth: API key)
+
+Checks every outgoing payment in the file and returns the run with each payment and its findings. Each held payment fires a `payment_item.held` [event](/docs/webhooks.md#event-types), and the run fires `payment_run.scanned`.
+
+In this example, Harbor Point and Cedar Ridge are known vendors with confirmed bank details and earlier payments. The third entry pays Harbor Point at an account it never gave you.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `format` | string | Yes | `nacha`, `csv` or `json`. |
+| `file` | string | No | The NACHA or CSV file as text. Required for `nacha` and `csv`. |
+| `items` | object[] | No | The payments. Required for `json`. See [JSON items](/docs/payment-runs.md#json). |
+| `name` | string | No | A name for the run, up to 200 characters. Default `Payment run YYYY-MM-DD`. |
+
+Request:
+
+```bash
+jq -n --rawfile file october-6.ach '{format: "nacha", name: "October 6 vendor run", file: $file}' |
+  curl -X POST "$QUARTER_API_URL/v1/payment_runs" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d @-
+```
+
+Response:
+
+```json
+{
+  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "object": "payment_run",
+  "name": "October 6 vendor run",
+  "format": "nacha",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-06T08:15:03.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 3,
+    "total": 52322.4,
+    "held": 1,
+    "held_amount": 12000,
+    "rejected": 0,
+    "rejected_amount": 0
+  },
+  "items": [
+    {
+      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 36410,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20977",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+      "payee_name": "CEDAR RIDGE SUPPLY CO",
+      "routing_number": "102103384",
+      "last4": "1904",
+      "amount": 3912.4,
+      "effective_date": "2026-10-06",
+      "reference": "INV-7718",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "amount": 12000,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "held",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": null
+    }
+  ]
+}
+```
+
+The same endpoint with JSON items:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"name":"Contractor payments","format":"json","items":[{"payee_name":"Cedar Ridge Supply Co.","routing_number":"102103384","account_number":"55021904","amount":3912.4,"effective_date":"2026-10-09","reference":"INV-7731","vendor_id":"V-0388"}]}'
+```
+
+### List payment runs
+
+`GET /v1/payment_runs` (auth: API key)
+
+Runs, newest first, with counts and totals but without their items.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `limit` | integer | No | 1 to 200. Default 50. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payment_runs?limit=2" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "object": "payment_run",
+      "name": "October 6 vendor run",
+      "status": "scanned",
+      "created_at": "2026-10-06T08:15:03.000Z",
+      "payments": 3,
+      "held": 1,
+      "total": 52322.4
+    },
+    {
+      "id": "run_4VbN8qLs2TjW6hPx9RkM",
+      "object": "payment_run",
+      "name": "Week 41 vendor payments",
+      "status": "released",
+      "created_at": "2026-10-05T14:02:11.000Z",
+      "payments": 2,
+      "held": 0,
+      "total": 58050
+    }
+  ]
+}
+```
+
+### Retrieve a payment run
+
+`GET /v1/payment_runs/{run}` (auth: API key)
+
+The run with every payment, its findings and its decision, in file order.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "object": "payment_run",
+  "name": "October 6 vendor run",
+  "format": "nacha",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-06T08:15:03.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 3,
+    "total": 52322.4,
+    "held": 1,
+    "held_amount": 12000,
+    "rejected": 0,
+    "rejected_amount": 0
+  },
+  "items": [
+    {
+      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 36410,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20977",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+      "payee_name": "CEDAR RIDGE SUPPLY CO",
+      "routing_number": "102103384",
+      "last4": "1904",
+      "amount": 3912.4,
+      "effective_date": "2026-10-06",
+      "reference": "INV-7718",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "amount": 12000,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "held",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": null
+    }
+  ]
+}
+```
+
+An item that has a first approval but still needs a second shows `status: "held"` with a `decision` whose `second_by` is `null`. See [two-person approval](/docs/releases.md#two-person-approval).
+
+One item, decided:
+
+```json
+{
+  "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+  "object": "payment_item",
+  "position": 2,
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "payee_name": "HARBOR POINT LOGISTICS",
+  "routing_number": "263391271",
+  "last4": "8226",
+  "amount": 12000,
+  "effective_date": "2026-10-06",
+  "reference": "INV-20981",
+  "status": "rejected",
+  "findings": [
+    {
+      "code": "account_not_on_file",
+      "severity": "hold",
+      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+    }
+  ],
+  "decision": {
+    "by": "dana@yourcompany",
+    "at": "2026-10-06T09:02:47.000Z",
+    "reason": "Harbor Point confirmed by phone that they did not change banks.",
+    "second_by": null
+  }
+}
+```
+
+---
+
+# Checks
+
+> The thirteen checks Quarter runs on every payment, what each one means, and the exact message it gives.
+
+Every payment in a run goes through every check. A check that fires adds a finding to the payment: a `code`, a `severity` and a `message`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
+
+A finding:
+
+```json
+{
+  "code": "account_not_on_file",
+  "severity": "hold",
+  "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+}
+```
+
+Messages are plain words, written to be shown to the reviewer as they are. In the messages below, the parts in braces are filled in from the payment. Amounts are written like `$48,250.00`.
+
+## All checks
+
+| Code | Default | Fires when |
+| --- | --- | --- |
+| [`unknown_payee`](/docs/checks.md#unknown-payee) | Hold | The payee matches no vendor. |
+| [`vendor_blocked`](/docs/checks.md#vendor-blocked) | Hold (always) | You blocked this vendor from being paid. |
+| [`unverified_account`](/docs/checks.md#unverified-account) | Hold | The account is the one on file, but nobody ever confirmed it with the vendor. |
+| [`account_changed_recently`](/docs/checks.md#account-changed-recently) | Hold; warn once confirmed | The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period. |
+| [`account_not_on_file`](/docs/checks.md#account-not-on-file) | Hold | The run pays a known vendor at an account other than the one on file. |
+| [`name_mismatch`](/docs/checks.md#name-mismatch) | Warn | The payee name in the file does not match the vendor. |
+| [`first_payment`](/docs/checks.md#first-payment) | Warn | The first payment to this vendor. |
+| [`amount_unusual`](/docs/checks.md#amount-unusual) | Warn | Far above what this vendor is usually paid. |
+| [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | The same amount to the same account twice. |
+| [`shared_account`](/docs/checks.md#shared-account) | Hold | Another of your vendors is paid at this same account. |
+| [`network_flagged`](/docs/checks.md#network-flagged) | Hold (always) | A business on Quarter reported this account in connection with a payment fraud. |
+| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | The payee name resembles a name on the OFAC SDN list. |
+| [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | The routing number is not a valid US bank routing number. |
+
+## Setting each check
+
+With [`PUT /v1/settings`](/docs/settings.md#put-v1-settings), set any check to `hold`, `warn` or `off`, or back to `default`. Three checks cannot be changed: `vendor_blocked`, `network_flagged` and `sanctions_match` always hold. Trying to change them answers `400 check_mandatory`.
+
+Two numbers tune the checks: `cooling_days` (default 10) for `account_changed_recently`, and `unusual_multiplier` (default 3) for `amount_unusual`.
+
+> **Note:** The checks lower the risk of paying a fraudster. They do not guarantee that every fraud is caught. A held payment is a question for a person, not a verdict.
+
+## Each check
+
+### `unknown_payee`
+
+**Default: hold.** The payee matches no vendor.
+
+Message:
+
+```shell
+{payee name} is not a vendor on file
+```
+
+Quarter looks for the vendor by your vendor id, then by the bank account, then by a close name. See [how a payment finds its vendor](/docs/payment-runs.md#matching). Add the vendor and confirm its bank details, or reject the payment.
+
+### `vendor_blocked`
+
+**Default: hold, cannot be turned off.** You blocked this vendor from being paid.
+
+Message:
+
+```shell
+{vendor name} is blocked from being paid
+```
+
+Set with `PATCH /v1/vendors/{vendor}` and `status: blocked`. It always holds and cannot be changed in settings.
+
+### `unverified_account`
+
+**Default: hold.** The account is the one on file, but nobody ever confirmed it with the vendor.
+
+Message:
+
+```shell
+these bank details were never confirmed with the vendor
+```
+
+Fires for a vendor whose first and only bank details are `unverified`. Confirm them with a [verification link](/docs/verification.md) or a [call-back](/docs/callbacks.md).
+
+### `account_changed_recently`
+
+**Default: hold.** The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period.
+
+Messages:
+
+```shell
+bank details changed {days} days ago and were not confirmed with the vendor
+bank details changed {days} days ago; they were confirmed
+```
+
+New details that are not confirmed hold every payment to them, however old the change is. Once they are confirmed, payments within the cooling period (`cooling_days`, default 10) still carry the second message, as a warning. After the cooling period, the check stays quiet.
+
+If you set this check to `hold`, the confirmed case holds too. If you set it to `warn`, the unconfirmed case only warns, which is not advised.
+
+### `account_not_on_file`
+
+**Default: hold.** The run pays a known vendor at an account other than the one on file.
+
+Message:
+
+```shell
+this pays {vendor name} at an account that is not the one on file
+```
+
+The payee matched a vendor by name, but the account is not that vendor's current bank details. This is what a fraudulent change looks like when it reaches the payment file before it reaches your vendor records. It also fires when a run still pays details that were replaced.
+
+### `name_mismatch`
+
+**Default: warn.** The payee name in the file does not match the vendor.
+
+Message:
+
+```shell
+the payee name "{payee name}" does not match the vendor "{vendor name}"
+```
+
+Names are compared after ignoring case, accents, punctuation and suffixes such as Inc or LLC, against both the vendor name and the name on its bank account. Below 0.6 alike, the check fires.
+
+### `first_payment`
+
+**Default: warn.** The first payment to this vendor.
+
+Message:
+
+```shell
+first payment to {vendor name}
+```
+
+Counts payments in released runs that were clear or approved.
+
+### `amount_unusual`
+
+**Default: warn.** Far above what this vendor is usually paid.
+
+Message:
+
+```shell
+{amount} is more than {multiplier} times the usual {median}
+```
+
+Compares the amount with the median of the vendor's last 12 released payments. Fires when the amount is more than `unusual_multiplier` times that median (default 3). It needs at least 3 earlier payments; before that, it stays quiet.
+
+### `duplicate_payment`
+
+**Default: hold.** The same amount to the same account twice.
+
+Messages:
+
+```shell
+the same payment appears twice in this run
+the same amount was paid to the same account in the last 7 days
+```
+
+The first message is for a second payment of the same amount to the same account in one run. The second is for a run created in the last 7 days, not cancelled, that has the same payment and did not reject it.
+
+### `shared_account`
+
+**Default: hold.** Another of your vendors is paid at this same account.
+
+Message:
+
+```shell
+another vendor on file is paid at this same account
+```
+
+Two vendors with one bank account is a sign that one of them is not who it says. It can also be a duplicate vendor record.
+
+### `network_flagged`
+
+**Default: hold, cannot be turned off.** A business on Quarter reported this account in connection with a payment fraud.
+
+Messages:
+
+```shell
+this account was reported as used in fraud by a business on Quarter
+this account was reported as used in fraud by {count} businesses on Quarter
+```
+
+The finding gives a count, never who reported. See [fraud reports](/docs/fraud-reports.md). This check always holds and cannot be turned off.
+
+### `sanctions_match`
+
+**Default: hold, cannot be turned off.** The payee name resembles a name on the OFAC SDN list.
+
+Message:
+
+```shell
+the payee name resembles a sanctioned party: {listed names}
+```
+
+Name screening against the OFAC SDN list, which Quarter loads and keeps current. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off.
+
+### `routing_invalid`
+
+**Default: hold.** The routing number is not a valid US bank routing number.
+
+Message:
+
+```shell
+the routing number is not a valid US bank routing number
+```
+
+Fires when the ABA checksum fails, or when the number is not in the Federal Reserve routing directory that Quarter loads.
+
+---
+
+# Decisions and release
+
+> Approve or reject each held payment with a reason, then release the run and get back the file to send to your bank.
+
+A run cannot be released while any payment in it is held. A person decides each held payment, approve or reject, and says why. Then release returns the file to upload to your bank, without the rejected payments.
+
+## Decisions
+
+- Only a `held` payment takes a decision. Deciding a clear or already decided payment answers `409 item_not_held`.
+- Every decision names a person (`reviewer`) and a reason. Both go into the item `decision` and into the [audit log](/docs/procedure.md#get-v1-audit-log).
+- A rejection is final for that run. To pay that vendor later, put the payment in a new run.
+- Decisions stop when the run is released or cancelled: `409 run_closed`.
+
+## Two-person approval
+
+An approval of a payment at or above the two-person threshold needs two different people. The threshold is `two_person_threshold` in [settings](/docs/settings.md), $50,000 by default. The first approval is recorded and the payment stays `held`. A second approval by a different person makes it `approved`. The same person approving twice answers `409 second_approver_required`.
+
+A rejection needs one person, whatever the amount. Reviewers are compared by their email, ignoring case.
+
+A $62,400.00 payment, after each approval, After the first:
+
+```json
+{
+  "status": "held",
+  "decision": {
+    "by": "dana@yourcompany",
+    "at": "2026-10-08T10:11:05.000Z",
+    "reason": "Quarterly freight invoice, matches the contract rate and the delivery log.",
+    "second_by": null
+  }
+}
+```
+
+A $62,400.00 payment, after each approval, After the second:
+
+```json
+{
+  "status": "approved",
+  "decision": {
+    "by": "dana@yourcompany",
+    "at": "2026-10-08T10:11:05.000Z",
+    "reason": "Quarterly freight invoice, matches the contract rate and the delivery log. / Checked the invoice and the call-back record.",
+    "second_by": "sam@yourcompany"
+  }
+}
+```
+
+## What release returns
+
+- **NACHA:** the same file without the rejected entries and their addenda. Batch control and file control totals (entry count, entry hash, debit and credit totals, batch and block counts) are recomputed, empty batches are dropped, and the file is padded to a multiple of ten records. Every other byte is as you sent it, including line endings.
+- **CSV:** the same header and rows, without the rejected rows.
+- **JSON:** the items you sent, as a JSON array in `file`, without the rejected ones.
+
+Upload `file` to your bank as you would have uploaded the original. Quarter does not send it anywhere.
+
+## What always holds
+
+- A held payment is never in a released file unless a person approved it.
+- A released file's totals match the payments in it.
+- A released run and its items never change again.
+- Every decision and the release name a person, and are kept in the audit log.
+
+## Endpoints
+
+### Decide a held payment
+
+`POST /v1/payment_runs/{run}/items/{item}/decision` (auth: API key)
+
+Approves or rejects one held payment. Returns the whole run.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+| `item` | string | Yes | The payment item id, starting with `itm_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `decision` | string | Yes | `approve` or `reject`. |
+| `reason` | string | Yes | Why, in plain words, up to 2,000 characters. |
+| `reviewer` | string | Yes | Email of the person deciding. Kept in the audit trail. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/items/itm_5RnX9cLw3TbM7kQp2VjF/decision" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"decision":"reject","reason":"Harbor Point confirmed by phone that they did not change banks.","reviewer":"dana@yourcompany"}'
+```
+
+Response:
+
+```json
+{
+  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "object": "payment_run",
+  "name": "October 6 vendor run",
+  "format": "nacha",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-06T08:15:03.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 3,
+    "total": 52322.4,
+    "held": 0,
+    "held_amount": 0,
+    "rejected": 1,
+    "rejected_amount": 12000
+  },
+  "items": [
+    {
+      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 36410,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20977",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+      "payee_name": "CEDAR RIDGE SUPPLY CO",
+      "routing_number": "102103384",
+      "last4": "1904",
+      "amount": 3912.4,
+      "effective_date": "2026-10-06",
+      "reference": "INV-7718",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "amount": 12000,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "rejected",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": {
+        "by": "dana@yourcompany",
+        "at": "2026-10-06T09:02:47.000Z",
+        "reason": "Harbor Point confirmed by phone that they did not change banks.",
+        "second_by": null
+      }
+    }
+  ]
+}
+```
+
+### Release a run
+
+`POST /v1/payment_runs/{run}/release` (auth: API key)
+
+Releases the run once no payment is held, and returns the file to send. While a payment is held, the answer is `409 payments_still_held` with how many. The `payment_run.released` [event](/docs/webhooks.md#event-types) fires.
+
+This is the example run above, with its third entry rejected. The batch and file control records now total two entries and $40,322.40.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `reviewer` | string | Yes | Email of the person releasing. Kept in the audit trail. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/release" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"reviewer":"dana@yourcompany"}'
+```
+
+Response:
+
+```json
+{
+  "object": "payment_run_release",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "format": "nacha",
+  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+}
+```
+
+The released file:
+
+```shell
+101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  
+5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001
+6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001
+62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002
+822000000200193511880000000000000000040322401234567890                         091000010000001
+9000001000001000000020019351188000000000000000004032240                                       
+9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+```
+
+### Cancel a run
+
+`POST /v1/payment_runs/{run}/cancel` (auth: API key)
+
+Cancels a run that was not released, for example to fix the file and upload it again. A cancelled run keeps its items and decisions for the record. A released run cannot be cancelled: `409 run_closed`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/cancel" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "object": "payment_run",
+  "name": "October 6 vendor run",
+  "format": "nacha",
+  "status": "cancelled",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-06T08:15:03.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 3,
+    "total": 52322.4,
+    "held": 1,
+    "held_amount": 12000,
+    "rejected": 0,
+    "rejected_amount": 0
+  },
+  "items": [
+    {
+      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 36410,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20977",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+      "payee_name": "CEDAR RIDGE SUPPLY CO",
+      "routing_number": "102103384",
+      "last4": "1904",
+      "amount": 3912.4,
+      "effective_date": "2026-10-06",
+      "reference": "INV-7718",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "amount": 12000,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "held",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": null
+    }
+  ]
+}
+```
+
+---
+
+# Account checks
+
+> Check bank details before you pay them: routing number, the network, your own vendor records and sanctions name screening.
+
+An account check answers one question before anyone pays a set of bank details: what is known about this account? It is useful the moment a vendor sends new details, before you record them, and for platforms that pay on behalf of others.
+
+## What it looks at
+
+- **The routing number:** whether it passes the ABA checksum and is in the routing directory, and the bank name when the directory has it.
+- **The network:** how many businesses on Quarter confirmed this account by call-back (`verified_by`), and how many reported it in connection with a payment fraud (`flagged_by`).
+- **Your own records:** which of your vendors have these as their current bank details, and how close the name you sent is to theirs (`name_score`, 0 to 1).
+- **Sanctions:** name screening against the OFAC SDN list, when you send a `name`. A resemblance is something for a person to look at, not a finding of fact.
+
+## The network
+
+Customers add to the network as they work. A confirmed [call-back](/docs/callbacks.md) adds one to `verified_by` for that account, once per business. A [fraud report](/docs/fraud-reports.md) adds one to `flagged_by`, once per business. The network stores a keyed fingerprint of the account, never the account number.
+
+The network shares counts only. No response, finding or event ever says which business confirmed or reported an account. Bank login results from [verification links](/docs/verification.md) are not shared at all.
+
+> **Note:** The network is built and working. It is early, with few accounts in it yet, so a count of zero means nobody on Quarter has seen the account, not that it is safe.
+
+## Recommendation
+
+| `recommendation` | When |
+| --- | --- |
+| `do_not_pay` | Any business reported the account (`flagged_by` above 0), or the routing number is not valid. |
+| `known` | One of your vendors has these as confirmed bank details. |
+| `verify_first` | Anything else. Confirm the details with the vendor before paying them. |
+
+### Check an account
+
+`POST /v1/account_checks` (auth: API key)
+
+Stores nothing: the account is not saved, and the check is not recorded. Run it as often as you like.
+
+In this example, Harbor Point has just asked to be paid at new details. Another business on Quarter confirmed that account by call-back. It is on file with you as unconfirmed details.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `routing_number` | string | Yes | The 9-digit routing number. |
+| `account_number` | string | Yes | 4 to 17 letters or digits. |
+| `name` | string | No | The account holder or payee name, for the name score and sanctions name screening. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/account_checks" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"routing_number":"263391271","account_number":"99300418226","name":"Harbor Point Logistics"}'
+```
+
+Response:
+
+```json
+{
+  "object": "account_check",
+  "routing": {
+    "valid": true,
+    "bank_name": "First Harborview Bank"
+  },
+  "network": {
+    "verified_by": 1,
+    "flagged_by": 0
+  },
+  "on_file": [
+    {
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "vendor_name": "Harbor Point Logistics LLC",
+      "status": "unverified",
+      "name_score": 1
+    }
+  ],
+  "sanctions": [],
+  "recommendation": "verify_first"
+}
+```
+
+An account reported by two businesses:
+
+```json
+{
+  "object": "account_check",
+  "routing": {
+    "valid": true,
+    "bank_name": "Pinecrest National Bank"
+  },
+  "network": {
+    "verified_by": 0,
+    "flagged_by": 2
+  },
+  "on_file": [],
+  "sanctions": [],
+  "recommendation": "do_not_pay"
+}
+```
+
+---
+
+# Fraud reports
+
+> Report a bank account used in a payment fraud against you, so every business on Quarter holds payments to it.
+
+When a fraudster gets you to pay an account, or tries to, report the account. From then on, any payment to it by any business on Quarter is held as [`network_flagged`](/docs/checks.md#network-flagged), and an [account check](/docs/account-checks.md) on it says `do_not_pay`.
+
+## What other businesses see
+
+- A count: how many businesses reported the account. Never which ones.
+- Factual wording only. The account was reported in connection with a payment fraud. Quarter does not say who owns the account or that its owner did anything.
+- Nothing from your description. The description stays with your report, for your records and for any dispute.
+
+Each business counts once per account, however many reports it makes. The `fraud_report.created` [event](/docs/webhooks.md#event-types) goes to your own webhooks only.
+
+## Retracting a report
+
+A report made in error can be withdrawn. When you retract your last open report on an account, your business stops counting toward its `flagged_by`. Reports by other businesses are not affected. The report itself is kept, marked as retracted, and the retraction is in the audit log.
+
+## Endpoints
+
+### Report an account
+
+`POST /v1/fraud_reports` (auth: API key)
+
+Records the report and adds your business to the account's `flagged_by` count. Returns the routing number and the last 4 digits only.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `routing_number` | string | Yes | The 9-digit routing number. |
+| `account_number` | string | Yes | 4 to 17 letters or digits. |
+| `description` | string | Yes | What happened, 10 to 2,000 characters. Kept for your records; never shared. |
+| `reporter` | string | Yes | Email of the person reporting. Kept in the audit trail. |
+| `vendor_id` | string | No | The vendor the fraudster pretended to be, if any. |
+| `holder_name` | string | No | The name on the account, if you know it. Not stored. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/fraud_reports" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"routing_number":"042815936","account_number":"70019934417","vendor_id":"ven_7Qm2KxR9pLwT4nVb8YcD","description":"An email from a lookalike Harbor Point address asked us to pay this account. Harbor Point confirmed by phone it was not them.","reporter":"dana@yourcompany"}'
+```
+
+Response:
+
+```json
+{
+  "id": "frd_7MxQ2vJk9LpT4bWn6HcR",
+  "object": "fraud_report",
+  "routing_number": "042815936",
+  "last4": "4417"
+}
+```
+
+### Retract a report
+
+`POST /v1/fraud_reports/{report}/retract` (auth: API key)
+
+Withdraws a report made in error. A report that does not exist or was already retracted answers `400 report_not_open`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `report` | string | Yes | The report id, starting with `frd_`. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/fraud_reports/frd_7MxQ2vJk9LpT4bWn6HcR/retract" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "id": "frd_7MxQ2vJk9LpT4bWn6HcR",
+  "object": "fraud_report",
+  "retracted": true
+}
+```
+
+---
+
+# Settings
+
+> Choose how each check acts, the cooling period, the unusual amount multiplier and the two-person threshold.
+
+Settings decide how payments are checked for your account. Every change is recorded in the [audit log](/docs/procedure.md#get-v1-audit-log) with the settings it produced, and the [written procedure](/docs/procedure.md) follows the settings at once, so the document and the controls never disagree.
+
+## Fields
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `checks` | `default` for each | Each check set to `hold`, `warn`, `off` or `default` (the default in [Checks](/docs/checks.md#all-checks)). `vendor_blocked`, `network_flagged` and `sanctions_match` always show `hold` and cannot be changed. |
+| `mandatory_checks` |  | The checks that cannot be changed. Read only. |
+| `cooling_days` | 10 | How long confirmed new bank details still warn, for [`account_changed_recently`](/docs/checks.md#account-changed-recently). 0 to 90. |
+| `unusual_multiplier` | 3 | How many times the usual amount counts as unusual, for [`amount_unusual`](/docs/checks.md#amount-unusual). 1.5 or more. |
+| `two_person_threshold` | 50000 | In dollars. Approving a payment of this amount or more needs [two different people](/docs/releases.md#two-person-approval). 0 means every approval needs two. |
+| `last_reviewed_at`, `last_reviewed_by` | `null` | The last yearly review of the procedure. Set by [`POST /v1/compliance/reviews`](/docs/procedure.md#post-v1-compliance-reviews). |
+
+## Endpoints
+
+### Read the settings
+
+`GET /v1/settings` (auth: API key)
+
+The settings in force. An account that never changed them gets the defaults.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/settings" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "settings",
+  "checks": {
+    "unknown_payee": "default",
+    "vendor_blocked": "hold",
+    "unverified_account": "default",
+    "account_changed_recently": "default",
+    "account_not_on_file": "default",
+    "name_mismatch": "default",
+    "first_payment": "default",
+    "amount_unusual": "default",
+    "duplicate_payment": "default",
+    "shared_account": "default",
+    "network_flagged": "hold",
+    "sanctions_match": "hold",
+    "routing_invalid": "default"
+  },
+  "mandatory_checks": [
+    "vendor_blocked",
+    "network_flagged",
+    "sanctions_match"
+  ],
+  "cooling_days": 10,
+  "unusual_multiplier": 3,
+  "two_person_threshold": 50000,
+  "last_reviewed_at": null,
+  "last_reviewed_by": null
+}
+```
+
+### Change the settings
+
+`PUT /v1/settings` (auth: API key)
+
+Changes the fields you send and keeps the rest. Inside `checks`, only the checks you name change. A change applies to runs uploaded after it, not to runs already scanned.
+
+Errors: `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid`, all `400`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `checks` | object | No | Check codes mapped to `hold`, `warn`, `off` or `default`. |
+| `cooling_days` | integer | No | 0 to 90. |
+| `unusual_multiplier` | number | No | 1.5 or more. |
+| `two_person_threshold` | number | No | Dollars, 0 or more. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/settings" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"checks":{"first_payment":"hold"},"cooling_days":14,"two_person_threshold":25000}'
+```
+
+Response:
+
+```json
+{
+  "object": "settings",
+  "checks": {
+    "unknown_payee": "default",
+    "vendor_blocked": "hold",
+    "unverified_account": "default",
+    "account_changed_recently": "default",
+    "account_not_on_file": "default",
+    "name_mismatch": "default",
+    "first_payment": "hold",
+    "amount_unusual": "default",
+    "duplicate_payment": "default",
+    "shared_account": "default",
+    "network_flagged": "hold",
+    "sanctions_match": "hold",
+    "routing_invalid": "default"
+  },
+  "mandatory_checks": [
+    "vendor_blocked",
+    "network_flagged",
+    "sanctions_match"
+  ],
+  "cooling_days": 14,
+  "unusual_multiplier": 3,
+  "two_person_threshold": 25000,
+  "last_reviewed_at": null,
+  "last_reviewed_by": null
+}
+```
+
+---
+
+# Procedure and audit log
+
+> The written fraud-monitoring procedure Quarter generates from your settings, its yearly review, and the audit log that shows you followed it.
+
+Nacha's rules ask every business that sends ACH payments to have a risk-based process to find payments authorized under false pretenses, such as a vendor impersonated by email, and to review it at least once a year. For businesses below the first phase's volume threshold, the rule applies from June 19, 2026. That day is a federal holiday, so in practice it applies from June 22, 2026.
+
+Quarter does not make you compliant, and no tool can. It gives you a documented, risk-based process and the evidence that you followed it, which helps you meet Nacha's fraud-monitoring rule. Your bank and your auditor decide whether your process is enough.
+
+## The written procedure
+
+Quarter writes the procedure from your [settings](/docs/settings.md) each time you ask for it, so the document always describes the controls actually in force. It lists every check that is on and what it does, names the checks you turned off as your own decision, and states the cooling period, the two-person threshold and the last review. It comes back as Markdown, ready to print, sign or hand to your bank.
+
+markdown:
+
+```shell
+# Payment fraud monitoring procedure
+
+Lakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.
+
+## Before a vendor is paid
+
+- Every vendor is approved and recorded before its first payment.
+- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held. A number supplied in the change request is never used to confirm the change.
+- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.
+
+## Every payment run
+
+Each payment file is checked before release.
+
+| What we check | What happens |
+|---|---|
+| Payments to anyone who is not an approved vendor | Held for review |
+| Payments to vendors the business has blocked | Held for review |
+| Payments to bank details never confirmed with the vendor | Held for review |
+| Payments to bank details changed recently and not confirmed out of band | Held for review |
+| Payments to a vendor at an account other than the one on file | Held for review |
+| Payee names that do not match the vendor | Flagged to the reviewer |
+| First payments to a vendor | Flagged to the reviewer |
+| Amounts far above what the vendor is usually paid | Flagged to the reviewer |
+| The same payment made twice | Held for review |
+| One bank account used by two vendors | Held for review |
+| Accounts other businesses reported as used in fraud | Held for review |
+| Payees resembling a party on the OFAC sanctions list | Held for review |
+| Invalid routing numbers | Held for review |
+
+## Review and release
+
+- A held payment is released only when a named person approves it with a reason. Payments of $50,000 or more need a second, different approver.
+- A rejected payment is removed from the file before it is sent.
+- Every check, decision, approver and piece of evidence is recorded and kept.
+
+## Review of this procedure
+
+This procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.
+```
+
+## The yearly review
+
+Once a year, someone responsible reads the procedure, checks it still fits the business, and records the review. The procedure then shows the date and the person, and `next_review_due` moves a year on. Before the first review, `next_review_due` is today.
+
+## The audit log
+
+Every action through the API is recorded with who did it, what, on which object, and when: vendors added and changed, bank details recorded, call-backs, verification links created, runs scanned, each decision with its reason, releases, cancels, fraud reports and retractions, settings changes and reviews. Nothing in it is edited or deleted. `actor` is the person named in the request for decisions, releases, fraud reports and reviews, and the API key prefix, such as `api_key:qk_test_Xy7P`, for everything else.
+
+What a vendor does on a verification link is recorded as evidence on the vendor, with the vendor contact as the actor. See [the evidence it leaves](/docs/verification.md#the-evidence-it-leaves).
+
+## Endpoints
+
+### Get the procedure
+
+`GET /v1/compliance/procedure` (auth: API key)
+
+The procedure as Markdown, generated now from the settings in force.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/compliance/procedure" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "procedure",
+  "generated_at": "2026-10-06T09:30:00.000Z",
+  "last_reviewed_at": "2026-10-02T16:20:00.000Z",
+  "next_review_due": "2027-10-02",
+  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held. A number supplied in the change request is never used to confirm the change.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Held for review |\n| Payees resembling a party on the OFAC sanctions list | Held for review |\n| Invalid routing numbers | Held for review |\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Payments of $50,000 or more need a second, different approver.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
+}
+```
+
+### Record the yearly review
+
+`POST /v1/compliance/reviews` (auth: API key)
+
+Records that a person reviewed the procedure today. Returns the settings with `last_reviewed_at` and `last_reviewed_by` set.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `reviewer` | string | Yes | Email of the person reviewing. Kept in the audit trail. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/compliance/reviews" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"reviewer":"dana@yourcompany"}'
+```
+
+Response:
+
+```json
+{
+  "object": "settings",
+  "checks": {
+    "unknown_payee": "default",
+    "vendor_blocked": "hold",
+    "unverified_account": "default",
+    "account_changed_recently": "default",
+    "account_not_on_file": "default",
+    "name_mismatch": "default",
+    "first_payment": "default",
+    "amount_unusual": "default",
+    "duplicate_payment": "default",
+    "shared_account": "default",
+    "network_flagged": "hold",
+    "sanctions_match": "hold",
+    "routing_invalid": "default"
+  },
+  "mandatory_checks": [
+    "vendor_blocked",
+    "network_flagged",
+    "sanctions_match"
+  ],
+  "cooling_days": 10,
+  "unusual_multiplier": 3,
+  "two_person_threshold": 50000,
+  "last_reviewed_at": "2026-10-02T16:20:00.000Z",
+  "last_reviewed_by": "dana@yourcompany"
+}
+```
+
+### Export the audit log
+
+`GET /v1/audit_log` (auth: API key)
+
+Every recorded action, oldest first. To page through it, pass the `id` of the last entry you have as `after`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `after` | string | No | An audit entry id. Returns entries after it. |
+| `limit` | integer | No | 1 to 5,000. Default 500. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/audit_log?limit=3" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "aud_4MbT7xKq2WnR9pLv5HcZ",
+      "actor": "api_key:qk_test_Xy7P",
+      "action": "payment_run.scanned",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "format": "nacha",
+        "payments": 3
+      },
+      "created_at": "2026-10-06T08:15:03.000Z"
+    },
+    {
+      "id": "aud_8KcW2pRt5NvQ1mXb7LzF",
+      "actor": "dana@yourcompany",
+      "action": "payment_item.reject",
+      "object_type": "payment_item",
+      "object_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "details": {
+        "run": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "reason": "Harbor Point confirmed by phone that they did not change banks."
+      },
+      "created_at": "2026-10-06T09:02:47.000Z"
+    },
+    {
+      "id": "aud_3TnJ9vLq6WbR2kPm8CxD",
+      "actor": "dana@yourcompany",
+      "action": "payment_run.released",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "rejected": 1
+      },
+      "created_at": "2026-10-06T09:05:12.000Z"
+    }
+  ]
+}
+```
+
+---
+
+# Webhooks and events
+
+> Event types, the signed delivery format, how to verify quarter-signature, and how retries work.
+
+Quarter records each change as an event and sends it to your webhook endpoints. The event and its deliveries are written in the same transaction, so an event is never recorded without its webhooks, and no webhook is sent for a change that did not happen.
 
 ## Event types
 
 | Type | When | `data` fields besides `object_type` and `object_id` |
 | --- | --- | --- |
-| `access.changed` | A user's active entitlements changed. | `app_id`, `app_user_id`, `customer_id`, `entitlements`, `granted`, `revoked` |
-| `subscription.started` | A new subscription. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.renewed` | A new period was paid for. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.product_changed` | The user moved to another plan. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.cancelled` | Auto-renew was turned off. Access lasts until the period ends. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.uncancelled` | Auto-renew was turned back on. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.billing_issue` | A renewal payment failed. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.recovered` | A failed renewal was paid after all. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.expired` | The subscription ended. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `subscription.refunded` | The store refunded or revoked it. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `purchase.completed` | A one-time purchase. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `purchase.refunded` | A one-time purchase was refunded. | `grant_id`, `customer_id`, `source`, `product_id`, `status`, `expires_at`, `period_type` |
-| `credits.granted` | Credits were added. | `app_id`, `app_user_id`, `customer_id`, `currency`, `amount`, `balance`, `reason`, and `reservation_id` when it came from a hold |
-| `credits.spent` | Credits were spent. | `app_id`, `app_user_id`, `customer_id`, `currency`, `amount`, `balance`, `reason`, and `reservation_id` when it came from a hold |
-| `credits.expired` | Credits expired unspent. | `app_id`, `app_user_id`, `customer_id`, `currency`, `amount`, `balance`, `reason`, and `reservation_id` when it came from a hold |
-| `credits.clawed_back` | Unspent credits were taken back after a refund. | `app_id`, `app_user_id`, `customer_id`, `currency`, `amount`, `balance`, `reason`, and `reservation_id` when it came from a hold |
-| `credits.reserved` | Credits were held for a call. | `app_id`, `app_user_id`, `customer_id`, `currency`, `amount`, `balance`, `reason`, and `reservation_id` when it came from a hold |
-| `credits.released` | Held credits went back to the balance. | `app_id`, `app_user_id`, `customer_id`, `currency`, `amount`, `balance`, `reason`, and `reservation_id` when it came from a hold |
+| `vendor.created` | A vendor was added. | `name` |
+| `vendor.bank_account_changed` | A vendor got new bank details. Its payments are held until they are confirmed. | `vendor_id`, `bank_account_id`, `last4`, `previous_last4` |
+| `vendor.verified` | Bank details were confirmed, by bank login or call-back. | `vendor_id`, `bank_account_id`, `last4`, `method` |
+| `verification_request.completed` | A vendor finished a verification link. | `vendor_id`, `request_id` |
+| `payment_run.scanned` | A run was uploaded and checked. | `run_id` |
+| `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes) |
+| `payment_run.released` | A run was released. | `run_id`, `released_by`, `rejected` (how many payments were left out) |
+| `fraud_report.created` | You reported an account. | `id`, `routing_number`, `last4` |
 
 ## What a delivery looks like
 
-A `POST` with a JSON body, and these headers: `quarter-event-id`, `quarter-timestamp` and `quarter-signature`.
+A `POST` with a JSON body and these headers: `quarter-event-id`, `quarter-timestamp` and `quarter-signature`.
 
 Body:
 
 ```json
 {
-  "id": "evt_N6Pcxyzof8Gy4JaW9VLr",
+  "id": "evt_3QkW8nRv5TpZ2mLx7BcJ",
   "object": "event",
-  "type": "access.changed",
-  "created_at": "2026-10-14T09:14:02.000Z",
+  "type": "payment_item.held",
+  "created_at": "2026-10-06T08:15:03.000Z",
   "data": {
-    "object_type": "customer",
-    "object_id": "cus_tDQoMdBpxNQGCALGwgWm",
-    "app_id": "app_xaGQYbk1WUpsjtVDFgDV",
-    "app_user_id": "user_8412",
-    "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-    "entitlements": [
-      "pro"
-    ],
-    "granted": [
-      "pro"
-    ],
-    "revoked": []
+    "object_type": "payment_item",
+    "object_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+    "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+    "item_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+    "payee_name": "HARBOR POINT LOGISTICS",
+    "amount": 12000,
+    "findings": [
+      "account_not_on_file"
+    ]
   }
 }
 ```
 
 ## Verify the signature
 
-`quarter-signature` is `t=<timestamp>,v1=<signature>`, where the signature is the hex HMAC SHA-256 of `<timestamp>.<raw body>` keyed with your endpoint's `whsec_` secret. Compute it over the raw body before parsing it, and compare in constant time.
+`quarter-signature` is `t=<timestamp>,v1=<signature>`. The timestamp is in Unix seconds. The signature is the hex HMAC SHA-256 of `<timestamp>.<raw body>`, keyed with your endpoint secret, which starts with `whsec_`. Compute it over the raw body before parsing it, and compare in constant time.
 
-A Next.js route handler:
+Verify and handle a delivery:
 
 ```ts
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-export async function POST(request: Request) {
-  const body = await request.text();
-  const signature = request.headers.get("quarter-signature") ?? "";
-  const { t, v1 } = Object.fromEntries(signature.split(",").map((p) => p.split("=")));
-  const expected = createHmac("sha256", process.env.QUARTER_WEBHOOK_SECRET!)
-    .update(`${t}.${body}`)
-    .digest("hex");
-  if (!v1 || v1.length !== expected.length || !timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) {
-    return new Response("invalid signature", { status: 400 });
-  }
+// The endpoint secret, shown once when you added the endpoint. Use all of it, "whsec_" included.
+const secret = process.env.QUARTER_WEBHOOK_SECRET!;
 
-  const event = JSON.parse(body);
-  if (event.type === "access.changed") {
-    // Your code: refresh this user's session or send a welcome email.
-    await onAccessChanged(event.data.app_user_id, event.data.entitlements, event.id);
+/** quarter-signature is "t=<unix seconds>,v1=<hex HMAC-SHA256 of `<t>.<raw body>`>". */
+export function verifyQuarterSignature(rawBody: string, header: string | null, toleranceSeconds = 300): boolean {
+  if (!header) return false;
+  const parts = new Map(header.split(",").map((part) => part.split("=", 2) as [string, string]));
+  const timestamp = Number(parts.get("t"));
+  const signature = parts.get("v1") ?? "";
+  if (!Number.isInteger(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > toleranceSeconds) return false;
+  const expected = createHmac("sha256", secret).update(`${timestamp}.${rawBody}`).digest("hex");
+  const given = Buffer.from(signature);
+  const wanted = Buffer.from(expected);
+  return given.length === wanted.length && timingSafeEqual(given, wanted);
+}
+
+// A Next.js route handler. Read the body as text: the signature covers the exact bytes Quarter sent.
+export async function POST(request: Request) {
+  const rawBody = await request.text();
+  if (!verifyQuarterSignature(rawBody, request.headers.get("quarter-signature"))) {
+    return new Response("bad signature", { status: 400 });
+  }
+  const event = JSON.parse(rawBody);
+  if (event.type === "payment_item.held") {
+    // Tell the reviewer: event.data.payee_name, event.data.amount, event.data.findings
   }
   return new Response(null, { status: 204 });
 }
 ```
 
-Each attempt is signed with the time it was sent, so you can also refuse signatures older than a few minutes.
+Each attempt is signed with the time it was sent, so refusing signatures older than a few minutes also refuses replays.
 
-## Retries and replay
+## Retries
 
-- Any 2xx response counts as delivered. Anything else, a timeout after 10 seconds, or a redirect counts as a failure.
-- A failed delivery is retried with growing waits, up to 8 attempts, then marked `failed`.
-- You can send any delivery again with [`POST /v1/webhook_deliveries/{id}/retry`](/docs/events.md#post-v1-webhook-deliveries-id-retry).
+- Any 2xx response counts as delivered. Anything else, a redirect, or no answer within 10 seconds counts as a failure.
+- A failed delivery is tried again after 10 seconds, then waits that double each time, up to 8 attempts. Then it is marked `failed`.
+- You can send any delivery again with [`POST /v1/webhook_deliveries/{id}/retry`](/docs/webhooks.md#post-v1-webhook-deliveries-id-retry).
 - Because of retries, an event can arrive more than once. Use the event `id` to do the work once.
 
 ## Endpoints
 
-Register endpoints with [`POST /v1/webhook_endpoints`](/docs/events.md#post-v1-webhook-endpoints). An endpoint receives every event type unless you list the ones it wants in `enabled_events`. The URL must be public and use https.
-
----
-
-# User data requests
-
-> What Quarter stores about your users, and how to export or erase it when a user asks.
-
-## What Quarter stores
-
-- Your own id for each user. No names, emails or card data.
-- Store ids for purchases and subscriptions, with amounts and currencies.
-- The store records behind each purchase. Stripe and Google records keep only the fields Quarter reads, so names, emails and addresses are dropped before anything is stored.
-- Store records are kept for the app's retention setting, seven years by default as tax evidence, and then deleted. Set `record_retention_days` when you create the app.
-
-## Export
-
-Everything Quarter holds about one user: their access and their full credit history. Send it to the user who asked, as part of your own reply.
-
-```bash
-curl "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/export" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-## Erase
-
-Deletes the user, their aliases and their credit history, removes their id from the stored store records, and deletes their row from your [mirror](/docs/mirror.md) table. Purchases stay as anonymous records, so your revenue history still adds up.
-
-```bash
-curl -X DELETE "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-# { "object": "customer_erasure", "erased": true }
-```
-
-> **Warning:** Erasure cannot be undone. If the same user id buys again later, Quarter starts a new customer.
-
----
-
-# Customers and access
-
-> Ask what a user has right now, ask the stores again, grant free access, link ids, and export or erase a user.
-
-Send your API key as `authorization: Bearer <key>` and JSON bodies as `content-type: application/json`. Errors use the shape in [Errors](/docs/errors.md).
-
-## Access
-
-### Retrieve access
-
-`GET /v1/apps/{app}/customers/{user}/access` (auth: API key)
-
-What this user has right now: entitlements by name, credit balances by currency, and every purchase behind them. An entitlement is active while any purchase that grants it gives access.
-
-A user Quarter has never seen gets empty access, not an error.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/access" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "access",
-  "app_user_id": "user_8412",
-  "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-  "entitlements": {
-    "pro": {
-      "active": true,
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "product_id": "pro_monthly",
-      "source": "app_store",
-      "status": "active",
-      "period_type": "normal",
-      "will_renew": true
-    }
-  },
-  "credits": {
-    "credits": 120
-  },
-  "purchases": [
-    {
-      "id": "grant_3B2DJiADNTB1GcwmqUAC",
-      "source": "app_store",
-      "kind": "subscription",
-      "product_id": "pro_monthly",
-      "status": "active",
-      "period_type": "normal",
-      "started_at": "2026-10-14T09:14:02.000Z",
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "will_renew": true,
-      "unconfigured_product": false
-    }
-  ]
-}
-```
-
-A user with nothing:
-
-```json
-{
-  "object": "access",
-  "app_user_id": "user_9001",
-  "customer_id": null,
-  "entitlements": {},
-  "credits": {},
-  "purchases": []
-}
-```
-
-### Retrieve access for many users
-
-`POST /v1/apps/{app}/access/batch` (auth: API key)
-
-Access for up to 100 users at once, in the order given.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `users` | string[] | Yes | 1 to 100 of your user ids. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/access/batch" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"users":["user_8412","user_9001"]}'
-```
-
-Response:
-
-```json
-{
-  "object": "list",
-  "data": [
-    {
-      "object": "access",
-      "app_user_id": "user_8412",
-      "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-      "entitlements": {
-        "pro": {
-          "active": true,
-          "expires_at": "2026-11-14T09:14:02.000Z",
-          "product_id": "pro_monthly",
-          "source": "app_store",
-          "status": "active",
-          "period_type": "normal",
-          "will_renew": true
-        }
-      },
-      "credits": {
-        "credits": 120
-      },
-      "purchases": [
-        {
-          "id": "grant_3B2DJiADNTB1GcwmqUAC",
-          "source": "app_store",
-          "kind": "subscription",
-          "product_id": "pro_monthly",
-          "status": "active",
-          "period_type": "normal",
-          "started_at": "2026-10-14T09:14:02.000Z",
-          "expires_at": "2026-11-14T09:14:02.000Z",
-          "will_renew": true,
-          "unconfigured_product": false
-        }
-      ]
-    },
-    {
-      "object": "access",
-      "app_user_id": "user_9001",
-      "customer_id": null,
-      "entitlements": {},
-      "credits": {},
-      "purchases": []
-    }
-  ]
-}
-```
-
-### Ask the stores again
-
-`POST /v1/apps/{app}/customers/{user}/sync` (auth: API key)
-
-For the user who says they paid and are locked out. Quarter asks each store again about everything this user bought, through the same checks a webhook goes through, and answers with the new access.
-
-Each purchase gets a `result`: `unchanged`, `updated`, `not_found`, `unreachable` or `skipped`. A store that does not answer never takes access away. A user can be synced once every 10 seconds.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/sync" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "customer_sync",
-  "checked": [
-    {
-      "purchase": "grant_3B2DJiADNTB1GcwmqUAC",
-      "source": "app_store",
-      "result": "unchanged"
-    }
-  ],
-  "access": {
-    "object": "access",
-    "app_user_id": "user_8412",
-    "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-    "entitlements": {
-      "pro": {
-        "active": true,
-        "expires_at": "2026-11-14T09:14:02.000Z",
-        "product_id": "pro_monthly",
-        "source": "app_store",
-        "status": "active",
-        "period_type": "normal",
-        "will_renew": true
-      }
-    },
-    "credits": {
-      "credits": 120
-    },
-    "purchases": [
-      {
-        "id": "grant_3B2DJiADNTB1GcwmqUAC",
-        "source": "app_store",
-        "kind": "subscription",
-        "product_id": "pro_monthly",
-        "status": "active",
-        "period_type": "normal",
-        "started_at": "2026-10-14T09:14:02.000Z",
-        "expires_at": "2026-11-14T09:14:02.000Z",
-        "will_renew": true,
-        "unconfigured_product": false
-      }
-    ]
-  }
-}
-```
-
-## Free access
-
-### Grant an entitlement
-
-`POST /v1/apps/{app}/customers/{user}/entitlements` (auth: API key)
-
-Gives the user an entitlement without a purchase, for a trial, a partner or support. Answers with the new access.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `entitlement` | string | Yes | A lowercase name, such as `pro`. |
-| `duration_days` | integer | No | How long it lasts, from 1 to 3650 days. |
-| `expires_at` | string | No | An ISO date in the future. Give this or `duration_days`, not both. With neither, it lasts until you end it. |
-| `idempotency_key` | string | Yes | Your own id for this operation, up to 200 characters. A retry with the same key does nothing more. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/entitlements" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"entitlement":"pro","duration_days":30,"idempotency_key":"support_ticket_771"}'
-```
-
-Response:
-
-```json
-{
-  "object": "access",
-  "app_user_id": "user_8412",
-  "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-  "entitlements": {
-    "pro": {
-      "active": true,
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "product_id": "pro_monthly",
-      "source": "app_store",
-      "status": "active",
-      "period_type": "normal",
-      "will_renew": true
-    }
-  },
-  "credits": {
-    "credits": 120
-  },
-  "purchases": [
-    {
-      "id": "grant_3B2DJiADNTB1GcwmqUAC",
-      "source": "app_store",
-      "kind": "subscription",
-      "product_id": "pro_monthly",
-      "status": "active",
-      "period_type": "normal",
-      "started_at": "2026-10-14T09:14:02.000Z",
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "will_renew": true,
-      "unconfigured_product": false
-    }
-  ]
-}
-```
-
-### End a granted entitlement
-
-`DELETE /v1/apps/{app}/customers/{user}/entitlements/{entitlement}` (auth: API key)
-
-Ends the free access you granted. Purchases that grant the same entitlement are not touched. Answers with the new access.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-| `entitlement` | string | Yes | The entitlement name. |
-
-Request:
-
-```bash
-curl -X DELETE "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/entitlements/pro" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "access",
-  "app_user_id": "user_8412",
-  "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-  "entitlements": {
-    "pro": {
-      "active": true,
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "product_id": "pro_monthly",
-      "source": "app_store",
-      "status": "active",
-      "period_type": "normal",
-      "will_renew": true
-    }
-  },
-  "credits": {
-    "credits": 120
-  },
-  "purchases": [
-    {
-      "id": "grant_3B2DJiADNTB1GcwmqUAC",
-      "source": "app_store",
-      "kind": "subscription",
-      "product_id": "pro_monthly",
-      "status": "active",
-      "period_type": "normal",
-      "started_at": "2026-10-14T09:14:02.000Z",
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "will_renew": true,
-      "unconfigured_product": false
-    }
-  ]
-}
-```
-
-## Ids
-
-### Link another id
-
-`POST /v1/apps/{app}/customers/{user}/aliases` (auth: API key)
-
-When a user who bought anonymously signs in, link the anonymous id to their account id. Purchases and credits under the alias move to the user, and both ids then answer with the same access.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `alias` | string | Yes | The other id, such as the anonymous id used before sign-in. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/aliases" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"alias":"anon_5f2c9e"}'
-```
-
-Response:
-
-```json
-{
-  "object": "access",
-  "app_user_id": "user_8412",
-  "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-  "entitlements": {
-    "pro": {
-      "active": true,
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "product_id": "pro_monthly",
-      "source": "app_store",
-      "status": "active",
-      "period_type": "normal",
-      "will_renew": true
-    }
-  },
-  "credits": {
-    "credits": 120
-  },
-  "purchases": [
-    {
-      "id": "grant_3B2DJiADNTB1GcwmqUAC",
-      "source": "app_store",
-      "kind": "subscription",
-      "product_id": "pro_monthly",
-      "status": "active",
-      "period_type": "normal",
-      "started_at": "2026-10-14T09:14:02.000Z",
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "will_renew": true,
-      "unconfigured_product": false
-    }
-  ]
-}
-```
-
-## Data requests
-
-### Export a user
-
-`GET /v1/apps/{app}/customers/{user}/export` (auth: API key)
-
-Everything Quarter holds about one user. See [User data requests](/docs/privacy.md).
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/export" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "customer_export",
-  "access": {
-    "object": "access",
-    "app_user_id": "user_8412",
-    "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-    "entitlements": {
-      "pro": {
-        "active": true,
-        "expires_at": "2026-11-14T09:14:02.000Z",
-        "product_id": "pro_monthly",
-        "source": "app_store",
-        "status": "active",
-        "period_type": "normal",
-        "will_renew": true
-      }
-    },
-    "credits": {
-      "credits": 120
-    },
-    "purchases": [
-      {
-        "id": "grant_3B2DJiADNTB1GcwmqUAC",
-        "source": "app_store",
-        "kind": "subscription",
-        "product_id": "pro_monthly",
-        "status": "active",
-        "period_type": "normal",
-        "started_at": "2026-10-14T09:14:02.000Z",
-        "expires_at": "2026-11-14T09:14:02.000Z",
-        "will_renew": true,
-        "unconfigured_product": false
-      }
-    ]
-  },
-  "credit_history": [
-    {
-      "currency": "credits",
-      "amount_micros": "200000000",
-      "reason": "period_grant",
-      "balance_after_micros": "200000000",
-      "created_at": "2026-10-14T09:14:02.000Z"
-    }
-  ]
-}
-```
-
-### Erase a user
-
-`DELETE /v1/apps/{app}/customers/{user}` (auth: API key)
-
-Deletes the user, their aliases and their credit history, removes their id from stored store records, and deletes their mirror row. Purchases stay as anonymous records. This cannot be undone.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-Request:
-
-```bash
-curl -X DELETE "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "customer_erasure",
-  "erased": true
-}
-```
-
----
-
-# Purchases
-
-> Report a purchase from your app as soon as the store completes it, and again on restore.
-
-Send your API key as `authorization: Bearer <key>` and JSON bodies as `content-type: application/json`. Errors use the shape in [Errors](/docs/errors.md).
-
-### Report a purchase
-
-`POST /v1/apps/{app}/purchases` (auth: API key)
-
-Your app reports a purchase as soon as the store completes it, and again when the user restores purchases. Quarter verifies it with the store, applies it once, and answers with the user's access. Reporting the same purchase again changes nothing.
-
-Send the field that matches `source`: `signed_transaction`, `purchase_token`, or `checkout_session_id`. A Google Play one-time product also needs `product_id`.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `user` | string | Yes | Your id for the user who bought. |
-| `source` | string | Yes | `stripe`, `app_store` or `play_store`. |
-| `signed_transaction` | string | No | For `app_store`: the transaction's JWS, as StoreKit gives it. |
-| `purchase_token` | string | No | For `play_store`: the purchase token from Google Play Billing. |
-| `product_id` | string | No | For a `play_store` one-time product: its product id. Leave it out for a subscription. |
-| `checkout_session_id` | string | No | For `stripe`: the Checkout Session id. It must have been created with your user id as `client_reference_id`. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/purchases" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"user":"user_8412","source":"app_store","signed_transaction":"eyJhbGciOiJFUzI1NiIs..."}'
-```
-
-Response:
-
-```json
-{
-  "object": "access",
-  "app_user_id": "user_8412",
-  "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-  "entitlements": {
-    "pro": {
-      "active": true,
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "product_id": "pro_monthly",
-      "source": "app_store",
-      "status": "active",
-      "period_type": "normal",
-      "will_renew": true
-    }
-  },
-  "credits": {
-    "credits": 120
-  },
-  "purchases": [
-    {
-      "id": "grant_3B2DJiADNTB1GcwmqUAC",
-      "source": "app_store",
-      "kind": "subscription",
-      "product_id": "pro_monthly",
-      "status": "active",
-      "period_type": "normal",
-      "started_at": "2026-10-14T09:14:02.000Z",
-      "expires_at": "2026-11-14T09:14:02.000Z",
-      "will_renew": true,
-      "unconfigured_product": false
-    }
-  ]
-}
-```
-
-If the store does not know the purchase, the request fails with `purchase_not_verified` and nothing changes. A Stripe session paid by another user fails with `user_mismatch`.
-
----
-
-# Credits API
-
-> Hold credits for an AI call and settle what it used, spend credits atomically, and grant credits.
-
-Send your API key as `authorization: Bearer <key>` and JSON bodies as `content-type: application/json`. Errors use the shape in [Errors](/docs/errors.md).
-
-Balances appear in [access](/docs/customers.md#get-v1-apps-app-customers-user-access). How credits work is in [Credits](/docs/credits.md).
-
-### Hold credits
-
-`POST /v1/apps/{app}/customers/{user}/credits/reservations` (auth: API key)
-
-Holds credits while a call runs. Held credits leave the balance at once. Fails with `insufficient_credits` when the balance is too low. Returns the reservation with status 201.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `currency` | string | Yes | A lowercase name you choose, such as `credits` or `tokens`. |
-| `amount` | number | Yes | A positive amount, with up to six decimals. |
-| `idempotency_key` | string | Yes | Your own id for this operation, up to 200 characters. A retry with the same key does nothing more. |
-| `expires_in_seconds` | integer | No | When an unsettled hold is released, from 30 to 86400 seconds. Defaults to 900. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/reservations" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"currency":"credits","amount":10,"idempotency_key":"gen_4821"}'
-```
-
-Response:
-
-```json
-{
-  "id": "res_Lm3Xc7Pq1Rt5Vw8Kn2Fa",
-  "object": "credit_reservation",
-  "status": "held",
-  "currency": "credits",
-  "held": 10,
-  "spent": null,
-  "balance": 110,
-  "expires_at": "2026-10-14T11:17:18.000Z"
-}
-```
-
-### Settle a hold
-
-`POST /v1/apps/{app}/customers/{user}/credits/reservations/{reservation}/settle` (auth: API key)
-
-Spends what the call used, up to the amount held, and returns the rest. Settling again with the same amount answers the same. Settling a closed hold differently fails with `reservation_closed`.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-| `reservation` | string | Yes | The reservation id, starting with `res_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `amount` | number | Yes | What the call used. 0 releases the whole hold. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/reservations/res_Lm3Xc7Pq1Rt5Vw8Kn2Fa/settle" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"amount":3.5}'
-```
-
-Response:
-
-```json
-{
-  "id": "res_Lm3Xc7Pq1Rt5Vw8Kn2Fa",
-  "object": "credit_reservation",
-  "status": "settled",
-  "currency": "credits",
-  "held": 10,
-  "spent": 3.5,
-  "balance": 116.5,
-  "expires_at": "2026-10-14T11:17:18.000Z"
-}
-```
-
-### Release a hold
-
-`POST /v1/apps/{app}/customers/{user}/credits/reservations/{reservation}/release` (auth: API key)
-
-Returns the whole hold to the balance, for a call that failed.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-| `reservation` | string | Yes | The reservation id. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/reservations/res_Lm3Xc7Pq1Rt5Vw8Kn2Fa/release" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "id": "res_Lm3Xc7Pq1Rt5Vw8Kn2Fa",
-  "object": "credit_reservation",
-  "status": "released",
-  "currency": "credits",
-  "held": 10,
-  "spent": 0,
-  "balance": 120,
-  "expires_at": "2026-10-14T11:17:18.000Z"
-}
-```
-
-### Spend credits
-
-`POST /v1/apps/{app}/customers/{user}/credits/spend` (auth: API key)
-
-Atomic: the balance never goes below zero, and a retry with the same idempotency key is the same spend, answered with `"replayed": true`. Fails with 409 `insufficient_credits` when the balance is too low, including when the user has no credits at all.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `currency` | string | Yes | A lowercase name you choose, such as `credits` or `tokens`. |
-| `amount` | number | Yes | A positive amount, with up to six decimals. |
-| `idempotency_key` | string | Yes | Your own id for this operation, up to 200 characters. A retry with the same key does nothing more. |
-| `metadata` | object | No | Your own data, kept with the entry. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/spend" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"currency":"credits","amount":1,"idempotency_key":"gen_4821"}'
-```
-
-Response:
-
-```json
-{
-  "object": "credit_spend",
-  "balance": 119,
-  "replayed": false
-}
-```
-
-### Grant credits
-
-`POST /v1/apps/{app}/customers/{user}/credits/grant` (auth: API key)
-
-Adds credits without a purchase, for a bonus or a support gesture. A retry with the same idempotency key adds nothing more.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-| `user` | string | Yes | Your own id for the user, 1 to 256 characters. Quarter never needs a name or email. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `currency` | string | Yes | A lowercase name you choose, such as `credits` or `tokens`. |
-| `amount` | number | Yes | A positive amount, with up to six decimals. |
-| `idempotency_key` | string | Yes | Your own id for this operation, up to 200 characters. A retry with the same key does nothing more. |
-| `expires_at` | string | No | An ISO date when these credits expire. Without it, they never do. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/customers/user_8412/credits/grant" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"currency":"credits","amount":50,"idempotency_key":"welcome_bonus_8412"}'
-```
-
-Response:
-
-```json
-{
-  "object": "credit_grant",
-  "balance": 170,
-  "replayed": false
-}
-```
-
----
-
-# Products
-
-> Say what each store product grants: entitlements, credits, or both.
-
-Send your API key as `authorization: Bearer <key>` and JSON bodies as `content-type: application/json`. Errors use the shape in [Errors](/docs/errors.md).
-
-A product must grant entitlements, credits, or both. Each store product can be configured once per app.
-
-### Create a product
-
-`POST /v1/apps/{app}/products` (auth: API key)
-
-Returns the product id with status 201.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `source` | string | Yes | `stripe`, `app_store` or `play_store`. |
-| `store_product_id` | string | Yes | The Stripe price id, the App Store product id, or the Play product id. |
-| `kind` | string | No | `subscription` (the default), `non_consumable` or `consumable`. |
-| `entitlements` | string[] | No | Lowercase names this product unlocks, such as `pro`. A consumable grants none. |
-| `credits` | object | No | `{ currency, amount, expires }`: credits added for each period or purchase. `expires` is `never` (the default) or `period_end`, for subscriptions only. |
-| `price` | number | No | The price, used only for metrics. |
-| `currency` | string | No | The price currency, such as `USD`. |
-| `period_days` | integer | No | The billing period in days, used only for metrics. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/products" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"source":"app_store","store_product_id":"pro_monthly","kind":"subscription","entitlements":["pro"],"credits":{"currency":"credits","amount":200,"expires":"never"}}'
-```
-
-Response:
-
-```json
-{
-  "id": "prod_uQXxdaWaD3DMuEDeum1T",
-  "object": "product"
-}
-```
-
-### List products
-
-`GET /v1/apps/{app}/products` (auth: API key)
-
-Every product of the app, oldest first.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/products" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "list",
-  "data": [
-    {
-      "id": "prod_uQXxdaWaD3DMuEDeum1T",
-      "object": "product",
-      "source": "app_store",
-      "store_product_id": "pro_monthly",
-      "kind": "subscription",
-      "entitlements": [
-        "pro"
-      ],
-      "credits": {
-        "currency": "credits",
-        "amount": 200,
-        "expires": "never"
-      }
-    }
-  ]
-}
-```
-
----
-
-# Apps and sources
-
-> Create apps, connect Stripe, the App Store and Google Play, set up the mirror, and read revenue metrics.
-
-Send your API key as `authorization: Bearer <key>` and JSON bodies as `content-type: application/json`. Errors use the shape in [Errors](/docs/errors.md).
-
-## Apps
-
-### Create an app
-
-`POST /v1/apps` (auth: API key)
-
-Returns the app with status 201.
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `name` | string | Yes | A name for your own reference. |
-| `record_retention_days` | integer | No | How long store records are kept, from 30 to 3653 days. Defaults to 2557, about seven years. |
-
-Request:
-
-```bash
-curl -X POST "$QUARTER_API_URL/v1/apps" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"name":"My AI app"}'
-```
-
-Response:
-
-```json
-{
-  "id": "app_xaGQYbk1WUpsjtVDFgDV",
-  "object": "app",
-  "name": "My AI app",
-  "sources": {},
-  "setup_urls": {
-    "stripe": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-    "app_store": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications"
-  }
-}
-```
-
-### List apps
-
-`GET /v1/apps` (auth: API key)
-
-Every app in the project of your API key, oldest first.
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/apps" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "list",
-  "data": [
-    {
-      "id": "app_xaGQYbk1WUpsjtVDFgDV",
-      "object": "app",
-      "name": "My AI app",
-      "sources": {
-        "stripe": {
-          "inbound_url": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-          "updated_at": "2026-10-02T09:00:00.000Z"
-        }
-      },
-      "setup_urls": {
-        "stripe": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-        "app_store": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications"
-      }
-    }
-  ]
-}
-```
-
-### Retrieve an app
-
-`GET /v1/apps/{app}` (auth: API key)
-
-The app and its connected sources, with the URL each store should call.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "id": "app_xaGQYbk1WUpsjtVDFgDV",
-  "object": "app",
-  "name": "My AI app",
-  "sources": {
-    "stripe": {
-      "inbound_url": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-      "updated_at": "2026-10-02T09:00:00.000Z"
-    }
-  },
-  "setup_urls": {
-    "stripe": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-    "app_store": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications"
-  }
-}
-```
-
-## Sources
-
-### Connect Stripe
-
-`PUT /v1/apps/{app}/sources/stripe` (auth: API key)
-
-Sets or replaces the Stripe source. Both secrets are stored encrypted. See [Connecting Stripe](/docs/stripe.md) for the key permissions and the webhook events.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `restricted_key` | string | Yes | A Stripe restricted key with read access, `rk_test_` in a test project and `rk_live_` in a live one. |
-| `webhook_secret` | string | Yes | The signing secret of the Stripe webhook endpoint, starting with `whsec_`. |
-
-Request:
-
-```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/sources/stripe" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"restricted_key":"rk_test_...","webhook_secret":"whsec_..."}'
-```
-
-Response:
-
-```json
-{
-  "id": "app_xaGQYbk1WUpsjtVDFgDV",
-  "object": "app",
-  "name": "My AI app",
-  "sources": {
-    "stripe": {
-      "inbound_url": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-      "updated_at": "2026-10-02T09:00:00.000Z"
-    }
-  },
-  "setup_urls": {
-    "stripe": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-    "app_store": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications"
-  },
-  "webhook_url": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks"
-}
-```
-
-### Connect the App Store
-
-`PUT /v1/apps/{app}/sources/app_store` (auth: API key)
-
-Sets or replaces the App Store source. See [Connecting the App Store](/docs/app-store.md).
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `bundle_id` | string | Yes | Your app's bundle id. |
-| `app_apple_id` | integer | No | Your app's Apple id. Apple requires it to verify production data. |
-| `key_id` | string | No | App Store Server API key id. |
-| `issuer_id` | string | No | App Store Server API issuer id. |
-| `private_key` | string | No | App Store Server API private key, as PEM. Stored encrypted. |
-
-Request:
-
-```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/sources/app_store" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"bundle_id":"your.bundle.id","app_apple_id":1234567890}'
-```
-
-Response:
-
-```json
-{
-  "id": "app_xaGQYbk1WUpsjtVDFgDV",
-  "object": "app",
-  "name": "My AI app",
-  "sources": {
-    "app_store": {
-      "bundle_id": "your.bundle.id",
-      "app_apple_id": 1234567890,
-      "inbound_url": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications",
-      "updated_at": "2026-10-02T09:00:00.000Z"
-    }
-  },
-  "setup_urls": {
-    "stripe": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-    "app_store": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications"
-  },
-  "notifications_url": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications"
-}
-```
-
-### Connect Google Play
-
-`PUT /v1/apps/{app}/sources/play_store` (auth: API key)
-
-Sets or replaces the Google Play source. The `push_url` carries a new secret token and is shown only in this response. See [Connecting Google Play](/docs/google-play.md).
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `package_name` | string | Yes | Your app's package name. |
-| `service_account_json` | string | Yes | The service account's JSON key file, as a string. Stored encrypted. |
-
-Request:
-
-```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/sources/play_store" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"package_name":"your.package.name","service_account_json":"{\"type\":\"service_account\",...}"}'
-```
-
-Response:
-
-```json
-{
-  "id": "app_xaGQYbk1WUpsjtVDFgDV",
-  "object": "app",
-  "name": "My AI app",
-  "sources": {
-    "play_store": {
-      "package_name": "your.package.name",
-      "inbound_url": "<your API URL>/sources/play_store/app_xaGQYbk1WUpsjtVDFgDV/notifications",
-      "updated_at": "2026-10-02T09:00:00.000Z"
-    }
-  },
-  "setup_urls": {
-    "stripe": "<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks",
-    "app_store": "<your API URL>/sources/app_store/app_xaGQYbk1WUpsjtVDFgDV/notifications"
-  },
-  "push_url": "<your API URL>/sources/play_store/app_xaGQYbk1WUpsjtVDFgDV/notifications?token=..."
-}
-```
-
-## Mirror
-
-### Set up the mirror
-
-`PUT /v1/apps/{app}/mirror` (auth: API key)
-
-Tests the connection, creates the table if it does not exist, and starts writing each user's access to it. See [Mirror to your database](/docs/mirror.md).
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-**Body**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `connection_string` | string | Yes | A `postgres://` URL on a public address. Stored encrypted. |
-| `table` | string | No | A lowercase SQL name. Defaults to `quarter_access`. |
-
-Request:
-
-```bash
-curl -X PUT "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/mirror" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"connection_string":"postgres://quarter_writer:...@<your database host>:5432/postgres"}'
-```
-
-Response:
-
-```json
-{
-  "object": "mirror",
-  "table": "quarter_access"
-}
-```
-
-### Retrieve the mirror
-
-`GET /v1/apps/{app}/mirror` (auth: API key)
-
-Where the mirror writes, when it last wrote, and the last error. The connection string is never returned.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/mirror" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "mirror",
-  "configured": true,
-  "host": "<your database host>",
-  "database": "postgres",
-  "table": "quarter_access",
-  "last_synced_at": "2026-10-14T09:14:03.000Z",
-  "last_error": null
-}
-```
-
-## Metrics
-
-### Retrieve metrics
-
-`GET /v1/apps/{app}/metrics` (auth: API key)
-
-Revenue as the stores report it, in each currency separately. MRR spreads each paying subscription's price over its billing period. Trials count as active but not as revenue.
-
-**Path parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `app` | string | Yes | The app id, starting with `app_`. |
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/apps/app_xaGQYbk1WUpsjtVDFgDV/metrics" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "metrics",
-  "as_of": "2026-10-14T12:00:00.000Z",
-  "by_currency": [
-    {
-      "currency": "USD",
-      "mrr": 1198.8,
-      "active_subscriptions": 120,
-      "active_trials": 14
-    }
-  ],
-  "last_30_days": {
-    "started": 31,
-    "renewed": 92,
-    "cancelled": 6,
-    "expired": 4,
-    "refunded": 1,
-    "billing_issues": 3
-  }
-}
-```
-
----
-
-# Events and webhook endpoints
-
-> Read the event log, register webhook endpoints, and replay deliveries.
-
-Send your API key as `authorization: Bearer <key>` and JSON bodies as `content-type: application/json`. Errors use the shape in [Errors](/docs/errors.md).
-
-## Events
-
-### List events
-
-`GET /v1/events` (auth: API key)
-
-The newest events in the project first. Events are append-only and never change.
-
-**Query parameters**
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `object_id` | string | No | Only events about this object, such as a customer id. |
-| `limit` | integer | No | How many to return, up to 200. Defaults to 50. |
-
-Request:
-
-```bash
-curl "$QUARTER_API_URL/v1/events?object_id=cus_tDQoMdBpxNQGCALGwgWm" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "object": "list",
-  "data": [
-    {
-      "id": "evt_N6Pcxyzof8Gy4JaW9VLr",
-      "object": "event",
-      "type": "access.changed",
-      "created_at": "2026-10-14T09:14:02.000Z",
-      "data": {
-        "object_type": "customer",
-        "object_id": "cus_tDQoMdBpxNQGCALGwgWm",
-        "app_id": "app_xaGQYbk1WUpsjtVDFgDV",
-        "app_user_id": "user_8412",
-        "customer_id": "cus_tDQoMdBpxNQGCALGwgWm",
-        "entitlements": [
-          "pro"
-        ],
-        "granted": [
-          "pro"
-        ],
-        "revoked": []
-      }
-    }
-  ]
-}
-```
-
-## Webhook endpoints
-
-### Create a webhook endpoint
+### Add a webhook endpoint
 
 `POST /v1/webhook_endpoints` (auth: API key)
 
-Returns the endpoint with status 201. The `secret` is shown only in this response. See [Webhooks](/docs/webhooks.md) to verify signatures.
+The URL must use https and be publicly reachable. The endpoint receives every event type unless you list the ones it wants. The `secret` is shown only in this response.
 
 **Body**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `url` | string | Yes | A public https URL. |
-| `enabled_events` | string[] | No | The event types to send. Without it, the endpoint receives every type. |
+| `url` | string | Yes | Where to send events. |
+| `enabled_events` | string[] | No | Event types to send. All of them when left out. |
 
 Request:
 
@@ -2213,20 +2797,21 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/webhook_endpoints" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"url":"https://<your app>/api/quarter-webhook","enabled_events":["access.changed"]}'
+  -d '{"url":"https://<your host>/webhooks/quarter","enabled_events":["payment_item.held","vendor.bank_account_changed"]}'
 ```
 
 Response:
 
 ```json
 {
-  "id": "we_BhXkWxr2GsRrAHFyoOJz",
+  "id": "we_5HtN9qLv2WkR7pXm3BcD",
   "object": "webhook_endpoint",
-  "url": "https://<your app>/api/quarter-webhook",
+  "url": "https://<your host>/webhooks/quarter",
   "enabled_events": [
-    "access.changed"
+    "payment_item.held",
+    "vendor.bank_account_changed"
   ],
-  "secret": "whsec_..."
+  "secret": "whsec_Rk2Vn8QxT4mLp7WcZ3bJ9yHs6FdG1aNe"
 }
 ```
 
@@ -2234,7 +2819,7 @@ Response:
 
 `GET /v1/webhook_endpoints` (auth: API key)
 
-Every endpoint in the project. Secrets are never returned.
+Your endpoints, oldest first, without their secrets.
 
 Request:
 
@@ -2250,11 +2835,12 @@ Response:
   "object": "list",
   "data": [
     {
-      "id": "we_BhXkWxr2GsRrAHFyoOJz",
+      "id": "we_5HtN9qLv2WkR7pXm3BcD",
       "object": "webhook_endpoint",
-      "url": "https://<your app>/api/quarter-webhook",
+      "url": "https://<your host>/webhooks/quarter",
       "enabled_events": [
-        "access.changed"
+        "payment_item.held",
+        "vendor.bank_account_changed"
       ],
       "enabled": true
     }
@@ -2262,24 +2848,23 @@ Response:
 }
 ```
 
-## Deliveries
+### List events
 
-### List deliveries
+`GET /v1/events` (auth: API key)
 
-`GET /v1/webhook_deliveries` (auth: API key)
-
-The latest 100 deliveries, with their status and the last response.
+Events, newest first. Useful to catch up after downtime, or to see everything that happened to one vendor or run.
 
 **Query parameters**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `event` | string | No | Only the deliveries of this event id. |
+| `object_id` | string | No | Only events about this vendor, run, item or report. |
+| `limit` | integer | No | Up to 200. Default 50. |
 
 Request:
 
 ```bash
-curl "$QUARTER_API_URL/v1/webhook_deliveries?event=evt_N6Pcxyzof8Gy4JaW9VLr" \
+curl "$QUARTER_API_URL/v1/events?object_id=itm_5RnX9cLw3TbM7kQp2VjF" \
   -H "authorization: Bearer $QUARTER_API_KEY"
 ```
 
@@ -2290,14 +2875,60 @@ Response:
   "object": "list",
   "data": [
     {
-      "id": "whd_d7d2f8feb06715a87ad0",
-      "event_id": "evt_N6Pcxyzof8Gy4JaW9VLr",
-      "endpoint_id": "we_BhXkWxr2GsRrAHFyoOJz",
+      "id": "evt_3QkW8nRv5TpZ2mLx7BcJ",
+      "object": "event",
+      "type": "payment_item.held",
+      "created_at": "2026-10-06T08:15:03.000Z",
+      "data": {
+        "object_type": "payment_item",
+        "object_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+        "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "item_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+        "payee_name": "HARBOR POINT LOGISTICS",
+        "amount": 12000,
+        "findings": [
+          "account_not_on_file"
+        ]
+      }
+    }
+  ]
+}
+```
+
+### List deliveries
+
+`GET /v1/webhook_deliveries` (auth: API key)
+
+The 100 most recent deliveries, with their status: `pending`, `delivered` or `failed`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `event` | string | No | Only deliveries of this event id. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/webhook_deliveries?event=evt_3QkW8nRv5TpZ2mLx7BcJ" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "whd_8f3c1a9e2d7b4c6a0e51",
+      "event_id": "evt_3QkW8nRv5TpZ2mLx7BcJ",
+      "endpoint_id": "we_5HtN9qLv2WkR7pXm3BcD",
       "status": "delivered",
       "attempts": 1,
       "last_status_code": 204,
       "last_error": null,
-      "delivered_at": "2026-10-14T09:14:03.000Z"
+      "delivered_at": "2026-10-06T08:15:04.000Z"
     }
   ]
 }
@@ -2307,7 +2938,7 @@ Response:
 
 `POST /v1/webhook_deliveries/{id}/retry` (auth: API key)
 
-Sends a delivery again now, whatever its state.
+Sends a delivery again now, whatever its state, with a fresh count of attempts.
 
 **Path parameters**
 
@@ -2318,7 +2949,7 @@ Sends a delivery again now, whatever its state.
 Request:
 
 ```bash
-curl -X POST "$QUARTER_API_URL/v1/webhook_deliveries/whd_d7d2f8feb06715a87ad0/retry" \
+curl -X POST "$QUARTER_API_URL/v1/webhook_deliveries/whd_8f3c1a9e2d7b4c6a0e51/retry" \
   -H "authorization: Bearer $QUARTER_API_KEY"
 ```
 
@@ -2326,7 +2957,7 @@ Response:
 
 ```json
 {
-  "id": "whd_d7d2f8feb06715a87ad0",
+  "id": "whd_8f3c1a9e2d7b4c6a0e51",
   "status": "pending"
 }
 ```
@@ -2335,28 +2966,61 @@ Response:
 
 # Errors
 
-> The error shape, the status codes, and the codes you will meet most.
+> The error shape, the error types and their HTTP status, and every error code the api returns.
 
-Every response carries a `quarter-request-id` header. Errors are JSON with the same id inside.
+Every error has the same shape. `type` tells you what kind of problem it is, `code` tells you exactly which one, and `message` is a plain sentence you can log or show. `request_id` is also sent as the `quarter-request-id` header on every response; quote it when you ask for help.
+
+Response:
 
 ```json
 {
   "error": {
     "type": "conflict",
-    "code": "insufficient_credits",
-    "message": "the balance is 0.5 credits; 1 were requested",
+    "code": "payments_still_held",
+    "message": "1 held payments need a decision first",
     "request_id": "req_Wc7GPq8Ln5Xv3Rn6Tk1A"
   }
 }
 ```
 
-| Status | `type` | Codes |
+## Types
+
+| `type` | HTTP status | Meaning |
 | --- | --- | --- |
-| 400 | `invalid_request` | A missing or invalid field, such as `user_required`, `source_invalid`, `amount_invalid`, `currency_invalid`, `idempotency_key_required`, `entitlements_invalid`. Also `purchase_not_verified`, `user_mismatch`, `client_reference_id_required`, `source_not_configured` and `mirror_unreachable`. |
-| 401 | `authentication` | `api_key_missing`, `api_key_invalid` |
-| 404 | `not_found` | `app_not_found`, `credit_reservation_not_found`, `webhook_delivery_not_found` |
-| 409 | `conflict` | `insufficient_credits`, `product_exists`, `reservation_closed` |
-| 413 | `invalid_request` | `payload_too_large`: JSON bodies are limited to 1 MB |
-| 415 | `invalid_request` | `unsupported_media_type`: send `application/json` |
-| 429 | `rate_limited` | `sync_too_soon` |
-| 500 | `api_error` | `internal` |
+| `invalid_request` | 400 | Something in the request is missing or wrong. Fix it before trying again. Also used with 413 and 415. |
+| `authentication` | 401 | No API key, or a key that is unknown or revoked. |
+| `not_found` | 404 | The object does not exist, or belongs to another account. |
+| `conflict` | 409 | The request is valid, but the object is not in a state that allows it, such as releasing a run with held payments. |
+| `rate_limited` | 429 | Too many attempts. Used for verification codes. |
+| `api_error` | 500 | Something went wrong on our side. Safe to retry later. |
+
+## Codes
+
+| Area | Status | Codes |
+| --- | --- | --- |
+| Any request | 400 | `request_invalid`, `limit_invalid`. `request_invalid` covers a body that is not valid JSON. |
+| Any request | 413, 415 | `payload_too_large`, `unsupported_media_type`. Send `application/json`, up to 10 MB. |
+| Any request | 401 | `api_key_missing`, `api_key_invalid` |
+| Any request | 500 | `internal` |
+| Any request | 404 | `vendor_not_found`, `bank_account_not_found`, `payment_run_not_found`, `payment_item_not_found`, `verification_request_not_found`, `webhook_delivery_not_found` |
+| [Vendors](/docs/vendors.md) | 400 | `name_required`, `name_invalid`, `email_domain_invalid`, `external_id_invalid`, `holder_name_invalid`, `status_invalid`, `routing_number_invalid`, `account_number_invalid`, `vendors_invalid` |
+| [Call-backs](/docs/callbacks.md) | 400 | `result_invalid`, `phone_source_invalid`, `callback_number_untrusted`, `reviewer_required`, `bank_account_inactive`, `phone_number_invalid`, `contact_name_invalid`, `notes_invalid` |
+| [Verification links](/docs/verification.md) | 400 | `contact_email_invalid`, `link_expired`, `code_invalid`, `public_token_required` |
+| [Verification links](/docs/verification.md) | 409 | `email_first`, `request_closed` |
+| [Verification links](/docs/verification.md) | 429 | `too_many_attempts` |
+| [Payment runs](/docs/payment-runs.md) | 400 | `format_invalid`, `file_required`, `file_invalid`, `items_required`, `amount_invalid`, `no_payments` |
+| [Payment runs](/docs/payment-runs.md) | 409 | `duplicate_file` |
+| [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `reviewer_required` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held` |
+| [Fraud reports](/docs/fraud-reports.md) | 400 | `description_required`, `reporter_required`, `report_not_open` |
+| [Settings](/docs/settings.md) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |
+| [Procedure](/docs/procedure.md) | 400 | `reviewer_required` |
+| [Webhooks](/docs/webhooks.md) | 400 | `url_required`, `url_invalid`, `enabled_events_invalid` |
+
+A text field that is too long, or not text, answers `<field>_invalid`, such as `name_invalid` (200 characters at most) or `notes_invalid` (2,000).
+
+## Handling errors
+
+- Branch on `code`, not on `message`. Messages may get clearer over time; codes do not change.
+- Retry `api_error` and network failures. Do not retry `invalid_request` or `conflict` unchanged: they will fail again.
+- A payment run upload is safe to retry: the same file a second time answers `409 duplicate_file` with the id of the run already made.

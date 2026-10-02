@@ -1,0 +1,217 @@
+1:"$Sreact.fragment"
+2:I[56448,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],""]
+3:I[56123,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"CodeBlock"]
+2a:X
+2f:X
+2f:C
+0:{"buildId":"P4YP0F4WbnJir0fiZPvV9","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Payment runs"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Decisions and release"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Approve or reject each held payment with a reason, then release the run and get back the file to send to your bank."]}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["A run cannot be released while any payment in it is held. A person decides each held payment, approve or reject, and says why. Then release returns the file to upload to your bank, without the rejected payments."]}],["$","h2","1",{"id":"decisions","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#decisions","className":"docs-module__RdmBMa__anchor","children":["Decisions"]}]}],["$","ul","2",{"children":[["$","li","0",{"children":["Only a ",["$","code","7",{"children":"held"}]," payment takes a decision. Deciding a clear or already decided payment answers ",["$","code","92",{"children":"409 item_not_held"}],"."]}],["$","li","1",{"children":["Every decision names a person (",["$","code","31",{"children":"reviewer"}],") and a reason. Both go into the item ",["$","code","79",{"children":"decision"}]," and into the ",["$","$L2","103",{"href":"/docs/procedure#get-v1-audit-log","children":["audit log"]}],"."]}],["$","li","2",{"children":["A rejection is final for that run. To pay that vendor later, put the payment in a new run."]}],["$","li","3",{"children":["Decisions stop when the run is released or cancelled: ",["$","code","54",{"children":"409 run_closed"}],"."]}]]}],["$","h2","3",{"id":"two-person-approval","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#two-person-approval","className":"docs-module__RdmBMa__anchor","children":["Two-person approval"]}]}],["$","p","4",{"children":["An approval of a payment at or above the two-person threshold needs two different people. The threshold is ",["$","code","107",{"children":"two_person_threshold"}]," in ",["$","$L2","133",{"href":"/docs/settings","children":["settings"]}],", $50,000 by default. The first approval is recorded and the payment stays ",["$","code","234",{"children":"held"}],". A second approval by a different person makes it ",["$","code","291",{"children":"approved"}],". The same person approving twice answers ",["$","code","343",{"children":"409 second_approver_required"}],"."]}],["$","p","5",{"children":["A rejection needs one person, whatever the amount. Reviewers are compared by their email, ignoring case."]}],["$","$L3","6",{"tabs":[{"label":"After the first","language":"json","code":"{\n  \"status\": \"held\",\n  \"decision\": {\n    \"by\": \"dana@yourcompany\",\n    \"at\": \"2026-10-08T10:11:05.000Z\",\n    \"reason\": \"Quarterly freight invoice, matches the contract rate and the delivery log.\",\n    \"second_by\": null\n  }\n}"},{"label":"After the second","language":"json","code":"{\n  \"status\": \"approved\",\n  \"decision\": {\n    \"by\": \"dana@yourcompany\",\n    \"at\": \"2026-10-08T10:11:05.000Z\",\n    \"reason\": \"Quarterly freight invoice, matches the contract rate and the delivery log. / Checked the invoice and the call-back record.\",\n    \"second_by\": \"sam@yourcompany\"\n  }\n}"}],"title":"A $62,400.00 payment, after each approval"}],["$","h2","7",{"id":"the-released-file","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#the-released-file","className":"docs-module__RdmBMa__anchor","children":["What release returns"]}]}],["$","ul","8",{"children":[["$","li","0",{"children":[["$","strong","0",{"children":"NACHA:"}]," the same file without the rejected entries and their addenda. Batch control and file control totals (entry count, entry hash, debit and credit totals, batch and block counts) are recomputed, empty batches are dropped, and the file is padded to a multiple of ten records. Every other byte is as you sent it, including line endings."]}],"$L4","$L5"]}],"$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24"]}],"$L25"]}],"$L26"]}],["$L27"],"$L28"]}],"isPartial":"$@29","staleTime":"$2a","varyParams":null},{"rsc":"$L2b","isPartial":"$@2c","staleTime":"$2a","varyParams":null},{"rsc":"$L2d","isPartial":"$@2e","staleTime":"$2a","varyParams":"$2f"},{"rsc":"$L30","isPartial":"$@31","staleTime":"$2a","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@32","rootVaryParams":null,"needsRuntimeRequest":"$@33"}
+37:I[20795,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"DocToc"]
+38:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+39:"$Sreact.suspense"
+3b:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+3c:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+3d:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+3e:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+3f:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+40:I[71948,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js"],"DocSidebar"]
+4:["$","li","1",{"children":[["$","strong","0",{"children":"CSV:"}]," the same header and rows, without the rejected rows."]}]
+5:["$","li","2",{"children":[["$","strong","0",{"children":"JSON:"}]," the items you sent, as a JSON array in ",["$","code","49",{"children":"file"}],", without the rejected ones."]}]
+6:["$","p","9",{"children":["Upload ",["$","code","7",{"children":"file"}]," to your bank as you would have uploaded the original. Quarter does not send it anywhere."]}]
+7:["$","h2","10",{"id":"invariants","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#invariants","className":"docs-module__RdmBMa__anchor","children":["What always holds"]}]}]
+8:["$","ul","11",{"children":[["$","li","0",{"children":["A held payment is never in a released file unless a person approved it."]}],["$","li","1",{"children":["A released file's totals match the payments in it."]}],["$","li","2",{"children":["A released run and its items never change again."]}],["$","li","3",{"children":["Every decision and the release name a person, and are kept in the audit log."]}]]}]
+9:["$","h2","12",{"id":"endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
+a:["$","h3","13",{"id":"post-v1-payment-runs-run-items-item-decision","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-payment-runs-run-items-item-decision","className":"docs-module__RdmBMa__anchor","children":["Decide a held payment"]}]}]
+b:["$","p","14",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/payment_runs/{run}/items/{item}/decision"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+c:["$","p","15",{"children":["Approves or rejects one held payment. Returns the whole run."]}]
+d:["$","p","16",{"children":[["$","strong","0",{"children":"Path parameters"}]]}]
+e:["$","div","17",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"run"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The payment run id, starting with ",["$","code","34",{"children":"run_"}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"item"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The payment item id, starting with ",["$","code","35",{"children":"itm_"}],"."]}]]}]]}]]}]}]
+f:["$","p","18",{"children":[["$","strong","0",{"children":"Body"}]]}]
+10:["$","div","19",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"decision"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":[["$","code","0",{"children":"approve"}]," or ",["$","code","13",{"children":"reject"}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"reason"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["Why, in plain words, up to 2,000 characters."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"reviewer"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["Email of the person deciding. Kept in the audit trail."]}]]}]]}]]}]}]
+11:["$","$L3","20",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/items/itm_5RnX9cLw3TbM7kQp2VjF/decision\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"decision\":\"reject\",\"reason\":\"Harbor Point confirmed by phone that they did not change banks.\",\"reviewer\":\"dana@yourcompany\"}'"}],"title":"Request"}]
+34:T830,{
+  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "object": "payment_run",
+  "name": "October 6 vendor run",
+  "format": "nacha",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-06T08:15:03.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 3,
+    "total": 52322.4,
+    "held": 0,
+    "held_amount": 0,
+    "rejected": 1,
+    "rejected_amount": 12000
+  },
+  "items": [
+    {
+      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 36410,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20977",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+      "payee_name": "CEDAR RIDGE SUPPLY CO",
+      "routing_number": "102103384",
+      "last4": "1904",
+      "amount": 3912.4,
+      "effective_date": "2026-10-06",
+      "reference": "INV-7718",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "amount": 12000,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "rejected",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": {
+        "by": "dana@yourcompany",
+        "at": "2026-10-06T09:02:47.000Z",
+        "reason": "Harbor Point confirmed by phone that they did not change banks.",
+        "second_by": null
+      }
+    }
+  ]
+}12:["$","$L3","21",{"tabs":[{"label":"200","language":"json","code":"$34"}],"title":"Response"}]
+13:["$","h3","22",{"id":"post-v1-payment-runs-run-release","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-payment-runs-run-release","className":"docs-module__RdmBMa__anchor","children":["Release a run"]}]}]
+14:["$","p","23",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/payment_runs/{run}/release"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+15:["$","p","24",{"children":["Releases the run once no payment is held, and returns the file to send. While a payment is held, the answer is ",["$","code","111",{"children":"409 payments_still_held"}]," with how many. The ",["$","code","156",{"children":"payment_run.released"}]," ",["$","$L2","179",{"href":"/docs/webhooks#event-types","children":["event"]}]," fires."]}]
+16:["$","p","25",{"children":["This is the example run above, with its third entry rejected. The batch and file control records now total two entries and $40,322.40."]}]
+17:["$","p","26",{"children":[["$","strong","0",{"children":"Path parameters"}]]}]
+18:["$","div","27",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"run"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The payment run id, starting with ",["$","code","34",{"children":"run_"}],"."]}]]}]]}]]}]}]
+19:["$","p","28",{"children":[["$","strong","0",{"children":"Body"}]]}]
+1a:["$","div","29",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"reviewer"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["Email of the person releasing. Kept in the audit trail."]}]]}]]}]]}]}]
+1b:["$","$L3","30",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/release\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"reviewer\":\"dana@yourcompany\"}'"}],"title":"Request"}]
+35:T430,{
+  "object": "payment_run_release",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "format": "nacha",
+  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+}1c:["$","$L3","31",{"tabs":[{"label":"200","language":"json","code":"$35"}],"title":"Response"}]
+1d:["$","$L3","32",{"tabs":[{"label":"NACHA","language":"shell","code":"101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"}],"title":"The released file"}]
+1e:["$","h3","33",{"id":"post-v1-payment-runs-run-cancel","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-payment-runs-run-cancel","className":"docs-module__RdmBMa__anchor","children":["Cancel a run"]}]}]
+1f:["$","p","34",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/payment_runs/{run}/cancel"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+20:["$","p","35",{"children":["Cancels a run that was not released, for example to fix the file and upload it again. A cancelled run keeps its items and decisions for the record. A released run cannot be cancelled: ",["$","code","184",{"children":"409 run_closed"}],"."]}]
+21:["$","p","36",{"children":[["$","strong","0",{"children":"Path parameters"}]]}]
+22:["$","div","37",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"run"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The payment run id, starting with ",["$","code","34",{"children":"run_"}],"."]}]]}]]}]]}]}]
+23:["$","$L3","38",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/cancel\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+36:T76e,{
+  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "object": "payment_run",
+  "name": "October 6 vendor run",
+  "format": "nacha",
+  "status": "cancelled",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-06T08:15:03.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 3,
+    "total": 52322.4,
+    "held": 1,
+    "held_amount": 12000,
+    "rejected": 0,
+    "rejected_amount": 0
+  },
+  "items": [
+    {
+      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 36410,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20977",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+      "payee_name": "CEDAR RIDGE SUPPLY CO",
+      "routing_number": "102103384",
+      "last4": "1904",
+      "amount": 3912.4,
+      "effective_date": "2026-10-06",
+      "reference": "INV-7718",
+      "status": "clear",
+      "findings": [],
+      "decision": null
+    },
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "amount": 12000,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "held",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": null
+    }
+  ]
+}24:["$","$L3","39",{"tabs":[{"label":"200","language":"json","code":"$36"}],"title":"Response"}]
+25:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L2",null,{"href":"/docs/checks","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Checks"]}],["$","$L2",null,{"href":"/docs/account-checks","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Account checks"]}]]}]
+26:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L37",null,{"entries":[{"id":"decisions","text":"Decisions","depth":2},{"id":"two-person-approval","text":"Two-person approval","depth":2},{"id":"the-released-file","text":"What release returns","depth":2},{"id":"invariants","text":"What always holds","depth":2},{"id":"endpoints","text":"Endpoints","depth":2},{"id":"post-v1-payment-runs-run-items-item-decision","text":"Decide a held payment","depth":3},{"id":"post-v1-payment-runs-run-release","text":"Release a run","depth":3},{"id":"post-v1-payment-runs-run-cancel","text":"Cancel a run","depth":3}]}]}]
+27:["$","script","script-0",{"src":"/preview/_next/static/chunks/18mft70_00mfh.js","async":true}]
+28:["$","$L38",null,{"children":["$","$39",null,{"name":"Next.MetadataOutlet","children":"$@3a"}]}]
+2b:["$","$1","h",{"children":[null,["$","$L3b",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$L3c",null,{"children":["$","$39",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Decisions and release | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"Approve or reject each held payment with a reason, then release the run and get back the file to send to your bank."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","meta","3",{"property":"og:title","content":"Quarter: Know who you're paying"}],["$","meta","4",{"property":"og:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the documented process Nacha now expects of every business that sends ACH."}],["$","meta","5",{"property":"og:site_name","content":"Quarter"}],["$","meta","6",{"property":"og:image","content":"http://localhost:3000/preview/opengraph-image.png?opengraph-image.2po1z49xebs7l.png"}],["$","meta","7",{"property":"og:image:type","content":"image/png"}],["$","meta","8",{"property":"og:image:width","content":"1200"}],["$","meta","9",{"property":"og:image:height","content":"1200"}],["$","meta","10",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","11",{"property":"og:type","content":"website"}],["$","meta","12",{"name":"twitter:card","content":"summary"}],["$","meta","13",{"name":"twitter:title","content":"Quarter: Know who you're paying"}],["$","meta","14",{"name":"twitter:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the documented process Nacha now expects of every business that sends ACH."}],["$","meta","15",{"name":"twitter:image","content":"http://localhost:3000/preview/twitter-image.png?twitter-image.2po1z49xebs7l.png"}],["$","meta","16",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","17",{"name":"twitter:image:type","content":"image/png"}],["$","meta","18",{"name":"twitter:image:width","content":"1200"}],["$","meta","19",{"name":"twitter:image:height","content":"1200"}],["$","link","20",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","21",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","22",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$L3d","23",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+2d:["$","$1","c",{"children":[null,["$","$L3e",null,{"parallelRouterKey":"children","template":["$","$L3f",null,{}]}]]}]
+30:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/2bdnw_kqmc820.js","async":true}]],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$L40",null,{"nav":[{"title":"Get started","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Vendors","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Verification links"},{"href":"/docs/callbacks","label":"Call-backs"}]},{"title":"Payment runs","items":[{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/checks","label":"Checks"},{"href":"/docs/releases","label":"Decisions and release"}]},{"title":"Network","items":[{"href":"/docs/account-checks","label":"Account checks"},{"href":"/docs/fraud-reports","label":"Fraud reports"}]},{"title":"Compliance","items":[{"href":"/docs/settings","label":"Settings"},{"href":"/docs/procedure","label":"Procedure and audit log"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L3e",null,{"parallelRouterKey":"children","template":["$","$L3f",null,{}]}]}]]}]]}]
+33:true
+3a:null
+2a:300
+2a:C
+32:0
+2c:"$undefined"
+2e:"$undefined"
+31:"$undefined"
+29:"$undefined"

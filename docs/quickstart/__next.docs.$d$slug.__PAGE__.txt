@@ -1,49 +1,223 @@
 1:"$Sreact.fragment"
-2:I[56123,["/preview/_next/static/chunks/1nsi7d6v0_b5f.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"CodeBlock"]
-3:I[56448,["/preview/_next/static/chunks/1nsi7d6v0_b5f.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],""]
-1a:X
-1f:X
-1f:C
-0:{"buildId":"VmExnlKTd_bn-QXym1tf-","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Get started"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Quickstart"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Take a Stripe test payment to an unlocked plan, credits added, and one credit spent."]}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["This walks one Stripe test payment through Quarter with a test key. It takes a handful of requests and a Stripe account in test mode."]}],["$","h2","1",{"id":"before-you-start","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#before-you-start","className":"docs-module__RdmBMa__anchor","children":["Before you start"]}]}],["$","p","2",{"children":["You need a test API key, which starts with ",["$","code","43",{"children":"qk_test_"}],", and your API URL. During early access, Quarter gives you both. A test key only ever sees test data."]}],["$","$L2","3",{"tabs":[{"label":"Shell","language":"bash","code":"export QUARTER_API_URL=\"<your API URL>\"\nexport QUARTER_API_KEY=\"qk_test_...\""}]}],["$","h2","4",{"id":"1-create-an-app","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#1-create-an-app","className":"docs-module__RdmBMa__anchor","children":["1. Create an app"]}]}],["$","p","5",{"children":["An app is one product you sell, with its stores, its products and its users. Keep its ",["$","code","86",{"children":"id"}],". The response also carries ",["$","code","118",{"children":"setup_urls"}],": the addresses Stripe and the App Store should call, known before you connect either."]}],["$","$L2","6",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/apps\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"name\":\"My AI app\"}'\n# { \"id\": \"app_xaGQYbk1WUpsjtVDFgDV\", \"object\": \"app\", \"name\": \"My AI app\", \"sources\": {},\n#   \"setup_urls\": { \"stripe\": \"<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks\", ... } }\n\nexport QUARTER_APP_ID=\"app_xaGQYbk1WUpsjtVDFgDV\""}]}],["$","h2","7",{"id":"2-connect-stripe","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#2-connect-stripe","className":"docs-module__RdmBMa__anchor","children":["2. Connect Stripe"]}]}],["$","ol","8",{"children":[["$","li","0",{"children":["In the Stripe dashboard, in test mode, add a webhook endpoint with the URL from ",["$","code","80",{"children":"setup_urls.stripe"}]," and the events listed in ",["$","$L3","125",{"href":"/docs/stripe","children":["Connecting Stripe"]}],". Stripe then shows its signing secret, which starts with ",["$","code","216",{"children":"whsec_"}],"."]}],["$","li","1",{"children":["Create a restricted key with ",["$","strong","29",{"children":"Read"}]," access to Checkout Sessions and Subscriptions, and nothing else. It starts with ",["$","code","118",{"children":"rk_test_"}],"."]}],["$","li","2",{"children":["Give both to Quarter."]}]]}],["$","$L2","9",{"tabs":[{"label":"curl","language":"bash","code":"curl -X PUT \"$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/sources/stripe\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"restricted_key\":\"rk_test_...\",\"webhook_secret\":\"whsec_...\"}'\n# { \"id\": \"app_xaGQYbk1WUpsjtVDFgDV\", \"object\": \"app\", ..., \"webhook_url\": \"<your API URL>/sources/stripe/app_xaGQYbk1WUpsjtVDFgDV/webhooks\" }"}]}],["$","h2","10",{"id":"3-say-what-your-plan-grants","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#3-say-what-your-plan-grants","className":"docs-module__RdmBMa__anchor","children":"$L4"}]}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14"]}],"$L15"]}],"$L16"]}],["$L17"],"$L18"]}],"isPartial":"$@19","staleTime":"$1a","varyParams":null},{"rsc":"$L1b","isPartial":"$@1c","staleTime":"$1a","varyParams":null},{"rsc":"$L1d","isPartial":"$@1e","staleTime":"$1a","varyParams":"$1f"},{"rsc":"$L20","isPartial":"$@21","staleTime":"$1a","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@22","rootVaryParams":null,"needsRuntimeRequest":"$@23"}
-24:I[20795,["/preview/_next/static/chunks/1nsi7d6v0_b5f.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"DocToc"]
-25:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
-26:"$Sreact.suspense"
-28:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
-29:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
-2a:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
-2b:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
-2c:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
-2d:I[71948,["/preview/_next/static/chunks/1nsi7d6v0_b5f.js","/preview/_next/static/chunks/2bdnw_kqmc820.js"],"DocSidebar"]
-4:["3. Say what your plan grants"]
-5:["$","p","11",{"children":["A product ties a store product to what it grants. Here a Stripe price unlocks the ",["$","code","82",{"children":"pro"}]," entitlement and adds 200 credits each period, which expire at the end of it."]}]
-6:["$","$L2","12",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/products\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"source\":\"stripe\",\"store_product_id\":\"price_...\",\"kind\":\"subscription\",\"entitlements\":[\"pro\"],\"credits\":{\"currency\":\"credits\",\"amount\":200,\"expires\":\"period_end\"}}'\n# { \"id\": \"prod_uQXxdaWaD3DMuEDeum1T\", \"object\": \"product\" }"}]}]
-7:["$","h2","13",{"id":"4-take-a-test-payment","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#4-take-a-test-payment","className":"docs-module__RdmBMa__anchor","children":["4. Take a test payment"]}]}]
-8:["$","p","14",{"children":["Create the Checkout Session with your own user id in ",["$","code","53",{"children":"client_reference_id"}],", and pay it with one of Stripe's test cards."]}]
-9:["$","$L2","15",{"tabs":[{"label":"TypeScript","language":"ts","code":"// Create the Checkout Session with your own user id, so Quarter knows who paid.\nconst session = await stripe.checkout.sessions.create({\n  mode: \"subscription\",\n  line_items: [{ price: \"price_pro_monthly\", quantity: 1 }],\n  client_reference_id: user.id,\n  subscription_data: { metadata: { quarter_user: user.id } },\n  success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,\n});"}]}]
-a:["$","h2","16",{"id":"5-report-the-purchase","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#5-report-the-purchase","className":"docs-module__RdmBMa__anchor","children":["5. Report the purchase"]}]}]
-b:["$","p","17",{"children":["On your success page, send the session id to Quarter. Quarter fetches the session from Stripe, unlocks ",["$","code","103",{"children":"pro"}],", adds the credits, and answers with the user's access. When the Stripe webhook arrives later, it changes nothing."]}]
-c:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/purchases\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"user\":\"user_8412\",\"source\":\"stripe\",\"checkout_session_id\":\"cs_test_...\"}'"}]}]
-d:["$","h2","19",{"id":"6-ask-what-the-user-has","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#6-ask-what-the-user-has","className":"docs-module__RdmBMa__anchor","children":["6. Ask what the user has"]}]}]
-e:["$","$L2","20",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/customers/user_8412/access\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}]}]
-f:["$","$L2","21",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"access\",\n  \"app_user_id\": \"user_8412\",\n  \"customer_id\": \"cus_tDQoMdBpxNQGCALGwgWm\",\n  \"entitlements\": {\n    \"pro\": {\n      \"active\": true,\n      \"expires_at\": \"2026-11-14T09:14:02.000Z\",\n      \"product_id\": \"price_...\",\n      \"source\": \"stripe\",\n      \"status\": \"active\",\n      \"period_type\": \"normal\",\n      \"will_renew\": true\n    }\n  },\n  \"credits\": {\n    \"credits\": 200\n  },\n  \"purchases\": [\n    {\n      \"id\": \"grant_3B2DJiADNTB1GcwmqUAC\",\n      \"source\": \"stripe\",\n      \"kind\": \"subscription\",\n      \"product_id\": \"price_...\",\n      \"status\": \"active\",\n      \"period_type\": \"normal\",\n      \"started_at\": \"2026-10-14T09:14:02.000Z\",\n      \"expires_at\": \"2026-11-14T09:14:02.000Z\",\n      \"will_renew\": true,\n      \"unconfigured_product\": false\n    }\n  ]\n}"}],"title":"Response"}]
-10:["$","h2","22",{"id":"7-spend-a-credit","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#7-spend-a-credit","className":"docs-module__RdmBMa__anchor","children":["7. Spend a credit"]}]}]
-11:["$","p","23",{"children":["Use an id from your own system as the idempotency key, such as the id of the AI generation. Sending the same request again spends nothing more and answers ",["$","code","155",{"children":"\"replayed\": true"}],"."]}]
-12:["$","$L2","24",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/apps/$QUARTER_APP_ID/customers/user_8412/credits/spend\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"currency\":\"credits\",\"amount\":1,\"idempotency_key\":\"gen_4821\"}'\n# { \"object\": \"credit_spend\", \"balance\": 199, \"replayed\": false }"}]}]
-13:["$","h2","25",{"id":"next","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#next","className":"docs-module__RdmBMa__anchor","children":["Next"]}]}]
-14:["$","ul","26",{"children":[["$","li","0",{"children":["Register a ",["$","$L3","11",{"href":"/docs/webhooks","children":["webhook endpoint"]}]," to hear about renewals, cancels and refunds as they happen."]}],["$","li","1",{"children":["Turn on the ",["$","$L3","12",{"href":"/docs/mirror","children":["mirror"]}]," to check access with a query against your own database."]}],["$","li","2",{"children":["Connect the ",["$","$L3","12",{"href":"/docs/app-store","children":["App Store"]}]," or ",["$","$L3","44",{"href":"/docs/google-play","children":["Google Play"]}],"."]}]]}]
-15:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L3",null,{"href":"/docs","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Overview"]}],["$","$L3",null,{"href":"/docs/concepts","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Concepts"]}]]}]
-16:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L24",null,{"entries":[{"id":"before-you-start","text":"Before you start","depth":2},{"id":"1-create-an-app","text":"1. Create an app","depth":2},{"id":"2-connect-stripe","text":"2. Connect Stripe","depth":2},{"id":"3-say-what-your-plan-grants","text":"3. Say what your plan grants","depth":2},{"id":"4-take-a-test-payment","text":"4. Take a test payment","depth":2},{"id":"5-report-the-purchase","text":"5. Report the purchase","depth":2},{"id":"6-ask-what-the-user-has","text":"6. Ask what the user has","depth":2},{"id":"7-spend-a-credit","text":"7. Spend a credit","depth":2},{"id":"next","text":"Next","depth":2}]}]}]
-17:["$","script","script-0",{"src":"/preview/_next/static/chunks/18mft70_00mfh.js","async":true}]
-18:["$","$L25",null,{"children":["$","$26",null,{"name":"Next.MetadataOutlet","children":"$@27"}]}]
-1b:["$","$1","h",{"children":[null,["$","$L28",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$L29",null,{"children":["$","$26",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Quickstart | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"Take a Stripe test payment to an unlocked plan, credits added, and one credit spent."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","meta","3",{"property":"og:title","content":"Quarter: Payments that just work"}],["$","meta","4",{"property":"og:description","content":"Quarter checks every Stripe, App Store and Google Play payment with the store and turns it into the right access, exactly once. It unlocks plans, adds credits, and takes access away on cancel, refund or a failed renewal."}],["$","meta","5",{"property":"og:site_name","content":"Quarter"}],["$","meta","6",{"property":"og:image","content":"http://localhost:3000/preview/opengraph-image.png?opengraph-image.2po1z49xebs7l.png"}],["$","meta","7",{"property":"og:image:type","content":"image/png"}],["$","meta","8",{"property":"og:image:width","content":"1200"}],["$","meta","9",{"property":"og:image:height","content":"1200"}],["$","meta","10",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","11",{"property":"og:type","content":"website"}],["$","meta","12",{"name":"twitter:card","content":"summary"}],["$","meta","13",{"name":"twitter:title","content":"Quarter: Payments that just work"}],["$","meta","14",{"name":"twitter:description","content":"Quarter checks every Stripe, App Store and Google Play payment with the store and turns it into the right access, exactly once. It unlocks plans, adds credits, and takes access away on cancel, refund or a failed renewal."}],["$","meta","15",{"name":"twitter:image","content":"http://localhost:3000/preview/twitter-image.png?twitter-image.2po1z49xebs7l.png"}],["$","meta","16",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","17",{"name":"twitter:image:type","content":"image/png"}],["$","meta","18",{"name":"twitter:image:width","content":"1200"}],["$","meta","19",{"name":"twitter:image:height","content":"1200"}],["$","link","20",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","21",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","22",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$L2a","23",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
-1d:["$","$1","c",{"children":[null,["$","$L2b",null,{"parallelRouterKey":"children","template":["$","$L2c",null,{}]}]]}]
-20:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/2bdnw_kqmc820.js","async":true}]],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$L2d",null,{"nav":[{"title":"Get started","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"},{"href":"/docs/concepts","label":"Concepts"},{"href":"/docs/sdk","label":"TypeScript SDK"}]},{"title":"Connect stores","items":[{"href":"/docs/stripe","label":"Connecting Stripe"},{"href":"/docs/app-store","label":"Connecting the App Store"},{"href":"/docs/google-play","label":"Connecting Google Play"}]},{"title":"Integrate","items":[{"href":"/docs/credits","label":"Credits"},{"href":"/docs/mirror","label":"Mirror to your database"},{"href":"/docs/webhooks","label":"Webhooks"},{"href":"/docs/privacy","label":"User data requests"}]},{"title":"API reference","items":[{"href":"/docs/customers","label":"Customers and access"},{"href":"/docs/purchases","label":"Purchases"},{"href":"/docs/credits-api","label":"Credits API"},{"href":"/docs/products","label":"Products"},{"href":"/docs/apps","label":"Apps and sources"},{"href":"/docs/events","label":"Events and webhook endpoints"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L2b",null,{"parallelRouterKey":"children","template":["$","$L2c",null,{}]}]}]]}]]}]
-23:true
-27:null
-1a:300
-1a:C
-22:0
-1c:"$undefined"
-1e:"$undefined"
-21:"$undefined"
-19:"$undefined"
+2:I[56123,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"CodeBlock"]
+1e:X
+23:X
+23:C
+0:{"buildId":"P4YP0F4WbnJir0fiZPvV9","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Get started"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Quickstart"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Add a vendor, confirm its bank details, upload a small payment run, decide the held payment and get the file back."]}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["This walks one small payment run through Quarter with a test key. It takes six requests. Every response below is the full JSON the api returns."]}],["$","h2","1",{"id":"before-you-start","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#before-you-start","className":"docs-module__RdmBMa__anchor","children":["Before you start"]}]}],["$","p","2",{"children":["You need a test API key, which starts with ",["$","code","43",{"children":"qk_test_"}],", and your API URL. During early access, Quarter gives you both. You also need ",["$","code","132",{"children":"curl"}]," and ",["$","code","143",{"children":"jq"}],"."]}],["$","$L2","3",{"tabs":[{"label":"Shell","language":"bash","code":"export QUARTER_API_URL=\"<your API URL>\"\nexport QUARTER_API_KEY=\"qk_test_...\""}]}],["$","h2","4",{"id":"1-add-a-vendor-with-bank-details","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#1-add-a-vendor-with-bank-details","className":"docs-module__RdmBMa__anchor","children":["1. Add a vendor with bank details"]}]}],["$","p","5",{"children":["A vendor is someone you pay. Give its name, the domain of its email addresses and the bank details you have on file. The details start ",["$","code","135",{"children":"unverified"}],": nobody has confirmed them with the vendor yet, so payments to them would be held."]}],["$","$L2","6",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/vendors\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"name\":\"Harbor Point Logistics LLC\",\"email_domain\":\"harborpoint.example\",\"external_id\":\"V-1042\",\"routing_number\":\"091408501\",\"account_number\":\"4021887365\",\"holder_name\":\"Harbor Point Logistics LLC\"}'"}],"title":"Request"}],["$","$L2","7",{"tabs":[{"label":"201","language":"json","code":"{\n  \"id\": \"ven_7Qm2KxR9pLwT4nVb8YcD\",\n  \"object\": \"vendor\",\n  \"name\": \"Harbor Point Logistics LLC\",\n  \"email_domain\": \"harborpoint.example\",\n  \"external_id\": \"V-1042\",\n  \"status\": \"unverified\",\n  \"created_at\": \"2026-10-05T13:40:12.000Z\",\n  \"bank_accounts\": [\n    {\n      \"id\": \"ba_3HfJ6tWq1ZsN8kPm2RxA\",\n      \"object\": \"bank_account\",\n      \"routing_number\": \"091408501\",\n      \"last4\": \"7365\",\n      \"holder_name\": \"Harbor Point Logistics LLC\",\n      \"source\": \"api\",\n      \"status\": \"unverified\",\n      \"verified_at\": null,\n      \"verified_method\": null,\n      \"created_at\": \"2026-10-05T13:40:12.000Z\",\n      \"replaced_at\": null\n    }\n  ],\n  \"evidence\": []\n}"}],"title":"Response"}],["$","p","8",{"children":["The response never repeats the account number. Quarter seals it and shows the last 4 digits. Keep the vendor ",["$","code","109",{"children":"id"}]," and the bank account ",["$","code","135",{"children":"id"}],"."]}],["$","$L2","9",{"tabs":[{"label":"Shell","language":"bash","code":"export VENDOR=\"ven_7Qm2KxR9pLwT4nVb8YcD\"\nexport ACCOUNT=\"ba_3HfJ6tWq1ZsN8kPm2RxA\""}]}],["$","h2","10",{"id":"2-confirm-the-bank-details","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#2-confirm-the-bank-details","className":"docs-module__RdmBMa__anchor","children":["2. Confirm the bank details"]}]}],"$L3","$L4","$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18"]}],"$L19"]}],"$L1a"]}],["$L1b"],"$L1c"]}],"isPartial":"$@1d","staleTime":"$1e","varyParams":null},{"rsc":"$L1f","isPartial":"$@20","staleTime":"$1e","varyParams":null},{"rsc":"$L21","isPartial":"$@22","staleTime":"$1e","varyParams":"$23"},{"rsc":"$L24","isPartial":"$@25","staleTime":"$1e","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@26","rootVaryParams":null,"needsRuntimeRequest":"$@27"}
+28:I[56448,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],""]
+2c:I[20795,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"DocToc"]
+2d:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+2e:"$Sreact.suspense"
+30:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+31:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+32:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+33:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+34:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+35:I[71948,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js"],"DocSidebar"]
+3:["$","p","11",{"children":["In production you would send the vendor a ",["$","$L28","42",{"href":"/docs/verification","children":["verification link"]}],", where they log in to their own bank. Here, record a ",["$","$L28","135",{"href":"/docs/callbacks","children":["call-back"]}]," instead: someone at your company called the vendor at a number you already had, and the vendor confirmed the details."]}]
+4:["$","$L2","12",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/vendors/$VENDOR/bank_accounts/$ACCOUNT/attestations\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"result\":\"pass\",\"phone_number\":\"+1 312 555 0148\",\"phone_source\":\"vendor_master_before_change\",\"contact_name\":\"Maria Okafor, accounts receivable\",\"reviewer\":\"dana@yourcompany\",\"notes\":\"Called the number on file since 2024. Maria read back the routing number and the last four digits.\"}'"}],"title":"Request"}]
+29:T4e9,{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "verified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "verified",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}5:["$","$L2","13",{"tabs":[{"label":"201","language":"json","code":"$29"}],"title":"Response"}]
+6:["$","h2","14",{"id":"3-upload-a-payment-run","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#3-upload-a-payment-run","className":"docs-module__RdmBMa__anchor","children":["3. Upload a payment run"]}]}]
+7:["$","p","15",{"children":["Here is a CSV with two payments: one to Harbor Point, and one to a payee you have never added. Save it as ",["$","code","106",{"children":"run.csv"}],"."]}]
+8:["$","$L2","16",{"tabs":[{"label":"CSV","language":"shell","code":"payee,routing_number,account_number,amount,payment_date,invoice\nHarbor Point Logistics LLC,091408501,4021887365,\"48,250.00\",2026-10-06,INV-20931\nJ. Reyes Consulting,063174290,88412007,\"9,800.00\",2026-10-06,INV-0412"}],"title":"run.csv"}]
+9:["$","p","17",{"children":["The api takes the file as text inside a JSON body. ",["$","code","51",{"children":"jq"}]," builds that body from the file."]}]
+a:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --rawfile file run.csv '{format: \"csv\", name: \"Week 41 vendor payments\", file: $file}' |\n  curl -X POST \"$QUARTER_API_URL/v1/payment_runs\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d @-"}],"title":"Request"}]
+2a:T624,{
+  "id": "run_4VbN8qLs2TjW6hPx9RkM",
+  "object": "payment_run",
+  "name": "Week 41 vendor payments",
+  "format": "csv",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-05T14:02:11.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 2,
+    "total": 58050,
+    "held": 1,
+    "held_amount": 9800,
+    "rejected": 0,
+    "rejected_amount": 0
+  },
+  "items": [
+    {
+      "id": "itm_9JcR4mXv7NpB2tKw5LqS",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "Harbor Point Logistics LLC",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 48250,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20931",
+      "status": "clear",
+      "findings": [
+        {
+          "code": "first_payment",
+          "severity": "warn",
+          "message": "first payment to Harbor Point Logistics LLC"
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "itm_1TzH6kQb3WmF8rNy4PdV",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": null,
+      "payee_name": "J. Reyes Consulting",
+      "routing_number": "063174290",
+      "last4": "2007",
+      "amount": 9800,
+      "effective_date": "2026-10-06",
+      "reference": "INV-0412",
+      "status": "held",
+      "findings": [
+        {
+          "code": "unknown_payee",
+          "severity": "hold",
+          "message": "J. Reyes Consulting is not a vendor on file"
+        }
+      ],
+      "decision": null
+    }
+  ]
+}b:["$","$L2","19",{"tabs":[{"label":"201","language":"json","code":"$2a"}],"title":"Response"}]
+c:["$","p","20",{"children":["Harbor Point is ",["$","code","16",{"children":"clear"}],". It carries a ",["$","code","38",{"children":"warn"}]," finding because it is the first payment to this vendor; a warning never holds. J. Reyes Consulting is ",["$","code","147",{"children":"held"}],", because the payee is not a vendor you know. Every finding has a ",["$","code","219",{"children":"code"}]," you can look up in ",["$","$L28","245",{"href":"/docs/checks","children":["Checks"]}]," and a ",["$","code","274",{"children":"message"}]," you can show as it is."]}]
+d:["$","h2","21",{"id":"4-decide-the-held-payment","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#4-decide-the-held-payment","className":"docs-module__RdmBMa__anchor","children":["4. Decide the held payment"]}]}]
+e:["$","p","22",{"children":["A person approves or rejects each held payment and says why. The reason and the person go into the audit trail."]}]
+f:["$","$L2","23",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM/items/itm_1TzH6kQb3WmF8rNy4PdV/decision\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"decision\":\"reject\",\"reason\":\"Not a vendor of ours. The invoice came from an address we do not know.\",\"reviewer\":\"dana@yourcompany\"}'"}],"title":"Request"}]
+2b:T6ef,{
+  "id": "run_4VbN8qLs2TjW6hPx9RkM",
+  "object": "payment_run",
+  "name": "Week 41 vendor payments",
+  "format": "csv",
+  "status": "scanned",
+  "created_by": "api_key:qk_test_Xy7P",
+  "created_at": "2026-10-05T14:02:11.000Z",
+  "released_at": null,
+  "released_by": null,
+  "summary": {
+    "payments": 2,
+    "total": 58050,
+    "held": 0,
+    "held_amount": 0,
+    "rejected": 1,
+    "rejected_amount": 9800
+  },
+  "items": [
+    {
+      "id": "itm_9JcR4mXv7NpB2tKw5LqS",
+      "object": "payment_item",
+      "position": 0,
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "Harbor Point Logistics LLC",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "amount": 48250,
+      "effective_date": "2026-10-06",
+      "reference": "INV-20931",
+      "status": "clear",
+      "findings": [
+        {
+          "code": "first_payment",
+          "severity": "warn",
+          "message": "first payment to Harbor Point Logistics LLC"
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "itm_1TzH6kQb3WmF8rNy4PdV",
+      "object": "payment_item",
+      "position": 1,
+      "vendor_id": null,
+      "payee_name": "J. Reyes Consulting",
+      "routing_number": "063174290",
+      "last4": "2007",
+      "amount": 9800,
+      "effective_date": "2026-10-06",
+      "reference": "INV-0412",
+      "status": "rejected",
+      "findings": [
+        {
+          "code": "unknown_payee",
+          "severity": "hold",
+          "message": "J. Reyes Consulting is not a vendor on file"
+        }
+      ],
+      "decision": {
+        "by": "dana@yourcompany",
+        "at": "2026-10-05T14:09:31.000Z",
+        "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
+        "second_by": null
+      }
+    }
+  ]
+}10:["$","$L2","24",{"tabs":[{"label":"200","language":"json","code":"$2b"}],"title":"Response"}]
+11:["$","h2","25",{"id":"5-release-the-run","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#5-release-the-run","className":"docs-module__RdmBMa__anchor","children":["5. Release the run"]}]}]
+12:["$","p","26",{"children":["Release works once no payment is still held. It returns the file to upload to your bank: the same CSV, without the rejected row."]}]
+13:["$","$L2","27",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM/release\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"reviewer\":\"dana@yourcompany\"}'"}],"title":"Request"}]
+14:["$","$L2","28",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"payment_run_release\",\n  \"run_id\": \"run_4VbN8qLs2TjW6hPx9RkM\",\n  \"format\": \"csv\",\n  \"file\": \"payee,routing_number,account_number,amount,payment_date,invoice\\nHarbor Point Logistics LLC,091408501,4021887365,\\\"48,250.00\\\",2026-10-06,INV-20931\\n\"\n}"}],"title":"Response"}]
+15:["$","$L2","29",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM/release\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"reviewer\":\"dana@yourcompany\"}' | jq -r .file > run-released.csv"}],"title":"Save the file"}]
+16:["$","aside","30",{"className":"docs-module__RdmBMa__note","data-tone":"info","children":["A run can be released once. Run the release request one way or the other, not both: the second call gets ",["$","code","105",{"children":"run_closed"}],". To read the run again later, use ",["$","$L28","152",{"href":"/docs/payment-runs#get-v1-payment-runs-run","children":[["$","code","0",{"children":"GET /v1/payment_runs/{run}"}]]}],"."]}]
+17:["$","h2","31",{"id":"next","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#next","className":"docs-module__RdmBMa__anchor","children":["Next"]}]}]
+18:["$","ul","32",{"children":[["$","li","0",{"children":[["$","$L28","0",{"href":"/docs/payment-runs","children":["Payment runs"]}],": NACHA files, every CSV column name Quarter reads, and JSON items."]}],["$","li","1",{"children":[["$","$L28","0",{"href":"/docs/checks","children":["Checks"]}],": all thirteen checks and how to set each one."]}],["$","li","2",{"children":[["$","$L28","0",{"href":"/docs/releases","children":["Releases"]}],": two-person approval, cancel, and what release guarantees."]}],["$","li","3",{"children":[["$","$L28","0",{"href":"/docs/webhooks","children":["Webhooks"]}],": hear about held payments as they happen."]}]]}]
+19:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L28",null,{"href":"/docs","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Overview"]}],["$","$L28",null,{"href":"/docs/vendors","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Vendors and bank details"]}]]}]
+1a:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L2c",null,{"entries":[{"id":"before-you-start","text":"Before you start","depth":2},{"id":"1-add-a-vendor-with-bank-details","text":"1. Add a vendor with bank details","depth":2},{"id":"2-confirm-the-bank-details","text":"2. Confirm the bank details","depth":2},{"id":"3-upload-a-payment-run","text":"3. Upload a payment run","depth":2},{"id":"4-decide-the-held-payment","text":"4. Decide the held payment","depth":2},{"id":"5-release-the-run","text":"5. Release the run","depth":2},{"id":"next","text":"Next","depth":2}]}]}]
+1b:["$","script","script-0",{"src":"/preview/_next/static/chunks/18mft70_00mfh.js","async":true}]
+1c:["$","$L2d",null,{"children":["$","$2e",null,{"name":"Next.MetadataOutlet","children":"$@2f"}]}]
+1f:["$","$1","h",{"children":[null,["$","$L30",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$L31",null,{"children":["$","$2e",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Quickstart | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"Add a vendor, confirm its bank details, upload a small payment run, decide the held payment and get the file back."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","meta","3",{"property":"og:title","content":"Quarter: Know who you're paying"}],["$","meta","4",{"property":"og:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the documented process Nacha now expects of every business that sends ACH."}],["$","meta","5",{"property":"og:site_name","content":"Quarter"}],["$","meta","6",{"property":"og:image","content":"http://localhost:3000/preview/opengraph-image.png?opengraph-image.2po1z49xebs7l.png"}],["$","meta","7",{"property":"og:image:type","content":"image/png"}],["$","meta","8",{"property":"og:image:width","content":"1200"}],["$","meta","9",{"property":"og:image:height","content":"1200"}],["$","meta","10",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","11",{"property":"og:type","content":"website"}],["$","meta","12",{"name":"twitter:card","content":"summary"}],["$","meta","13",{"name":"twitter:title","content":"Quarter: Know who you're paying"}],["$","meta","14",{"name":"twitter:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the documented process Nacha now expects of every business that sends ACH."}],["$","meta","15",{"name":"twitter:image","content":"http://localhost:3000/preview/twitter-image.png?twitter-image.2po1z49xebs7l.png"}],["$","meta","16",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","17",{"name":"twitter:image:type","content":"image/png"}],["$","meta","18",{"name":"twitter:image:width","content":"1200"}],["$","meta","19",{"name":"twitter:image:height","content":"1200"}],["$","link","20",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","21",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","22",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$L32","23",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+21:["$","$1","c",{"children":[null,["$","$L33",null,{"parallelRouterKey":"children","template":["$","$L34",null,{}]}]]}]
+24:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/2bdnw_kqmc820.js","async":true}]],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$L35",null,{"nav":[{"title":"Get started","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Vendors","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Verification links"},{"href":"/docs/callbacks","label":"Call-backs"}]},{"title":"Payment runs","items":[{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/checks","label":"Checks"},{"href":"/docs/releases","label":"Decisions and release"}]},{"title":"Network","items":[{"href":"/docs/account-checks","label":"Account checks"},{"href":"/docs/fraud-reports","label":"Fraud reports"}]},{"title":"Compliance","items":[{"href":"/docs/settings","label":"Settings"},{"href":"/docs/procedure","label":"Procedure and audit log"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L33",null,{"parallelRouterKey":"children","template":["$","$L34",null,{}]}]}]]}]]}]
+27:true
+2f:null
+1e:300
+1e:C
+26:0
+20:"$undefined"
+22:"$undefined"
+25:"$undefined"
+1d:"$undefined"

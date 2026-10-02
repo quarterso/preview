@@ -1,0 +1,219 @@
+1:"$Sreact.fragment"
+2:I[56448,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],""]
+3e:X
+43:X
+43:C
+0:{"buildId":"P4YP0F4WbnJir0fiZPvV9","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Vendors"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Vendors and bank details"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Add the people you pay, record their bank details, and see why a change of bank details holds payments until it is confirmed."]}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["A vendor is someone you pay. Quarter matches every payment in a run to a vendor, so the vendor list is what the checks compare against: a payee that is not on it is held as ",["$","$L2","173",{"href":"/docs/checks#unknown-payee","children":[["$","code","0",{"children":"unknown_payee"}]]}],"."]}],["$","h2","1",{"id":"bank-details-and-their-history","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#bank-details-and-their-history","className":"docs-module__RdmBMa__anchor","children":["Bank details and their history"]}]}],["$","p","2",{"children":["A vendor has one current set of bank details. Recording new details does not overwrite the old ones. The old details stay on file with status ",["$","code","142",{"children":"replaced"}],", so you can always see what changed and when."]}],["$","div","3",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Bank account status",{"scope":"col","children":["Bank account status"]}],["$","th","Meaning",{"scope":"col","children":["Meaning"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"unverified"}]]}],["$","td","1",{"children":["Current, and not yet confirmed with the vendor. Payments to it are held."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"verified"}]]}],["$","td","1",{"children":["Current, and confirmed through the vendor bank login or a call-back. ",["$","code","69",{"children":"verified_method"}]," says which: ",["$","code","99",{"children":"bank_link"}]," or ",["$","code","114",{"children":"callback"}],"."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"rejected"}]]}],["$","td","1",{"children":["A call-back said these details are wrong. They are no longer current."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"replaced"}]]}],["$","td","1",{"children":["Newer details were recorded. Kept as history."]}]]}]]}]]}]}],["$","p","4",{"children":["The vendor ",["$","code","11",{"children":"status"}]," follows its current details: ",["$","code","49",{"children":"unverified"}]," or ",["$","code","65",{"children":"verified"}],". You can also set it to ",["$","code","100",{"children":"blocked"}]," yourself."]}],["$","aside","5",{"className":"docs-module__RdmBMa__note","data-tone":"warn","children":["Setting a vendor to ",["$","code","20",{"children":"blocked"}]," records your decision on the vendor, but today no check holds a payment because its vendor is blocked. To stop paying a vendor, keep its payments out of the run, or reject them when they come up."]}],["$","h2","6",{"id":"why-changes-hold","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#why-changes-hold","className":"docs-module__RdmBMa__anchor","children":["Why a change of bank details holds payments"]}]}],["$","p","7",{"children":["The most common payment fraud is a message that looks like it comes from a vendor and asks you to pay a new account. So any new bank details put the vendor back to ",["$","code","164",{"children":"unverified"}],", and payments to the new details are held as ",["$","$L2","222",{"href":"/docs/checks#account-changed-recently","children":["$L3"]}]," until someone confirms the change with the vendor. A run that still pays the old details is held as ","$L4","."]}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38"]}],"$L39"]}],"$L3a"]}],["$L3b"],"$L3c"]}],"isPartial":"$@3d","staleTime":"$3e","varyParams":null},{"rsc":"$L3f","isPartial":"$@40","staleTime":"$3e","varyParams":null},{"rsc":"$L41","isPartial":"$@42","staleTime":"$3e","varyParams":"$43"},{"rsc":"$L44","isPartial":"$@45","staleTime":"$3e","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@46","rootVaryParams":null,"needsRuntimeRequest":"$@47"}
+48:I[56123,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"CodeBlock"]
+4c:I[20795,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"DocToc"]
+4d:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+4e:"$Sreact.suspense"
+50:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+51:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+52:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+53:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+54:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+55:I[71948,["/preview/_next/static/chunks/0ga1l3ny499ie.js","/preview/_next/static/chunks/2bdnw_kqmc820.js"],"DocSidebar"]
+3:["$","code","0",{"children":"account_changed_recently"}]
+4:["$","$L2","390",{"href":"/docs/checks#account-not-on-file","children":[["$","code","0",{"children":"account_not_on_file"}]]}]
+5:["$","p","8",{"children":["Confirm the change with a ",["$","$L2","26",{"href":"/docs/verification","children":["verification link"]}]," or a ",["$","$L2","71",{"href":"/docs/callbacks","children":["call-back"]}]," to a number you already had. Never confirm it with the phone number or email in the change request itself."]}]
+6:["$","h2","9",{"id":"what-quarter-keeps","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#what-quarter-keeps","className":"docs-module__RdmBMa__anchor","children":["What Quarter keeps"]}]}]
+7:["$","ul","10",{"children":[["$","li","0",{"children":["The routing number, in full. It names a bank, not an account."]}],["$","li","1",{"children":["The account number, sealed. Quarter matches accounts by a keyed fingerprint and shows only ",["$","code","91",{"children":"last4"}],"."]}],["$","li","2",{"children":["Recording the same details twice changes nothing. Leading zeros do not make a different account."]}]]}]
+8:["$","h2","11",{"id":"endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
+9:["$","h3","12",{"id":"post-v1-vendors","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-vendors","className":"docs-module__RdmBMa__anchor","children":["Add a vendor"]}]}]
+a:["$","p","13",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/vendors"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+b:["$","p","14",{"children":["Creates a vendor and, when you send bank details, records them as its current details with ",["$","code","91",{"children":"source: \"api\""}],". Returns the vendor with its bank details and evidence."]}]
+c:["$","p","15",{"children":[["$","strong","0",{"children":"Body"}]]}]
+d:["$","div","16",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"name"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The vendor name, up to 200 characters. Legal suffixes, case and punctuation are ignored when matching."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"email_domain"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["The domain the vendor emails from, such as ",["$","code","43",{"children":"harborpoint.example"}],". A verification code sent anywhere else is recorded as a failed check."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"external_id"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Your own id for the vendor, unique among your vendors. A CSV run can match payments by it."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"routing_number"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["The 9-digit ABA routing number. Spaces are ignored."]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"account_number"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["4 to 17 letters or digits. Spaces and dashes are ignored. Sealed at rest; never returned."]}]]}],["$","tr","5",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"holder_name"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["The name on the bank account, if you have it. Used when matching payee names."]}]]}]]}]]}]}]
+e:["$","$L48","17",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/vendors\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"name\":\"Harbor Point Logistics LLC\",\"email_domain\":\"harborpoint.example\",\"external_id\":\"V-1042\",\"routing_number\":\"091408501\",\"account_number\":\"4021887365\",\"holder_name\":\"Harbor Point Logistics LLC\"}'"}],"title":"Request"}]
+f:["$","$L48","18",{"tabs":[{"label":"201","language":"json","code":"{\n  \"id\": \"ven_7Qm2KxR9pLwT4nVb8YcD\",\n  \"object\": \"vendor\",\n  \"name\": \"Harbor Point Logistics LLC\",\n  \"email_domain\": \"harborpoint.example\",\n  \"external_id\": \"V-1042\",\n  \"status\": \"unverified\",\n  \"created_at\": \"2026-10-05T13:40:12.000Z\",\n  \"bank_accounts\": [\n    {\n      \"id\": \"ba_3HfJ6tWq1ZsN8kPm2RxA\",\n      \"object\": \"bank_account\",\n      \"routing_number\": \"091408501\",\n      \"last4\": \"7365\",\n      \"holder_name\": \"Harbor Point Logistics LLC\",\n      \"source\": \"api\",\n      \"status\": \"unverified\",\n      \"verified_at\": null,\n      \"verified_method\": null,\n      \"created_at\": \"2026-10-05T13:40:12.000Z\",\n      \"replaced_at\": null\n    }\n  ],\n  \"evidence\": []\n}"}],"title":"Response"}]
+10:["$","h3","19",{"id":"get-v1-vendors","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-vendors","className":"docs-module__RdmBMa__anchor","children":["List vendors"]}]}]
+11:["$","p","20",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/vendors"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+12:["$","p","21",{"children":["Vendors in name order, each with the last 4 digits and status of its current bank details."]}]
+13:["$","p","22",{"children":[["$","strong","0",{"children":"Query parameters"}]]}]
+14:["$","div","23",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"status"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"unverified"}],", ",["$","code","14",{"children":"verified"}]," or ",["$","code","28",{"children":"blocked"}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"search"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Part of a name. Matched the same way payee names are."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"limit"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1 to 1000. Default 100."]}]]}]]}]]}]}]
+15:["$","$L48","24",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/vendors?status=verified&limit=2\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+16:["$","$L48","25",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"list\",\n  \"data\": [\n    {\n      \"id\": \"ven_2PwK7nTq4XmB9vLr6JcH\",\n      \"object\": \"vendor\",\n      \"name\": \"Cedar Ridge Supply Co.\",\n      \"email_domain\": \"cedarridgesupply.example\",\n      \"external_id\": \"V-0388\",\n      \"status\": \"verified\",\n      \"bank_account\": {\n        \"last4\": \"1904\",\n        \"status\": \"verified\"\n      }\n    },\n    {\n      \"id\": \"ven_7Qm2KxR9pLwT4nVb8YcD\",\n      \"object\": \"vendor\",\n      \"name\": \"Harbor Point Logistics LLC\",\n      \"email_domain\": \"harborpoint.example\",\n      \"external_id\": \"V-1042\",\n      \"status\": \"verified\",\n      \"bank_account\": {\n        \"last4\": \"7365\",\n        \"status\": \"verified\"\n      }\n    }\n  ]\n}"}],"title":"Response"}]
+17:["$","h3","26",{"id":"get-v1-vendors-vendor","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-vendors-vendor","className":"docs-module__RdmBMa__anchor","children":["Retrieve a vendor"]}]}]
+18:["$","p","27",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/vendors/{vendor}"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+19:["$","p","28",{"children":["The vendor with every set of bank details it ever had, newest first, and every piece of verification evidence: email codes, bank logins and call-backs, with who did it and when. Evidence is never edited or deleted."]}]
+1a:["$","p","29",{"children":[["$","strong","0",{"children":"Path parameters"}]]}]
+1b:["$","div","30",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"vendor"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The vendor id, starting with ",["$","code","29",{"children":"ven_"}],"."]}]]}]]}]]}]}]
+1c:["$","$L48","31",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+49:T4e9,{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "verified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "verified",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}1d:["$","$L48","32",{"tabs":[{"label":"200","language":"json","code":"$49"}],"title":"Response"}]
+1e:["$","h3","33",{"id":"patch-v1-vendors-vendor","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#patch-v1-vendors-vendor","className":"docs-module__RdmBMa__anchor","children":["Change a vendor"]}]}]
+1f:["$","p","34",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"PATCH","children":"PATCH"}],["$","code",null,{"children":"/v1/vendors/{vendor}"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+20:["$","p","35",{"children":["Changes the name, the email domain or the status. Fields you leave out are kept. Bank details change only through the bank details route below."]}]
+21:["$","p","36",{"children":[["$","strong","0",{"children":"Path parameters"}]]}]
+22:["$","div","37",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"vendor"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The vendor id, starting with ",["$","code","29",{"children":"ven_"}],"."]}]]}]]}]]}]}]
+23:["$","p","38",{"children":[["$","strong","0",{"children":"Body"}]]}]
+24:["$","div","39",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"name"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["The new name."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"email_domain"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["The new email domain."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"status"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"blocked"}],", or ",["$","code","14",{"children":"unverified"}]," to lift a block."]}]]}]]}]]}]}]
+25:["$","$L48","40",{"tabs":[{"label":"curl","language":"bash","code":"curl -X PATCH \"$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"email_domain\":\"harborpointlogistics.example\"}'"}],"title":"Request"}]
+4a:T4f2,{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpointlogistics.example",
+  "external_id": "V-1042",
+  "status": "verified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "verified",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}26:["$","$L48","41",{"tabs":[{"label":"200","language":"json","code":"$4a"}],"title":"Response"}]
+27:["$","h3","42",{"id":"post-v1-vendors-import","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-vendors-import","className":"docs-module__RdmBMa__anchor","children":["Import a vendor list"]}]}]
+28:["$","p","43",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/vendors/import"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+29:["$","p","44",{"children":["Loads your vendor master in one request, up to 5,000 vendors, all or nothing. Each row has the same fields as ",["$","$L2","110",{"href":"/docs/vendors#post-v1-vendors","children":["Add a vendor"]}],". Bank details from an import are recorded with ",["$","code","203",{"children":"source: \"import\""}]," and start ",["$","code","232",{"children":"unverified"}],"."]}]
+2a:["$","p","45",{"children":["A row whose ",["$","code","12",{"children":"external_id"}]," matches an existing vendor counts as ",["$","code","63",{"children":"updated"}],": its name is kept, and bank details that differ from the current ones are recorded as a change, which holds its payments until confirmed. Every other row creates a vendor. Export your vendor list as CSV from your accounting tool and send its rows as JSON."]}]
+2b:["$","p","46",{"children":[["$","strong","0",{"children":"Body"}]]}]
+2c:["$","div","47",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"vendors"}]]}],["$","td","1",{"children":["object[]"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["1 to 5,000 vendors, each with ",["$","code","30",{"children":"name"}]," and optionally ",["$","code","52",{"children":"email_domain"}],", ",["$","code","68",{"children":"external_id"}],", ",["$","code","83",{"children":"routing_number"}],", ",["$","code","101",{"children":"account_number"}],", ",["$","code","119",{"children":"holder_name"}],"."]}]]}]]}]]}]}]
+2d:["$","$L48","48",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/vendors/import\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"vendors\":[{\"name\":\"Cedar Ridge Supply Co.\",\"email_domain\":\"cedarridgesupply.example\",\"external_id\":\"V-0388\",\"routing_number\":\"102103384\",\"account_number\":\"55021904\"},{\"name\":\"Bluestem Office Products\",\"external_id\":\"V-0412\"}]}'"}],"title":"Request"}]
+2e:["$","$L48","49",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"vendor_import\",\n  \"created\": 2,\n  \"updated\": 0\n}"}],"title":"Response"}]
+2f:["$","h3","50",{"id":"post-v1-vendors-vendor-bank-accounts","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-vendors-vendor-bank-accounts","className":"docs-module__RdmBMa__anchor","children":["Record new bank details"]}]}]
+30:["$","p","51",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/vendors/{vendor}/bank_accounts"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+31:["$","p","52",{"children":["Records new bank details for a vendor, with ",["$","code","44",{"children":"source: \"manual\""}],". The previous details become ",["$","code","92",{"children":"replaced"}],", the vendor becomes ",["$","code","123",{"children":"unverified"}],", and the ",["$","code","145",{"children":"vendor.bank_account_changed"}]," ",["$","$L2","175",{"href":"/docs/webhooks#event-types","children":["event"]}]," fires. Payments to the new details are held until someone confirms them. A blocked vendor stays blocked."]}]
+32:["$","p","53",{"children":["Sending the details already on file changes nothing."]}]
+33:["$","p","54",{"children":[["$","strong","0",{"children":"Path parameters"}]]}]
+34:["$","div","55",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"vendor"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The vendor id, starting with ",["$","code","29",{"children":"ven_"}],"."]}]]}]]}]]}]}]
+35:["$","p","56",{"children":[["$","strong","0",{"children":"Body"}]]}]
+36:["$","div","57",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"routing_number"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The 9-digit ABA routing number."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"account_number"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["4 to 17 letters or digits."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"holder_name"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["The name on the bank account."]}]]}]]}]]}]}]
+37:["$","$L48","58",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/bank_accounts\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"routing_number\":\"263391271\",\"account_number\":\"99300418226\",\"holder_name\":\"Harbor Point Logistics\"}'"}],"title":"Request"}]
+4b:T67c,{
+  "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "object": "vendor",
+  "name": "Harbor Point Logistics LLC",
+  "email_domain": "harborpoint.example",
+  "external_id": "V-1042",
+  "status": "unverified",
+  "created_at": "2026-10-05T13:40:12.000Z",
+  "bank_accounts": [
+    {
+      "id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+      "object": "bank_account",
+      "routing_number": "263391271",
+      "last4": "8226",
+      "holder_name": "Harbor Point Logistics",
+      "source": "manual",
+      "status": "unverified",
+      "verified_at": null,
+      "verified_method": null,
+      "created_at": "2026-10-07T10:21:44.000Z",
+      "replaced_at": null
+    },
+    {
+      "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "object": "bank_account",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "source": "api",
+      "status": "replaced",
+      "verified_at": "2026-10-05T13:52:40.000Z",
+      "verified_method": "callback",
+      "created_at": "2026-10-05T13:40:12.000Z",
+      "replaced_at": "2026-10-07T10:21:44.000Z"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd_5LpV9cTy2MwQ7hKj4BnE",
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "kind": "callback",
+      "result": "pass",
+      "details": {
+        "phone_number": "+1 312 555 0148",
+        "phone_source": "vendor_master_before_change",
+        "contact_name": "Maria Okafor, accounts receivable",
+        "notes": "Called the number on file since 2024. Maria read back the routing number and the last four digits."
+      },
+      "actor": "dana@yourcompany",
+      "created_at": "2026-10-05T13:52:40.000Z",
+      "object": "evidence"
+    }
+  ]
+}38:["$","$L48","59",{"tabs":[{"label":"201","language":"json","code":"$4b"}],"title":"Response"}]
+39:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L2",null,{"href":"/docs/quickstart","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Quickstart"]}],["$","$L2",null,{"href":"/docs/verification","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Verification links"]}]]}]
+3a:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L4c",null,{"entries":[{"id":"bank-details-and-their-history","text":"Bank details and their history","depth":2},{"id":"why-changes-hold","text":"Why a change of bank details holds payments","depth":2},{"id":"what-quarter-keeps","text":"What Quarter keeps","depth":2},{"id":"endpoints","text":"Endpoints","depth":2},{"id":"post-v1-vendors","text":"Add a vendor","depth":3},{"id":"get-v1-vendors","text":"List vendors","depth":3},{"id":"get-v1-vendors-vendor","text":"Retrieve a vendor","depth":3},{"id":"patch-v1-vendors-vendor","text":"Change a vendor","depth":3},{"id":"post-v1-vendors-import","text":"Import a vendor list","depth":3},{"id":"post-v1-vendors-vendor-bank-accounts","text":"Record new bank details","depth":3}]}]}]
+3b:["$","script","script-0",{"src":"/preview/_next/static/chunks/18mft70_00mfh.js","async":true}]
+3c:["$","$L4d",null,{"children":["$","$4e",null,{"name":"Next.MetadataOutlet","children":"$@4f"}]}]
+3f:["$","$1","h",{"children":[null,["$","$L50",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$L51",null,{"children":["$","$4e",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Vendors and bank details | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"Add the people you pay, record their bank details, and see why a change of bank details holds payments until it is confirmed."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","meta","3",{"property":"og:title","content":"Quarter: Know who you're paying"}],["$","meta","4",{"property":"og:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the documented process Nacha now expects of every business that sends ACH."}],["$","meta","5",{"property":"og:site_name","content":"Quarter"}],["$","meta","6",{"property":"og:image","content":"http://localhost:3000/preview/opengraph-image.png?opengraph-image.2po1z49xebs7l.png"}],["$","meta","7",{"property":"og:image:type","content":"image/png"}],["$","meta","8",{"property":"og:image:width","content":"1200"}],["$","meta","9",{"property":"og:image:height","content":"1200"}],["$","meta","10",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","11",{"property":"og:type","content":"website"}],["$","meta","12",{"name":"twitter:card","content":"summary"}],["$","meta","13",{"name":"twitter:title","content":"Quarter: Know who you're paying"}],["$","meta","14",{"name":"twitter:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the documented process Nacha now expects of every business that sends ACH."}],["$","meta","15",{"name":"twitter:image","content":"http://localhost:3000/preview/twitter-image.png?twitter-image.2po1z49xebs7l.png"}],["$","meta","16",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","17",{"name":"twitter:image:type","content":"image/png"}],["$","meta","18",{"name":"twitter:image:width","content":"1200"}],["$","meta","19",{"name":"twitter:image:height","content":"1200"}],["$","link","20",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","21",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","22",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$L52","23",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+41:["$","$1","c",{"children":[null,["$","$L53",null,{"parallelRouterKey":"children","template":["$","$L54",null,{}]}]]}]
+44:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/2bdnw_kqmc820.js","async":true}]],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$L55",null,{"nav":[{"title":"Get started","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Vendors","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Verification links"},{"href":"/docs/callbacks","label":"Call-backs"}]},{"title":"Payment runs","items":[{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/checks","label":"Checks"},{"href":"/docs/releases","label":"Decisions and release"}]},{"title":"Network","items":[{"href":"/docs/account-checks","label":"Account checks"},{"href":"/docs/fraud-reports","label":"Fraud reports"}]},{"title":"Compliance","items":[{"href":"/docs/settings","label":"Settings"},{"href":"/docs/procedure","label":"Procedure and audit log"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L53",null,{"parallelRouterKey":"children","template":["$","$L54",null,{}]}]}]]}]]}]
+47:true
+4f:null
+3e:300
+3e:C
+46:0
+40:"$undefined"
+42:"$undefined"
+45:"$undefined"
+3d:"$undefined"

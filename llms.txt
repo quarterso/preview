@@ -1,44 +1,44 @@
 # Quarter
 
-> Quarter turns every Stripe, App Store and Google Play payment in an app into the right access, exactly once. It checks each payment with the store, unlocks the plan or adds the credits, never double-credits, never leaves a paying user locked out, and takes access away on cancel, refund or a failed renewal. The app asks one question: what does this user have right now? Credits are spent atomically and can never go negative or be spent twice. Access can be mirrored into the app's own Postgres or Supabase table.
+> Quarter is a payment firewall. It checks every outgoing business payment before it leaves the bank. A business uploads a vendor payment run (a NACHA file, a CSV, or a JSON list of payments) before sending it to its bank. Quarter matches each payment to a known vendor, runs thirteen checks, and holds suspicious payments for a person to approve or reject, with the reason in plain words. When no payment is held, release returns the file without the rejected payments, NACHA control totals recomputed. Vendors can confirm their own bank details by logging in to their bank (Plaid) through a verification link, and staff call-backs are recorded with where the phone number came from. Everything goes into an audit trail, and Quarter generates a written fraud-monitoring procedure from the settings.
 
-Quarter never holds or moves money: payments stay in the app's own Stripe, Apple or Google account. It never sees card data, uses only a read-only Stripe restricted key, and stores only the app's own user ids, not names or emails.
+Quarter never holds, moves or sends money: the cleaned file goes back to the customer, who uploads it to their own bank. Account numbers are sealed at rest and responses show only the last 4 digits. The cross-customer network (account checks and fraud reports) shares counts only, never which customer verified or reported an account. Quarter gives a documented, risk-based process and the evidence it was followed, which helps a business meet Nacha's fraud-monitoring rule; it does not make anyone compliant and does not guarantee that every fraud is caught.
 
-For AI apps, hold credits while each call runs (`POST /v1/apps/{app}/customers/{user}/credits/reservations`), then settle with what it used or release on failure. A failed call costs nothing and parallel calls cannot overspend. When a user says they paid and are locked out, `POST /v1/apps/{app}/customers/{user}/sync` asks every store again.
+Status: Quarter is pre-launch, with no customers yet. The api described here is built and tested: vendors and bank details, verification links, call-backs, payment runs in NACHA, CSV and JSON, the thirteen checks, decisions with two-person approval, release, account checks, fraud reports, settings, the generated procedure, the audit log, events and signed webhooks. The network is built, and it fills as customers join. During early access, Quarter issues API keys and the API URL.
 
-Live today: Stripe Checkout, subscriptions and one-time payments; App Store purchases and subscriptions; Google Play subscriptions and one-time products; the access endpoint and batch access; credits with atomic spends and holds; promotional entitlements; customer resync; the mirror; signed webhooks; erasure and export. The TypeScript SDK is built and coming to npm. Planned and not built: the console and self-serve sign-up.
-
-Every docs page below is plain Markdown. The whole set is one file at [/llms-full.txt](/llms-full.txt). The exact contract of every `/v1` route is an OpenAPI 3.1 document at `GET $QUARTER_API_URL/openapi.json`, which needs no key. Examples use `$QUARTER_API_URL` for the API URL, which Quarter issues during early access. Test keys start with `qk_test_`. Keep API keys on your server, never in a browser or mobile app.
+Every docs page below is plain Markdown. The whole set is one file at [/llms-full.txt](/llms-full.txt). The exact contract of every route is an OpenAPI 3.1 document at `GET $QUARTER_API_URL/openapi.json`, which needs no key. Examples use `$QUARTER_API_URL` for the API URL and `$QUARTER_API_KEY` for the key. Test keys start with `qk_test_`, live keys with `qk_live_`; send them as a Bearer token on every `/v1` route and keep them on a server. The `/verify` routes are public and take the token in the link instead. Start with the [quickstart](/docs/quickstart.md); look up any finding code in [checks](/docs/checks.md).
 
 ## Get started
 
-- [Overview](/docs.md): Turn every Stripe, App Store and Google Play payment in your app into the right access, exactly once, and spend credits atomically.
-- [Quickstart](/docs/quickstart.md): Take a Stripe test payment to an unlocked plan, credits added, and one credit spent.
-- [Concepts](/docs/concepts.md): Apps, products, entitlements, credits and customers, the statuses a purchase moves through, and the rules Quarter keeps.
-- [TypeScript SDK](/docs/sdk.md): Access checks, credit holds for AI calls, purchase reports and webhook verification from your backend, with last known access during an outage.
+- [Overview](/docs.md): Check every outgoing vendor payment before it leaves your bank. Hold the suspicious ones for a person, with the reason in plain words.
+- [Quickstart](/docs/quickstart.md): Add a vendor, confirm its bank details, upload a small payment run, decide the held payment and get the file back.
 
-## Connect stores
+## Vendors
 
-- [Connecting Stripe](/docs/stripe.md): Connect Stripe with a read-only restricted key and a webhook, and pass your user id on every Checkout Session.
-- [Connecting the App Store](/docs/app-store.md): Connect the App Store, report Apple's signed transactions from your app, and point App Store Server Notifications at Quarter.
-- [Connecting Google Play](/docs/google-play.md): Connect Google Play subscriptions and one-time products with a service account and real-time developer notifications.
+- [Vendors and bank details](/docs/vendors.md): Add the people you pay, record their bank details, and see why a change of bank details holds payments until it is confirmed.
+- [Verification links](/docs/verification.md): Send a vendor a link where they confirm their own bank details by logging in to their bank.
+- [Call-backs](/docs/callbacks.md): Record that someone at your company phoned the vendor at a number you already had and confirmed the bank details.
 
-## Integrate
+## Payment runs
 
-- [Credits](/docs/credits.md): Charge for what each AI call used with credit holds, spend credits atomically, and sell credits with a plan or as packs.
-- [Mirror to your database](/docs/mirror.md): Keep one row per user with their current access in your own Postgres or Supabase, and check access with a plain query.
-- [Webhooks](/docs/webhooks.md): Event types, the signed delivery format, how to verify Quarter-Signature, and how retries and replays work.
-- [User data requests](/docs/privacy.md): What Quarter stores about your users, and how to export or erase it when a user asks.
+- [Payment runs](/docs/payment-runs.md): Upload a NACHA file, a CSV or a list of payments, and get every payment back clear or held, with its findings.
+- [Checks](/docs/checks.md): The thirteen checks Quarter runs on every payment, what each one means, and the exact message it gives.
+- [Decisions and release](/docs/releases.md): Approve or reject each held payment with a reason, then release the run and get back the file to send to your bank.
 
-## API reference
+## Network
 
-- [Customers and access](/docs/customers.md): Ask what a user has right now, ask the stores again, grant free access, link ids, and export or erase a user.
-- [Purchases](/docs/purchases.md): Report a purchase from your app as soon as the store completes it, and again on restore.
-- [Credits API](/docs/credits-api.md): Hold credits for an AI call and settle what it used, spend credits atomically, and grant credits.
-- [Products](/docs/products.md): Say what each store product grants: entitlements, credits, or both.
-- [Apps and sources](/docs/apps.md): Create apps, connect Stripe, the App Store and Google Play, set up the mirror, and read revenue metrics.
-- [Events and webhook endpoints](/docs/events.md): Read the event log, register webhook endpoints, and replay deliveries.
-- [Errors](/docs/errors.md): The error shape, the status codes, and the codes you will meet most.
+- [Account checks](/docs/account-checks.md): Check bank details before you pay them: routing number, the network, your own vendor records and sanctions name screening.
+- [Fraud reports](/docs/fraud-reports.md): Report a bank account used in a payment fraud against you, so every business on Quarter holds payments to it.
+
+## Compliance
+
+- [Settings](/docs/settings.md): Choose how each check acts, the cooling period, the unusual amount multiplier and the two-person threshold.
+- [Procedure and audit log](/docs/procedure.md): The written fraud-monitoring procedure Quarter generates from your settings, its yearly review, and the audit log that shows you followed it.
+
+## Reference
+
+- [Webhooks and events](/docs/webhooks.md): Event types, the signed delivery format, how to verify quarter-signature, and how retries work.
+- [Errors](/docs/errors.md): The error shape, the error types and their HTTP status, and every error code the api returns.
 
 ## Optional
 
