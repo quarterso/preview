@@ -392,7 +392,7 @@ curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM/release"
 ## Next
 
 - [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
-- [Checks](/docs/checks.md): all thirteen checks and how to set each one.
+- [Checks](/docs/checks.md): all fourteen checks and how to set each one.
 - [Releases](/docs/releases.md): two-person approval, cancel, and what release guarantees.
 - [Webhooks](/docs/webhooks.md): hear about held payments as they happen.
 
@@ -1618,7 +1618,7 @@ One item, decided:
 
 # Checks
 
-> The thirteen checks Quarter runs on every payment, what each one means, and the exact message it gives.
+> The fourteen checks Quarter runs on every payment, what each one means, and the exact message it gives.
 
 Every payment in a run goes through every check. A check that fires adds a finding to the payment: a `code`, a `severity` and a `message`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
 
@@ -1651,6 +1651,7 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`network_flagged`](/docs/checks.md#network-flagged) | Hold (always) | A business on Quarter reported this account in connection with a payment fraud. |
 | [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | The payee name resembles a name on the OFAC SDN list. |
 | [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | The routing number is not a valid US bank routing number. |
+| [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | The IBAN on an international payment fails its checksum. |
 
 ## Setting each check
 
@@ -1822,6 +1823,18 @@ the routing number is not a valid US bank routing number
 ```
 
 Fires when the ABA checksum fails, or when the number is not in the Federal Reserve routing directory that Quarter loads.
+
+### `iban_invalid`
+
+**Default: hold.** The IBAN on an international payment fails its checksum.
+
+Message:
+
+```shell
+the IBAN fails its check digits
+```
+
+Applies only to international payment checks. The mod-97 check catches a mistyped or altered IBAN before the wire is keyed in.
 
 ---
 
@@ -2393,7 +2406,8 @@ Response:
     "shared_account": "default",
     "network_flagged": "hold",
     "sanctions_match": "hold",
-    "routing_invalid": "default"
+    "routing_invalid": "default",
+    "iban_invalid": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
@@ -2452,7 +2466,8 @@ Response:
     "shared_account": "default",
     "network_flagged": "hold",
     "sanctions_match": "hold",
-    "routing_invalid": "default"
+    "routing_invalid": "default",
+    "iban_invalid": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
@@ -2601,7 +2616,8 @@ Response:
     "shared_account": "default",
     "network_flagged": "hold",
     "sanctions_match": "hold",
-    "routing_invalid": "default"
+    "routing_invalid": "default",
+    "iban_invalid": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
