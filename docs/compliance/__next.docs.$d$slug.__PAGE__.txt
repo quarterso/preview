@@ -1,0 +1,302 @@
+1:"$Sreact.fragment"
+2:I[56448,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/18mft70_00mfh.js"],""]
+3:I[56123,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"CodeBlock"]
+4:T12ae,# Payment fraud monitoring procedure
+
+Lakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.
+
+## Before a vendor is paid
+
+- Every vendor is approved and recorded before its first payment.
+- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.
+- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.
+
+## Every payment run
+
+Each payment file is checked before release.
+
+| What we check | What happens |
+|---|---|
+| Payments to anyone who is not an approved vendor | Held for review |
+| Payments to vendors the business has blocked | Held for review |
+| Payments to bank details never confirmed with the vendor | Held for review |
+| Payments to bank details changed recently and not confirmed out of band | Held for review |
+| Payments to a vendor at an account other than the one on file | Held for review |
+| Payee names that do not match the vendor | Flagged to the reviewer |
+| First payments to a vendor | Flagged to the reviewer |
+| Amounts far above what the vendor is usually paid | Flagged to the reviewer |
+| The same payment made twice | Held for review |
+| One bank account used by two vendors | Held for review |
+| Accounts other businesses reported as used in fraud | Held for review |
+| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |
+| Invalid routing numbers | Held for review |
+| Invalid IBANs on international payments | Held for review |
+| A check number already used on the same account | Held for review |
+| A check payee line that differs from the vendor name on file | Flagged to the reviewer |
+| Checks just under the two-person approval threshold | Flagged to the reviewer |
+| Payments to an account on the employee account list | Held for review |
+| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |
+| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |
+| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |
+| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |
+
+## Insider controls
+
+- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.
+- A report of every change to vendors and their bank details, by person, is kept for review.
+
+## Check runs
+
+- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.
+- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.
+
+## Review and release
+
+- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.
+- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.
+- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.
+- A rejected payment is removed from the file before it is sent.
+- Every check, decision, approver and piece of evidence is recorded and kept.
+
+## Review of this procedure
+
+This procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.42:X
+47:X
+47:C
+0:{"buildId":"L5bijIYh4MPIYZ7WRikXQ","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Compliance and insider controls"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."]}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["Nacha's rules ask every business that sends ACH payments to have a risk-based process to find payments authorized under false pretenses, such as a vendor impersonated by email, and to review it at least once a year. For businesses below the first phase's volume threshold, the rule applies from June 19, 2026. That day is a federal holiday, so in practice it applies from June 22, 2026."]}],["$","p","1",{"children":["Quarter does not make you compliant, and no tool can. It gives you a documented, risk-based process and the evidence that you followed it, which helps you meet Nacha's fraud-monitoring rule. Your bank and your auditor decide whether your process is enough."]}],["$","h2","2",{"id":"written-procedure","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#written-procedure","className":"docs-module__RdmBMa__anchor","children":["The written procedure"]}]}],["$","p","3",{"children":["Quarter writes the procedure from your ",["$","$L2","39",{"href":"/docs/checks#settings","children":["settings"]}]," each time you ask for it, so the document always describes the controls actually in force. It lists every check that is on and what it does, names the checks you turned off as your own decision, and states the cooling period, the two-person threshold and the last review. It comes back as Markdown, ready to print, sign or hand to your bank."]}],["$","$L3","4",{"tabs":[{"label":"Markdown","language":"shell","code":"$4"}],"title":"markdown"}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38","$L39","$L3a","$L3b","$L3c"]}],"$L3d"]}],"$L3e"]}],["$L3f"],"$L40"]}],"isPartial":"$@41","staleTime":"$42","varyParams":null},{"rsc":"$L43","isPartial":"$@44","staleTime":"$42","varyParams":null},{"rsc":"$L45","isPartial":"$@46","staleTime":"$42","varyParams":"$47"},{"rsc":"$L48","isPartial":"$@49","staleTime":"$42","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@4a","rootVaryParams":null,"needsRuntimeRequest":"$@4b"}
+50:I[20795,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/18mft70_00mfh.js"],"DocToc"]
+51:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+52:"$Sreact.suspense"
+54:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+55:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+56:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+57:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+58:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+59:I[71948,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js"],"DocSidebar"]
+5:["$","h2","5",{"id":"yearly-review","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#yearly-review","className":"docs-module__RdmBMa__anchor","children":["The yearly review"]}]}]
+6:["$","p","6",{"children":["Once a year, someone responsible reads the procedure, checks it still fits the business, and records the review, signed in to the console as an admin. The procedure then shows the date and the person, and ",["$","code","205",{"children":"next_review_due"}]," moves a year on. Before the first review, ",["$","code","265",{"children":"next_review_due"}]," is today."]}]
+7:["$","h2","7",{"id":"audit-log","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#audit-log","className":"docs-module__RdmBMa__anchor","children":["The audit log"]}]}]
+8:["$","p","8",{"children":["Every action through the API is recorded with who did it, what, on which object, and when: vendors added and changed, bank details recorded, call-backs, verification links created, runs scanned, each decision with its reason, releases, cancels, fraud reports and retractions, settings changes and reviews. Nothing in it is edited or deleted. ",["$","code","342",{"children":"actor"}]," is the person signed in, or the person named in ",["$","code","398",{"children":"uploaded_by"}]," or ",["$","code","415",{"children":"requested_by"}],". For anything else done with an API key, it is the key prefix, such as ",["$","code","501",{"children":"api_key:qk_test_Xy7P"}],"."]}]
+9:["$","p","9",{"children":["What a vendor does on a verification link is recorded as evidence on the vendor, with the vendor contact as the actor. See ",["$","$L2","123",{"href":"/docs/verification#the-evidence-it-leaves","children":["the evidence it leaves"]}],"."]}]
+a:["$","h2","10",{"id":"endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
+b:["$","h3","11",{"id":"get-v1-compliance-procedure","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-compliance-procedure","className":"docs-module__RdmBMa__anchor","children":["Get the procedure"]}]}]
+c:["$","p","12",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/compliance/procedure"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+d:["$","p","13",{"children":["The procedure as Markdown, generated now from the settings in force."]}]
+e:["$","$L3","14",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/compliance/procedure\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+4c:T139b,{
+  "object": "procedure",
+  "generated_at": "2026-10-06T09:30:00.000Z",
+  "last_reviewed_at": "2026-10-02T16:20:00.000Z",
+  "next_review_due": "2027-10-02",
+  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Held for review |\n| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |\n| Invalid routing numbers | Held for review |\n| Invalid IBANs on international payments | Held for review |\n| A check number already used on the same account | Held for review |\n| A check payee line that differs from the vendor name on file | Flagged to the reviewer |\n| Checks just under the two-person approval threshold | Flagged to the reviewer |\n| Payments to an account on the employee account list | Held for review |\n| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |\n| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |\n| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |\n| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |\n\n## Insider controls\n\n- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.\n- A report of every change to vendors and their bank details, by person, is kept for review.\n\n## Check runs\n\n- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.\n- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.\n- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.\n- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
+}f:["$","$L3","15",{"tabs":[{"label":"200","language":"json","code":"$4c"}],"title":"Response"}]
+10:["$","h3","16",{"id":"post-v1-compliance-reviews","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-compliance-reviews","className":"docs-module__RdmBMa__anchor","children":["Record the yearly review"]}]}]
+11:["$","p","17",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/compliance/reviews"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
+12:["$","p","18",{"children":["Records that a person reviewed the procedure today. A signed-in admin only; an API key answers ",["$","code","95",{"children":"403 session_required"}],". Returns the settings with ",["$","code","145",{"children":"last_reviewed_at"}]," and ",["$","code","168",{"children":"last_reviewed_by"}]," set."]}]
+13:["$","p","19",{"children":[["$","strong","0",{"children":"Body"}]]}]
+14:["$","div","20",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"reviewer"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Your own email, as the person reviewing. Taken from the session; any other email answers ",["$","code","89",{"children":"400 reviewer_not_you"}],". Kept in the audit trail."]}]]}]]}]]}]}]
+15:["$","$L3","21",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/compliance/reviews\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"reviewer\":\"dana@yourcompany\"}'"}],"title":"Request"}]
+4d:T762,{
+  "object": "settings",
+  "checks": {
+    "unknown_payee": "default",
+    "vendor_blocked": "hold",
+    "unverified_account": "default",
+    "account_changed_recently": "default",
+    "account_not_on_file": "default",
+    "name_mismatch": "default",
+    "first_payment": "default",
+    "amount_unusual": "default",
+    "duplicate_payment": "default",
+    "shared_account": "default",
+    "network_flagged": "hold",
+    "sanctions_match": "hold",
+    "routing_invalid": "default",
+    "iban_invalid": "default",
+    "check_number_reused": "default",
+    "payee_name_altered": "default",
+    "just_under_threshold": "default",
+    "employee_account_match": "default",
+    "vendor_dormant_reactivated": "default",
+    "split_below_threshold": "default",
+    "vendor_new_paid_fast": "default",
+    "second_person_required": "hold"
+  },
+  "mandatory_checks": [
+    "network_flagged",
+    "sanctions_match",
+    "vendor_blocked",
+    "second_person_required"
+  ],
+  "defaults": {
+    "unknown_payee": "hold",
+    "vendor_blocked": "hold",
+    "unverified_account": "hold",
+    "account_changed_recently": "hold",
+    "account_not_on_file": "hold",
+    "name_mismatch": "warn",
+    "first_payment": "warn",
+    "amount_unusual": "warn",
+    "duplicate_payment": "hold",
+    "shared_account": "hold",
+    "network_flagged": "hold",
+    "sanctions_match": "hold",
+    "routing_invalid": "hold",
+    "iban_invalid": "hold",
+    "check_number_reused": "hold",
+    "payee_name_altered": "warn",
+    "just_under_threshold": "warn",
+    "employee_account_match": "hold",
+    "vendor_dormant_reactivated": "warn",
+    "split_below_threshold": "warn",
+    "vendor_new_paid_fast": "warn",
+    "second_person_required": "hold"
+  },
+  "cooling_days": 10,
+  "unusual_multiplier": 3,
+  "two_person_threshold": 50000,
+  "last_reviewed_at": "2026-10-02T16:20:00.000Z",
+  "last_reviewed_by": "dana@yourcompany"
+}16:["$","$L3","22",{"tabs":[{"label":"201","language":"json","code":"$4d"}],"title":"Response"}]
+17:["$","h3","23",{"id":"get-v1-audit-log","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-audit-log","className":"docs-module__RdmBMa__anchor","children":["Export the audit log"]}]}]
+18:["$","p","24",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/audit_log"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+19:["$","p","25",{"children":["Every recorded action, oldest first. To page through it, pass the ",["$","code","66",{"children":"id"}]," of the last entry you have as ",["$","code","101",{"children":"after"}],"."]}]
+1a:["$","p","26",{"children":[["$","strong","0",{"children":"Query parameters"}]]}]
+1b:["$","div","27",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"after"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["An audit entry id. Returns entries after it."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"limit"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1 to 5,000. Default 500."]}]]}]]}]]}]}]
+1c:["$","$L3","28",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/audit_log?limit=3\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+4e:T448,{
+  "object": "list",
+  "data": [
+    {
+      "id": "aud_4MbT7xKq2WnR9pLv5HcZ",
+      "actor": "api_key:qk_test_Xy7P",
+      "action": "payment_run.scanned",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "format": "nacha",
+        "payments": 3
+      },
+      "created_at": "2026-10-06T08:15:03.000Z"
+    },
+    {
+      "id": "aud_8KcW2pRt5NvQ1mXb7LzF",
+      "actor": "dana@yourcompany",
+      "action": "payment_item.reject",
+      "object_type": "payment_item",
+      "object_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "details": {
+        "run": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "reason": "Harbor Point confirmed by phone that they did not change banks."
+      },
+      "created_at": "2026-10-06T09:02:47.000Z"
+    },
+    {
+      "id": "aud_3TnJ9vLq6WbR2kPm8CxD",
+      "actor": "sam@yourcompany",
+      "action": "payment_run.released",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "rejected": 1
+      },
+      "created_at": "2026-10-06T09:05:12.000Z"
+    }
+  ]
+}1d:["$","$L3","29",{"tabs":[{"label":"200","language":"json","code":"$4e"}],"title":"Response"}]
+1e:["$","h2","30",{"id":"insider-controls","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#insider-controls","className":"docs-module__RdmBMa__anchor","children":["Insider controls"]}]}]
+1f:["$","p","31",{"children":["Some payment fraud starts inside the business: an employee changes a vendor to their own account, adds a vendor and pays it, or splits a payment to stay under the second approver. These controls make that harder and leave a record."]}]
+20:["$","h3","32",{"id":"segregation-of-duties","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#segregation-of-duties","className":"docs-module__RdmBMa__anchor","children":["Segregation of duties"]}]}]
+21:["$","ul","33",{"children":[["$","li","0",{"children":["Approvals, call-backs, releases and fraud reports are made only by people signed in to the console. An API key answers ",["$","code","119",{"children":"403 session_required"}],"."]}],["$","li","1",{"children":["Nobody approves a payment to a vendor whose bank details they added or changed in the last 90 days, as the first approver or the second. The answer is ",["$","code","151",{"children":"403 approver_changed_details"}],". Rejecting is always allowed."]}],["$","li","2",{"children":["A payment to that vendor made by that same person is held as ",["$","$L2","61",{"href":"/docs/checks#second-person-required","children":[["$","code","0",{"children":"second_person_required"}]]}],", for someone else to approve."]}],["$","li","3",{"children":["Nobody releases a run with a clear payment to that vendor: ",["$","code","59",{"children":"403 releaser_changed_details"}],". Someone else releases it. A payment to that vendor that someone else approved does not stop the release."]}],["$","li","4",{"children":["The person who added bank details may not confirm them by call-back: ",["$","code","69",{"children":"403 attester_changed_details"}],"."]}],["$","li","5",{"children":["Only a signed-in admin can unblock a blocked vendor: ",["$","code","53",{"children":"403 unblock_needs_admin"}],"."]}],["$","li","6",{"children":["People are compared by email with the person who added the details, as the audit trail records them. Details added with an API key are recorded against the key, not a person, so these rules cover changes made by people signed in to Quarter."]}]]}]
+22:["$","h3","34",{"id":"employee-accounts","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#employee-accounts","className":"docs-module__RdmBMa__anchor","children":["Employee accounts"]}]}]
+23:["$","p","35",{"children":["Keep a list of your employees' own bank accounts, from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is held as ",["$","$L2","164",{"href":"/docs/checks#employee-account-match","children":[["$","code","0",{"children":"employee_account_match"}]]}],"."]}]
+24:["$","ul","36",{"children":[["$","li","0",{"children":["Quarter keeps only a fingerprint of each account and your own id for the employee. The account numbers are dropped as soon as they are fingerprinted, and they are never returned."]}],["$","li","1",{"children":["Employee accounts are kept out of the network. Once an account is on the list, your business adds nothing about it to the network. A confirmation made before the account was listed still counts."]}],["$","li","2",{"children":["Each import replaces the whole list. Sending the same list twice changes nothing. The audit log records the counts, never the accounts."]}]]}]
+25:["$","h3","37",{"id":"insider-checks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#insider-checks","className":"docs-module__RdmBMa__anchor","children":["Other insider checks"]}]}]
+26:["$","p","38",{"children":["Three warnings look for patterns rather than lists: ",["$","$L2","52",{"href":"/docs/checks#split-below-threshold","children":[["$","code","0",{"children":"split_below_threshold"}]]}],", ",["$","$L2","115",{"href":"/docs/checks#vendor-new-paid-fast","children":[["$","code","0",{"children":"vendor_new_paid_fast"}]]}]," and ",["$","$L2","179",{"href":"/docs/checks#vendor-dormant-reactivated","children":[["$","code","0",{"children":"vendor_dormant_reactivated"}]]}],"."]}]
+27:["$","h3","39",{"id":"insider-control-endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#insider-control-endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
+28:["$","h3","40",{"id":"post-v1-employee-accounts-import","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-employee-accounts-import","className":"docs-module__RdmBMa__anchor","children":["Import the employee account list"]}]}]
+29:["$","p","41",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/employee_accounts/import"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+2a:["$","p","42",{"children":["Replaces the list with these accounts. Needs an admin, or an API key. Returns how many accounts the list now holds, and how many were added and removed."]}]
+2b:["$","p","43",{"children":["Errors, all ",["$","code","12",{"children":"400"}],": ",["$","code","19",{"children":"employees_invalid"}],", ",["$","code","40",{"children":"employee_ref_invalid"}],", ",["$","code","64",{"children":"routing_number_invalid"}]," and ",["$","code","93",{"children":"account_number_invalid"}],". The message names the employee by position."]}]
+2c:["$","p","44",{"children":[["$","strong","0",{"children":"Body"}]]}]
+2d:["$","div","45",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"employees"}]]}],["$","td","1",{"children":["object[]"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["1 to 10,000 accounts, each with ",["$","code","32",{"children":"employee_ref"}]," (your own id for the employee, up to 100 characters), ",["$","code","101",{"children":"routing_number"}]," and ",["$","code","122",{"children":"account_number"}],"."]}]]}]]}]]}]}]
+2e:["$","$L3","46",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/employee_accounts/import\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"employees\":[{\"employee_ref\":\"E-1043\",\"routing_number\":\"071921008\",\"account_number\":\"88301274\"},{\"employee_ref\":\"E-1187\",\"routing_number\":\"122611005\",\"account_number\":\"40917736\"}]}'"}],"title":"Request"}]
+2f:["$","$L3","47",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"employee_account_import\",\n  \"accounts\": 2,\n  \"added\": 2,\n  \"removed\": 0\n}"}],"title":"Response"}]
+30:["$","h3","48",{"id":"get-v1-employee-accounts","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-employee-accounts","className":"docs-module__RdmBMa__anchor","children":["Read the employee account list"]}]}]
+31:["$","p","49",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/employee_accounts"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+32:["$","p","50",{"children":["How many accounts and employees are on the list, and when and by whom it was last imported. The accounts themselves are never returned."]}]
+33:["$","$L3","51",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/employee_accounts\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+34:["$","$L3","52",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"employee_accounts\",\n  \"accounts\": 2,\n  \"employees\": 2,\n  \"imported_at\": \"2026-10-05T09:12:30.000Z\",\n  \"imported_by\": \"api_key:qk_test_Xy7P\"\n}"}],"title":"Response"}]
+35:["$","h3","53",{"id":"get-v1-reports-vendor-changes","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-reports-vendor-changes","className":"docs-module__RdmBMa__anchor","children":["Report vendor changes"]}]}]
+36:["$","p","54",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/reports/vendor_changes"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+37:["$","p","55",{"children":["Every change to vendors and their bank details in a period, oldest first, with who made it. ",["$","code","92",{"children":"people"}]," sums it by person, those with the most bank detail changes first. For bank details, it gives the old and new last 4, and how and by whom the new details were confirmed."]}]
+38:["$","p","56",{"children":["The report stops at 10,000 changes and says so in ",["$","code","50",{"children":"truncated"}],"; narrow the period then. A bad date answers ",["$","code","106",{"children":"400 from_invalid"}]," or ",["$","code","128",{"children":"400 to_invalid"}],"."]}]
+39:["$","p","57",{"children":[["$","strong","0",{"children":"Query parameters"}]]}]
+3a:["$","div","58",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"from"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"YYYY-MM-DD"}],". Default 90 days before ",["$","code","37",{"children":"to"}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"to"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"YYYY-MM-DD"}],", included. Default today."]}]]}]]}]]}]}]
+3b:["$","$L3","59",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/reports/vendor_changes?from=2026-07-08&to=2026-10-06\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+4f:T4e1,{
+  "object": "vendor_change_report",
+  "from": "2026-07-08",
+  "to": "2026-10-06",
+  "truncated": false,
+  "people": [
+    {
+      "actor": "dana@yourcompany",
+      "changes": 1,
+      "bank_details_changed": 1,
+      "vendors": 1
+    },
+    {
+      "actor": "api_key:qk_test_Xy7P",
+      "changes": 1,
+      "bank_details_changed": 0,
+      "vendors": 1
+    }
+  ],
+  "data": [
+    {
+      "id": "aud_6RkT2vNp9WqL4mXb8HcJ",
+      "object": "vendor_change",
+      "at": "2026-10-05T13:40:12.000Z",
+      "actor": "api_key:qk_test_Xy7P",
+      "action": "vendor.created",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "vendor_name": "Harbor Point Logistics LLC",
+      "fields": null,
+      "last4": null,
+      "previous_last4": null,
+      "verified_method": null,
+      "verified_by": null
+    },
+    {
+      "id": "aud_9LwB3nTq7KpR2vMx5CzF",
+      "object": "vendor_change",
+      "at": "2026-10-05T16:02:44.000Z",
+      "actor": "dana@yourcompany",
+      "action": "vendor.bank_account_added",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "vendor_name": "Harbor Point Logistics LLC",
+      "fields": null,
+      "last4": "8226",
+      "previous_last4": "7365",
+      "verified_method": null,
+      "verified_by": null
+    }
+  ]
+}3c:["$","$L3","60",{"tabs":[{"label":"200","language":"json","code":"$4f"}],"title":"Response"}]
+3d:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L2",null,{"href":"/docs/network","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Account checks and fraud reports"]}],["$","$L2",null,{"href":"/docs/netsuite","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"NetSuite"]}]]}]
+3e:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L50",null,{"entries":[{"id":"written-procedure","text":"The written procedure","depth":2},{"id":"yearly-review","text":"The yearly review","depth":2},{"id":"audit-log","text":"The audit log","depth":2},{"id":"endpoints","text":"Endpoints","depth":2},{"id":"get-v1-compliance-procedure","text":"Get the procedure","depth":3},{"id":"post-v1-compliance-reviews","text":"Record the yearly review","depth":3},{"id":"get-v1-audit-log","text":"Export the audit log","depth":3},{"id":"insider-controls","text":"Insider controls","depth":2},{"id":"segregation-of-duties","text":"Segregation of duties","depth":3},{"id":"employee-accounts","text":"Employee accounts","depth":3},{"id":"insider-checks","text":"Other insider checks","depth":3},{"id":"insider-control-endpoints","text":"Endpoints","depth":3},{"id":"post-v1-employee-accounts-import","text":"Import the employee account list","depth":3},{"id":"get-v1-employee-accounts","text":"Read the employee account list","depth":3},{"id":"get-v1-reports-vendor-changes","text":"Report vendor changes","depth":3}]}]}]
+3f:["$","script","script-0",{"src":"/preview/_next/static/chunks/18mft70_00mfh.js","async":true}]
+40:["$","$L51",null,{"children":["$","$52",null,{"name":"Next.MetadataOutlet","children":"$@53"}]}]
+43:["$","$1","h",{"children":[null,["$","$L54",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$L55",null,{"children":["$","$52",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Compliance and insider controls | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","meta","3",{"property":"og:title","content":"Quarter: Know who you're paying"}],["$","meta","4",{"property":"og:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the written process and the evidence your bank, auditor and insurer ask for."}],["$","meta","5",{"property":"og:site_name","content":"Quarter"}],["$","meta","6",{"property":"og:image","content":"http://localhost:3000/preview/opengraph-image.png?opengraph-image.2po1z49xebs7l.png"}],["$","meta","7",{"property":"og:image:type","content":"image/png"}],["$","meta","8",{"property":"og:image:width","content":"1200"}],["$","meta","9",{"property":"og:image:height","content":"1200"}],["$","meta","10",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","11",{"property":"og:type","content":"website"}],["$","meta","12",{"name":"twitter:card","content":"summary"}],["$","meta","13",{"name":"twitter:title","content":"Quarter: Know who you're paying"}],["$","meta","14",{"name":"twitter:description","content":"Quarter checks every payment your business sends before it leaves your bank. It holds a payment to an unconfirmed or changed bank account for a person to review, lets vendors confirm their own details through their bank login, and keeps the written process and the evidence your bank, auditor and insurer ask for."}],["$","meta","15",{"name":"twitter:image","content":"http://localhost:3000/preview/twitter-image.png?twitter-image.2po1z49xebs7l.png"}],["$","meta","16",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","17",{"name":"twitter:image:type","content":"image/png"}],["$","meta","18",{"name":"twitter:image:width","content":"1200"}],["$","meta","19",{"name":"twitter:image:height","content":"1200"}],["$","link","20",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","21",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","22",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$L56","23",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+45:["$","$1","c",{"children":[null,["$","$L57",null,{"parallelRouterKey":"children","template":["$","$L58",null,{}]}]]}]
+48:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/1wg-g500q1kp4.js","async":true}]],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$L59",null,{"nav":[{"title":"Get started","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Guides","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Confirming bank details"},{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/releases","label":"Decisions and release"},{"href":"/docs/payment-checks","label":"Payment checks"},{"href":"/docs/checks","label":"Checks and settings"},{"href":"/docs/network","label":"Account checks and fraud reports"},{"href":"/docs/compliance","label":"Compliance and insider controls"},{"href":"/docs/netsuite","label":"NetSuite"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L57",null,{"parallelRouterKey":"children","template":["$","$L58",null,{}]}]}]]}]]}]
+4b:true
+53:null
+42:300
+42:C
+4a:0
+44:"$undefined"
+46:"$undefined"
+49:"$undefined"
+41:"$undefined"
