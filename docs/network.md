@@ -65,7 +65,8 @@ Response:
   },
   "network": {
     "verified_by": 1,
-    "flagged_by": 0
+    "flagged_by": 0,
+    "disputed": false
   },
   "on_file": [
     {
@@ -91,7 +92,8 @@ An account reported by two businesses:
   },
   "network": {
     "verified_by": 0,
-    "flagged_by": 2
+    "flagged_by": 2,
+    "disputed": false
   },
   "on_file": [],
   "sanctions": [],
@@ -110,6 +112,10 @@ When a fraudster gets you to pay an account, or tries to, a person signed in to 
 - Nothing from your description. The description stays with your report, for your records and for any dispute.
 
 Each business counts once per account, however many reports it makes. The `fraud_report.created` [event](/docs/webhooks.md#event-types) goes to your own webhooks only.
+
+### Disputes
+
+A business that says a report about its account is wrong can write to Quarter. Quarter staff open a dispute and check it, with the business and with the reporters. While it is open, the reports still count, so a complaint alone never clears a reported account, and an account check answers `disputed: true`. If Quarter upholds the dispute, every report made before the decision stops counting toward `flagged_by`. A report made afterwards counts, since it is new. Your own report stays in your records either way.
 
 ### Retracting a report
 

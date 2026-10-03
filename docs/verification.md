@@ -381,6 +381,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -421,6 +422,7 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```

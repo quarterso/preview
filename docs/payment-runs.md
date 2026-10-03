@@ -10,7 +10,7 @@ The body is JSON. `format` says what the run is: `nacha`, `csv` or `check_regist
 
 ### NACHA files
 
-A standard NACHA file of 94-character records, as your accounting system or bank portal writes it. Quarter checks every credit entry, which is every payment out. Debits and prenotes are not checked, and they stay in the released file as they were. An entry with a transaction code a business does not send, such as a return (codes 21, 31, 41 and 51), refuses the whole file with `400 file_invalid`.
+A standard NACHA file of 94-character records, as your accounting system or bank portal writes it. Quarter checks every credit entry, which is every payment out. Debits and prenotes are not checked, and they stay in the released file as they were. An entry with a transaction code a business does not send, such as a return (codes 21, 31, 41 and 51), refuses the whole file with `400 file_invalid`. So do a record with a character that is not plain ASCII, such as a lone carriage return, and an IAT (international) batch, whose payee and bank sit in addenda records Quarter does not read yet.
 
 | Item field | Taken from |
 | --- | --- |
@@ -53,7 +53,9 @@ Accounting tools and bank portals export payments as CSV, each with its own colu
 - The first row is the header. Other columns are ignored and kept in the released file.
 - A file the bank could read differently from Quarter is refused with `400 file_invalid`: two columns for the payee, routing number, account number or amount, such as `amount` and `total`, or a column Quarter does not read whose name looks like an account, a routing number or an amount, such as `iban` or `amount_due`. Rename or remove the column.
 - Amounts are positive dollars, with or without `$` and thousands separators: `48250`, `48,250.00` and `$48,250.00` all work. A bad amount refuses the whole file with `400 file_invalid` and the row number.
-- Quoted fields may hold commas, quotes and line breaks.
+- Quoted fields may hold commas and quotes, except the payee and the reference: a comma or quote there refuses the file, since a bank importer that splits on commas would read another field.
+- A cell with a line break or another control character, in any column, refuses the file with `400 file_invalid` and its row and column. A bank importer that splits lines first would read the rest as a payment of its own.
+- A routing number is 9 digits. 8 digits are read as a routing number whose leading zero a spreadsheet dropped, and the released file carries all 9. Anything else refuses the file. An account number is 4 to 17 letters or digits, with spaces and dashes taken out.
 - A date is kept as `effective_date` when it is written `YYYY-MM-DD`.
 
 Headers Quarter reads:
@@ -66,7 +68,7 @@ Beneficiary Name,ABA,Beneficiary Account,Payment Amount,Effective Date,Reference
 
 ### JSON items
 
-Send the payments directly, for example from your own payables system. The released file is the same list, as JSON, without the rejected items. Only `amount` is checked for shape: a payment with no routing number is held as `routing_invalid`, and one with no payee name matches no vendor.
+Send the payments directly, for example from your own payables system. The released file is the same list, as JSON, without the rejected items and with only the fields Quarter read. `amount` must be a positive amount, `routing_number` 9 digits and `account_number` 4 to 17 letters or digits, or the list is refused naming the item. A payment with no payee name matches no vendor, and a payee name with a line break refuses the list.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -155,7 +157,7 @@ A payment that finds no vendor is held as [`unknown_payee`](/docs/checks.md#unkn
 
 ## The same file twice
 
-Uploading a file that is byte for byte the same as a run that was not cancelled answers `409 duplicate_file`, with the id of the earlier run. Sending the same file to the bank twice pays everyone twice. The same file uploaded twice at the same moment is refused too. Two different files uploaded together are checked one after the other, so a payment in both is held as [`duplicate_payment`](/docs/checks.md#duplicate-payment) in the file checked second.
+Uploading a file that is byte for byte the same as a run that was not cancelled answers `409 duplicate_file`, with the id of the earlier run. Sending the same file to the bank twice pays everyone twice. The same file uploaded twice at the same moment is refused too. Two different files uploaded together are checked one after the other, so a payment in both is held as [`duplicate_payment`](/docs/checks.md#duplicate-payment) in the file checked second. A file that waits more than 55 seconds behind another answers `503 scan_busy` and nothing is recorded; send it again.
 
 ## Endpoints
 
@@ -178,7 +180,7 @@ In this example, Harbor Point and Cedar Ridge are known vendors with confirmed b
 | `items` | object[] | No | The payments. Required for `json`. See [JSON items](/docs/payment-runs.md#json). |
 | `name` | string | No | A name for the run, up to 200 characters. Default `Payment run YYYY-MM-DD`. |
 | `uploaded_by` | string | No | Email of the person uploading. Defaults to the person signed in, or the API key. |
-| `payroll` | boolean | No | `true` for a payroll CSV, check register or list: its payments [warn and never hold](/docs/checks.md#payroll), except the checks that always hold. A NACHA file says this in each batch's entry class, so sending `payroll` with one answers `400 payroll_invalid`. |
+| `payroll` | boolean | No | `true` for a payroll CSV, check register or list, from a signed-in admin only (anyone else is answered `403 payroll_needs_admin`): pay to an account on your employee list [warns instead of holding](/docs/checks.md#payroll), and the checks that always hold still hold. A NACHA file says this in each batch's entry class, so sending `payroll` with one answers `400 payroll_invalid`. |
 
 Request:
 

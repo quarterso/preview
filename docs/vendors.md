@@ -31,6 +31,26 @@ For a request that came by email, send the sender's address as `request_sender`.
 
 A lookup waits at most 4 seconds and is kept for a day. When a registry does not answer, the details are still recorded and the record says `unavailable`. These records add [points](/docs/checks.md#points) and warnings only while the new details are unconfirmed, and never hold a payment by themselves: the change is already held until someone confirms it. They cannot catch a request sent from the vendor's own mailbox after someone took it over, so a call-back is still what confirms a change.
 
+## Vendor health
+
+The vendor health report lists what to clean up in your vendor master. It reads only what is on file, so it works on an import in a test project, before any payment is checked. Blocked vendors are left out, and a vendor can be on more than one list.
+
+| List | A vendor is on it when |
+| --- | --- |
+| `stale` | Its last payment was over 12 months ago: the later of a payment Quarter released and your `last_paid_on`. A vendor with no payment known counts once it has been on file a year. |
+| `duplicate_account` | Its current bank details are also the current details of another vendor. |
+| `duplicate_name` | Its name is almost the same as another vendor's, after legal suffixes, case and punctuation are ignored. |
+| `unverified` | Its first bank details were never confirmed. |
+| `change_unconfirmed` | Its current bank details replaced earlier ones and were not confirmed. |
+| `no_contact` | It has no `email_domain`, and no vendor link or call-back was ever made. |
+| `individual` | It is a person or sole proprietor. |
+
+## Sanctions re-screening
+
+Each payment is screened when it is checked. A vendor can also be added to a list between payments, so when Quarter's copy of a sanctions list changes (a listed name or id added, changed or removed, not just fetched again), the worker screens the name of every vendor that is not blocked again, for every business, the same way.
+
+A possible match not found before is recorded on the vendor in `sanctions_findings`, with the listed name, the list, its programs and when it was found, and in the audit log as `vendor.sanctions_match_found`. Your admins and security contacts get one email listing the new matches. A match found before is never recorded or emailed again. Payments to the vendor are then held as [`sanctions_match`](/docs/checks.md#sanctions-match), whatever name the payment file gives the payee. Findings are never edited or deleted.
+
 ## What Quarter keeps
 
 - The routing number, in full. It names a bank, not an account.
@@ -56,6 +76,7 @@ An `external_id` already used by another of your vendors answers `409 external_i
 | `email_domain` | string | No | The domain the vendor emails from, such as `harborpoint.example`. A verification code sent anywhere else is recorded as a failed check. |
 | `external_id` | string | No | Your own id for the vendor, unique among your vendors. A CSV run can match payments by it. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
+| `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
 | `routing_number` | string | No | The 9-digit ABA routing number. Spaces are ignored. |
 | `account_number` | string | No | 4 to 17 letters or digits. Spaces and dashes are ignored. Sealed at rest; never returned. |
 | `holder_name` | string | No | The name on the bank account, if you have it. Used when matching payee names. |
@@ -82,6 +103,7 @@ Response:
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -106,7 +128,8 @@ Response:
       "changed_by_note": null
     }
   ],
-  "evidence": []
+  "evidence": [],
+  "sanctions_findings": []
 }
 ```
 
@@ -150,6 +173,7 @@ Response:
       "external_id": "V-0388",
       "status": "verified",
       "individual": false,
+      "last_paid_on": "2026-09-30",
       "bank_account": {
         "last4": "1904",
         "status": "verified",
@@ -206,6 +230,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -246,7 +271,8 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```
 
@@ -254,7 +280,7 @@ Response:
 
 `PATCH /v1/vendors/{vendor}` (auth: API key)
 
-Changes the name, the email domain, whether the vendor is a person, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
+Changes the name, the email domain, whether the vendor is a person, the last payment date, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
 
 **Path parameters**
 
@@ -269,6 +295,7 @@ Changes the name, the email domain, whether the vendor is a person, or the statu
 | `name` | string | No | The new name. |
 | `email_domain` | string | No | The new email domain. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
+| `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
 | `status` | string | No | `blocked`, or `unverified` to lift a block. Only a signed-in admin can lift a block; anyone else, and any API key, answers `403 unblock_needs_admin`. |
 
 Request:
@@ -291,6 +318,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -331,7 +359,8 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```
 
@@ -341,13 +370,15 @@ Response:
 
 Loads your vendor master in one request, up to 5,000 vendors, all or nothing. Each row has the same fields as [Add a vendor](/docs/vendors.md#post-v1-vendors). Bank details from an import are recorded with `source: "import"` and start `unverified`.
 
-A row whose `external_id` matches an existing vendor counts as `updated`: its name is kept, and bank details that differ from the current ones are recorded as a change, which holds its payments until confirmed. Every other row creates a vendor. Export your vendor list as CSV from your accounting tool and send its rows as JSON.
+A row whose `external_id` matches an existing vendor counts as `updated`: its name is kept, bank details that differ from the current ones are recorded as a change, which holds its payments until confirmed, and a later `last_paid_on` replaces an earlier one. Every other row creates a vendor. Export your vendor list as CSV from your accounting tool and send its rows as JSON.
+
+A test project holds up to 5,000 vendors, so you can import your whole vendor master and read its [health report](/docs/vendors.md#vendor-health) before going live. Test payment runs still stop at 50 payments.
 
 **Body**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
+| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `last_paid_on`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
 
 Request:
 
@@ -412,6 +443,7 @@ Response:
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -481,6 +513,66 @@ Response:
       "actor": "dana@yourcompany",
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
+    }
+  ],
+  "sanctions_findings": []
+}
+```
+
+### Report vendor health
+
+`GET /v1/reports/vendor_health` (auth: API key)
+
+The [vendor health](/docs/vendors.md#vendor-health) lists, each with a complete `count` and up to 1,000 vendors in `data`; `truncated` says when there are more, and on `duplicate_name` also when the vendor master has so many similar names that the count may be short. `vendors` counts the vendors on file, blocked ones left out. Any role can read it, and an API key can too.
+
+With `format=csv`, the same lists as a CSV file, one row per vendor per list: `list`, `vendor_id`, `vendor_name`, `detail`. A cell that starts with `=`, `+`, `-` or `@` is sent with a leading `'`, so a spreadsheet shows it as text. Any other format answers `400 format_invalid`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `format` | string | No | `json` (default) or `csv`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/reports/vendor_health" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "vendor_health_report",
+  "generated_at": "2026-10-07T09:00:00.000Z",
+  "vendors": 412,
+  "sections": [
+    {
+      "code": "stale",
+      "title": "Not paid in 12 months",
+      "count": 1,
+      "truncated": false,
+      "data": [
+        {
+          "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+          "vendor_name": "Cedar Ridge Supply Co.",
+          "detail": "last paid 2025-06-30"
+        }
+      ]
+    },
+    {
+      "code": "change_unconfirmed",
+      "title": "Bank details changed and not confirmed",
+      "count": 1,
+      "truncated": false,
+      "data": [
+        {
+          "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+          "vendor_name": "Harbor Point Logistics LLC",
+          "detail": "account ending 8226, changed 2026-10-07"
+        }
+      ]
     }
   ]
 }

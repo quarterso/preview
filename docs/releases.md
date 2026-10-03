@@ -15,6 +15,10 @@ Decisions and releases are made by people signed in to the Quarter console, with
 - Nobody approves a payment to a vendor whose bank details they added in the last 90 days: `403 approver_changed_details`. Rejecting is allowed. See [segregation of duties](/docs/compliance.md#segregation-of-duties).
 - Nobody releases a run with a clear payment to a vendor whose bank details they added in the last 90 days: `403 releaser_changed_details`. Someone else releases it. A payment to that vendor that someone else approved does not stop the release.
 
+## Checked again at release
+
+Things change between a scan and a release. So releasing a run runs the checks again on every payment it would send. A payment that now holds for a new reason is held again. Its vendor was blocked, say, or its bank details changed, its payee was added to a sanctions list, or its account was reported or left your employee list. Its earlier approval is taken back, since it was given for other reasons, and the release answers `409 payments_held_since_scan`. Decide those payments, then release. The checks about other payments (duplicates, totals for two people, check numbers) were settled at the scan and are not run again. A payment check keeps no account number, so before an approval releases it Quarter looks again only for a blocked vendor and a sanctions match. A NetSuite bill already cleared is held again when its vendor is blocked in Quarter or its bill or bank details change in NetSuite; other new reasons wait until the bill next changes.
+
 ## What a hold turned out to be
 
 Once a held payment has a decision, a person records what it was: `fraud_attempt`, `error` (wrong amount, duplicate or wrong details), `legitimate` or `unknown`, with a required `reason` and an optional note. The console asks for it when someone rejects a payment; an approval may leave it for later. It moves no money and changes no decision.
@@ -50,6 +54,8 @@ Fraud often comes to light when the real vendor asks why it was not paid. So Qua
 
 Every payment at or above the two-person threshold is held as [`second_person_required`](/docs/checks.md#second-person-required), even when no other check holds it, and its approval needs two different people. The threshold is `two_person_threshold` in [settings](/docs/checks.md#settings), $50,000 by default. The first approval is recorded and the payment stays `held`. A second approval by a different person makes it `approved`. The same person approving twice answers `409 second_approver_required`.
 
+The threshold also applies to what one person would send to one payee in pieces. Payments under it to one account, one vendor or one check payee, in this run and in runs of the last 7 days, that together reach it are each held for two people, payroll included. Payments two people approved, and rejected ones, are not counted.
+
 A rejection needs one person, whatever the amount. People are compared by their email, ignoring case.
 
 A $62,400.00 payment, after each approval, After the first:
@@ -83,8 +89,8 @@ A $62,400.00 payment, after each approval, After the second:
 ## What release returns
 
 - **NACHA:** the same file without the rejected entries and their addenda. Batch control and file control totals (entry count, entry hash, debit and credit totals, batch and block counts) are recomputed, empty batches are dropped, and the file is padded to a multiple of ten records. Every other byte is as you sent it, including line endings.
-- **CSV:** the same header and rows, without the rejected rows.
-- **JSON:** the items you sent, as a JSON array in `file`, without the rejected ones.
+- **CSV:** the same header and rows, without the rejected rows. Routing and account numbers are written as Quarter checked them: 9 digits, a leading zero a spreadsheet dropped put back, spaces and dashes taken out.
+- **JSON:** the items you sent, as a JSON array in `file`, without the rejected ones, and with only the fields Quarter read: `payee_name`, `routing_number`, `account_number`, `amount`, and `effective_date`, `reference` and `vendor_id` where given.
 - **Check register:** the issued-check file for your bank's [Positive Pay](/docs/releases.md#positive-pay), in the layout you chose.
 
 Upload `file` to your bank as you would have uploaded the original. Quarter does not send it anywhere.
@@ -479,7 +485,7 @@ Response:
 
 `POST /v1/payment_runs/{run}/release` (auth: Signed-in approver)
 
-Releases the run once no payment is held, and returns the file to send. While a payment is held, the answer is `409 payments_still_held` with how many. The `payment_run.released` [event](/docs/webhooks.md#event-types) fires.
+Releases the run once no payment is held, and returns the file to send with its SHA-256 (`sha256`), so you can compare it with the file your bank receives. While a payment is held, the answer is `409 payments_still_held` with how many. Every payment is [checked again](/docs/releases.md#release-recheck) first; one that now holds is held again and the answer is `409 payments_held_since_scan`. The `payment_run.released` [event](/docs/webhooks.md#event-types) fires, and the answer, which carries full account numbers, is a `full_numbers_downloaded` [security event](/docs/compliance.md#security-events).
 
 A [payment check](/docs/payment-checks.md) is released by itself when it is clear or approved. Releasing one that is held or rejected answers `409 released_when_approved`.
 
@@ -514,7 +520,8 @@ Response:
   "object": "payment_run_release",
   "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
   "format": "nacha",
-  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n",
+  "sha256": "bc9d67721d4f3e0d93e2a0a865abb6487e86c992c467cf58580fa7056e0a18bc"
 }
 ```
 
@@ -543,6 +550,7 @@ Releasing a check run:
   "run_id": "run_3KxP9vLq2TmW7nRb5HcZ",
   "format": "check_register",
   "file": "account_number,check_number,amount,issue_date,payee,record_type\r\n4400193318,10452,3912.40,10/06/2026,Cedar Ridge Supply Co.,I\r\n4400193318,10453,2150.00,10/06/2026,Harbor Point Logistics LLC,V\r\n",
+  "sha256": "c5979c76d58538b3744fb09bcf6cfb046cab044915a910404d74f8b3f7ce0d71",
   "template": "generic_csv",
   "extension": "csv"
 }
@@ -574,7 +582,49 @@ Response:
   "object": "payment_run_file",
   "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
   "format": "nacha",
-  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n",
+  "sha256": "bc9d67721d4f3e0d93e2a0a865abb6487e86c992c467cf58580fa7056e0a18bc"
+}
+```
+
+### Check a file against its run
+
+`POST /v1/payment_runs/{run}/file_checks` (auth: API key)
+
+Says whether a file is the one Quarter released for the run (`released`), the one uploaded to it (`uploaded`), or neither (`null`). Use it before you upload a file to your bank, or on the copy your bank says it received, to show that the file sent is the file that was checked. Malware or a person that changes one account number after download makes the answer `null`.
+
+Quarter compares a keyed hash it recorded at upload and at release, and keeps nothing of the file you send. Any role and API keys may ask, 30 times a minute per organization. Each check is recorded in the audit log with its answer. A payment check or a NetSuite run answers `409 no_payment_file`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `file` | string | Yes | The text of the file. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/file_checks" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"file":"101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"}'
+```
+
+Response:
+
+```json
+{
+  "object": "file_check",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "matches": "released",
+  "sha256": "bc9d67721d4f3e0d93e2a0a865abb6487e86c992c467cf58580fa7056e0a18bc",
+  "released_at": "2026-10-06T09:30:00.000Z"
 }
 ```
 
@@ -612,6 +662,7 @@ Response:
   "template": "generic_csv",
   "extension": "csv",
   "file": "account_number,check_number,amount,issue_date,payee,record_type\r\n4400193318,10452,3912.40,10/06/2026,Cedar Ridge Supply Co.,I\r\n4400193318,10453,2150.00,10/06/2026,Harbor Point Logistics LLC,V\r\n",
+  "sha256": "c5979c76d58538b3744fb09bcf6cfb046cab044915a910404d74f8b3f7ce0d71",
   "issued": 1,
   "issued_amount": 3912.4,
   "voids": 1,

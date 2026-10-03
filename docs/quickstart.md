@@ -37,6 +37,7 @@ Response:
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -61,7 +62,8 @@ Response:
       "changed_by_note": null
     }
   ],
-  "evidence": []
+  "evidence": [],
+  "sanctions_findings": []
 }
 ```
 
@@ -94,6 +96,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -134,7 +137,8 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```
 
@@ -478,7 +482,7 @@ Response:
 ## Next
 
 - [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
-- [Checks](/docs/checks.md): all twenty-five checks and how to set each one.
+- [Checks](/docs/checks.md): all twenty-six checks and how to set each one.
 - [Decisions and release](/docs/releases.md): two-person approval, cancel, and what release guarantees.
 - [Payment checks](/docs/payment-checks.md): one wire or instant payment, checked before it is keyed in.
 - [Webhooks](/docs/webhooks.md): hear about held payments as they happen.

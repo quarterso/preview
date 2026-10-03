@@ -24,7 +24,13 @@ When NetSuite names no employee (a script, an import or the system), names one w
 
 ## Connecting
 
-Connect NetSuite from the console's Integrations settings, as an admin. Quarter uses OAuth 2.0 client credentials with a certificate: an RSA key of 3072 bits or more, or EC P-256. The credentials are tested against NetSuite before they are saved, then sealed. They are never returned, logged or put in the audit log, and they are wiped on disconnect.
+Connect NetSuite from the console's Integrations settings, as an admin. Quarter uses OAuth 2.0 client credentials with a certificate. The credentials are tested against NetSuite before they are saved, then sealed. They are never returned, logged or put in the audit log, and they are wiped on disconnect.
+
+1. In Quarter, create a certificate. Quarter makes an EC P-256 key pair and a certificate valid for 2 years. It keeps the private key sealed and never shows it, so no copy sits on a laptop or in a download folder.
+2. Download the certificate and upload it in NetSuite under Setup > Integration > OAuth 2.0 Client Credentials (M2M) Setup, for the integration record, an employee and the role.
+3. Connect with the account id, the integration's client id and the certificate id NetSuite shows. Quarter uses its newest certificate, or the one you name in `certificate`.
+
+Admins and security contacts are emailed 60 days and again 14 days before the certificate in use expires. To replace it, create a new certificate, upload it in NetSuite (NetSuite accepts several at once), and connect again with its certificate id: the old one is retired and its private key deleted. A key pair you made yourself still works, sent once as `private_key`, but a copy of it stays wherever it was made.
 
 These routes take a signed-in admin's session, never an API key: an API key answers `403 session_required`. A test project can connect Quarter's sample account of four vendors with `sandbox: true`. A live project refuses NetSuite sandbox accounts.
 
@@ -33,7 +39,7 @@ These routes take a signed-in admin's session, never an API key: an API key answ
 A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Payment button is gone, the bill is left off the Pay Bills page, and Electronic Bank Payments does not process it. Oracle's NetSuite help says so on its page Entering a Vendor Bill. Quarter uses that box, so a held bill is stopped by NetSuite itself, before any payment file exists.
 
 1. A workflow you add holds every new bill, with Quarter's field saying `Held by Quarter until checked`. It holds a bill again when its amount or vendor changes.
-2. Every 15 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
+2. Every 5 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
 3. Quarter writes each result to the bill. A clear bill comes off hold, and Quarter's field says it was cleared, with a link to the run. A held bill stays on hold, and the field says why and where to decide.
 4. A person approves or rejects the held payment in Quarter, signed in, never with an API key. Two different people approve at or above your two-person threshold. Quarter then takes the hold off an approved bill and keeps it on a rejected one.
 5. A bill that changes after its check, in amount, vendor or bank details, is checked again in a new run and held again if it needs to be. The first check is closed as rejected, with the reason.
@@ -42,7 +48,7 @@ A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Pay
 
 - Someone with edit access to bills in NetSuite can clear Payment Hold and pay at once. Quarter puts the hold back at the next sync and sends `integration.hold_overridden`, but a payment made in between is made. A bill that leaves the open bills while Quarter holds it is recorded in the audit log, since it was paid, voided or deleted in NetSuite.
 - Payments that do not come from a vendor bill: checks written directly, journal entries, and payments keyed in your bank portal.
-- A bank change made on the vendor in NetSuite after a bill was cleared is seen at the next sync, at most 15 minutes later. Sync now before a payment run to close that gap.
+- A bank change made on the vendor in NetSuite after a bill was cleared, or a vendor blocked in Quarter after its bill was cleared, holds the bill again at the next sync, at most 5 minutes later. Until then NetSuite can still pay it. Sync now before a payment run to close that gap, or have your NetSuite administrator set Payment Hold on the open bills of a vendor whose bank details change, with a workflow or script on Entity Bank Details.
 - Without the workflow, a new bill can be paid before Quarter first sees it. Quarter counts bills that arrive without a hold and shows the count in the console.
 - A payment file Electronic Bank Payments already generated. Quarter acts on the bill, before the file.
 
@@ -95,6 +101,8 @@ Turning the payment flow off stops every write and leaves every hold where it is
 
 Tests the credentials against NetSuite, saves them sealed and starts the first sync. Nothing is saved when NetSuite refuses them.
 
+Without `private_key`, the connection uses the newest certificate Quarter made for the project, or the one named in `certificate`; with none, it answers `409 certificate_required`.
+
 Errors: `account_id_invalid`, `client_id_invalid`, `certificate_id_invalid`, `private_key_invalid`, `sandbox_invalid`, `sandbox_test_only`, `sandbox_account_in_live`, `netsuite_unauthorized`, `netsuite_forbidden`, `netsuite_bank_details_unavailable`, `netsuite_query_failed` and `netsuite_response_too_large`, all `400`; `netsuite_account_changed`, `409`; `netsuite_unreachable`, `503`.
 
 **Body**
@@ -103,8 +111,9 @@ Errors: `account_id_invalid`, `client_id_invalid`, `certificate_id_invalid`, `pr
 | --- | --- | --- | --- |
 | `account_id` | string | Yes | Your NetSuite account id, such as `1234567`, or `1234567_SB1` for a sandbox (test projects only). |
 | `client_id` | string | Yes | The integration record's client id. |
-| `certificate_id` | string | Yes | The certificate id from the OAuth 2.0 client credentials mapping. |
-| `private_key` | string | Yes | The PEM private key of that certificate. |
+| `certificate_id` | string | Yes | The certificate id NetSuite shows for the uploaded certificate, in the OAuth 2.0 client credentials mapping. |
+| `certificate` | string | No | The id of a certificate Quarter made. Default: the newest. |
+| `private_key` | string | No | Only for a key pair you made yourself: its PEM private key, RSA of 3072 bits or more, or EC P-256. Leave it out to use the certificate Quarter made. |
 | `sandbox` | boolean | No | Test projects only: connect Quarter's sample account instead. No other field is needed. |
 
 Request:
@@ -113,7 +122,7 @@ Request:
 curl -X PUT "$QUARTER_API_URL/v1/integrations/netsuite" \
   -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
   -H "content-type: application/json" \
-  -d '{"account_id":"1234567","client_id":"<client id>","certificate_id":"<certificate id>","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"}'
+  -d '{"account_id":"1234567","client_id":"<client id>","certificate_id":"<certificate id>"}'
 ```
 
 Response:
@@ -153,7 +162,51 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
+}
+```
+
+### Create a certificate
+
+`POST /v1/integrations/netsuite/certificates` (auth: Signed-in admin)
+
+Makes an EC P-256 key pair and a self-signed certificate valid for 2 years, and keeps the private key sealed. The answer has the certificate to upload in NetSuite, never the key. The certificate in use keeps working until you connect with the new one.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/integrations/netsuite/certificates" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+  "object": "netsuite_certificate",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+  "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+  "not_before": "2026-10-05T15:12:40.000Z",
+  "not_after": "2028-10-04T15:12:40.000Z",
+  "days_left": 729,
+  "in_use": false,
+  "created_by": "dana@yourcompany",
+  "created_at": "2026-10-05T15:12:40.000Z"
 }
 ```
 
@@ -226,7 +279,21 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```
 
@@ -234,7 +301,7 @@ Response:
 
 `POST /v1/integrations/netsuite/sync` (auth: Signed-in admin)
 
-Starts a sync now instead of at the next one, which is every hour, or every 15 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
+Starts a sync now instead of at the next one, which is every hour, or every 5 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
 
 Request:
 
@@ -288,7 +355,21 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```
 
@@ -296,7 +377,7 @@ Response:
 
 `PUT /v1/integrations/netsuite/payment_flow` (auth: Signed-in admin)
 
-On, Quarter checks open bills every 15 minutes and writes its result to each one. Off, Quarter stops writing and leaves every hold where it is. Before turning it on, Quarter reads one bill with Payment Hold and its own field.
+On, Quarter checks open bills every 5 minutes and writes its result to each one. Off, Quarter stops writing and leaves every hold where it is. Before turning it on, Quarter reads one bill with Payment Hold and its own field.
 
 Errors: `enabled_invalid`, `production_account_in_test`, `netsuite_field_missing`, `netsuite_unauthorized` and `netsuite_forbidden`, all `400`; `not_connected`, `409`; `netsuite_unreachable`, `503`.
 
@@ -360,7 +441,21 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```
 
@@ -472,6 +567,20 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```

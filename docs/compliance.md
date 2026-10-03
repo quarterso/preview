@@ -93,8 +93,27 @@ Each organization's audit log is a hash chain. The database gives every entry it
 
 - An admin checks the whole chain in the console, under Compliance, or with [`GET /v1/audit_log/verify`](/docs/compliance.md#get-v1-audit-log-verify). It names the first entry that was changed or removed.
 - Someone who could rewrite every hash after a change could make the chain look whole again. So once a day Quarter emails the latest hash of each organization's chain to its own staff inbox, outside the database and its host. Pass a hash you kept as `anchor_seq` and `anchor_hash`, and the check also says whether that entry still has it.
-- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Those entries are marked, and the check counts them as `redacted`: their links are checked, their content is not.
+- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Those entries are marked, and the check counts them as `redacted` apart from `content_checked`: their links and their shape are checked, their content cannot be. An entry marked redacted breaks the chain as `redaction_invalid` unless it has the one shape a privacy request leaves and a privacy request is recorded at that moment or after.
 - Entries written before the chain existed were chained in order, oldest first, when it was added.
+
+## Security events
+
+Quarter keeps a separate record of security events, with who acted, from which address, and when. It is append-only, and each organization's events form their own hash chain, built and anchored in the daily email the same way as the audit log.
+
+| Event | Severity |
+| --- | --- |
+| A passkey reset by an admin | High |
+| The employee account list replaced | High |
+| A webhook endpoint added, which receives payee names and amounts | High |
+| The NetSuite connection made or removed, a certificate created, or the payment flow turned on or off | High |
+| An API key used from a network it was not used from before (an IPv4 /24 or IPv6 /48; its first use sets the start) | High |
+| Security contacts or evidence retention changed | High |
+| One person downloading more than 5 files with full account numbers in 24 hours | High |
+| A passkey added or removed; a member's first passkey approved; an API key created or revoked | Medium |
+| A member invited or removed, or a role changed; check settings changed (admins are already emailed each of these) | Medium |
+| An export downloaded: the organization export, a claim file, the vendor health CSV, the vendor changes report, or a page of the audit log past the first or longer than 100 entries. A run released, or a payment or Positive Pay file downloaded: each carries full account numbers | Medium |
+
+High events are emailed to your admins and security contacts, all waiting events in one email, at most every 15 minutes. Alert emails stop at 40 a day across Quarter, so they never use up the mail that sign-in links and vendor codes need; organizations' alerts go first, and past the limit alerts wait until the next day. An address that sends 20 unknown or expired credentials in a minute is recorded in Quarter's own chain and Quarter's staff are told, at most every 3 hours, because nothing names whose account it was after.
 
 ## The claim file
 
@@ -180,6 +199,7 @@ Response:
     "payee_name_altered": "default",
     "just_under_threshold": "default",
     "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
@@ -191,6 +211,7 @@ Response:
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
+    "payroll_account_unlisted",
     "second_person_required"
   ],
   "defaults": {
@@ -212,6 +233,7 @@ Response:
     "payee_name_altered": "warn",
     "just_under_threshold": "warn",
     "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
@@ -239,6 +261,7 @@ Response:
     "payee_name_altered": "Payee line differs from the vendor name",
     "just_under_threshold": "Just under the two-person threshold",
     "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
@@ -303,6 +326,10 @@ Response:
         {
           "name": "Sanctions list out of date, so not screened",
           "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
         }
       ]
     },
@@ -331,6 +358,19 @@ Response:
       "variants": [
         {
           "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
           "points": 10
         }
       ]
@@ -370,6 +410,10 @@ Response:
         {
           "name": "Paid by the person who changed the bank details",
           "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
         }
       ]
     }
@@ -516,7 +560,7 @@ Response:
 
 `GET /v1/audit_log/verify` (auth: API key or signed-in admin)
 
-Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed` or `hash_changed`. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
+Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed`, `hash_changed` or `redaction_invalid`. `content_checked` counts the entries whose content was recomputed and matched; `redacted` ones are counted apart. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
 
 **Query parameters**
 
@@ -540,6 +584,7 @@ Response:
   "organization_id": "org_5RkT8wPq3NmV7xLc2BzH",
   "intact": true,
   "entries": 43,
+  "content_checked": 43,
   "redacted": 0,
   "complete": true,
   "head": {
@@ -553,6 +598,99 @@ Response:
     "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532",
     "matches": true
   },
+  "checked_at": "2026-10-07T08:00:00.000Z"
+}
+```
+
+### List security events
+
+`GET /v1/security_events` (auth: Signed-in admin)
+
+Your [security events](/docs/compliance.md#security-events), newest first, a page at a time: pass the `id` of the last event you have as `after` while `has_more` is true. `alerted_at` is when the alert email went out, for high events. An API key answers `403 session_required`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `severity` | string | No | `high` or `medium`. Anything else answers `400 severity_invalid`. |
+| `limit` | integer | No | 1 to 200. Default 50. |
+| `after` | string | No | The `id` of the last event of the previous page. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/security_events?severity=high&limit=1" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "sev_8LmQ2vTx5RnK9wPc4HdJ",
+      "object": "security_event",
+      "kind": "organization_settings_changed",
+      "severity": "high",
+      "title": "Security contacts or evidence retention changed",
+      "actor": "controller@yourcompany",
+      "address": "203.0.113.24",
+      "subject": {
+        "type": "organization",
+        "id": "org_5RkT8wPq3NmV7xLc2BzH"
+      },
+      "details": {
+        "fields": [
+          "security_contacts"
+        ]
+      },
+      "created_at": "2026-10-06T14:02:51.000Z",
+      "alerted_at": "2026-10-06T14:02:52.000Z"
+    }
+  ]
+}
+```
+
+### Check the security events were not altered
+
+`GET /v1/security_events/verify` (auth: Signed-in admin)
+
+Recomputes your security event chain, exactly as [Check the audit log was not altered](/docs/compliance.md#get-v1-audit-log-verify) does the audit log, and answers in the same shape with `object: "security_chain_verification"`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `anchor_seq` | integer | No | The number of an event whose hash you kept. |
+| `anchor_hash` | string | No | That hash: 64 characters, `0` to `9` and `a` to `f`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/security_events/verify" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "security_chain_verification",
+  "organization_id": "org_5RkT8wPq3NmV7xLc2BzH",
+  "intact": true,
+  "entries": 12,
+  "content_checked": 12,
+  "redacted": 0,
+  "complete": true,
+  "head": {
+    "chain_seq": 12,
+    "hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b",
+    "created_at": "2026-10-06T14:02:51.000Z"
+  },
+  "first_break": null,
   "checked_at": "2026-10-07T08:00:00.000Z"
 }
 ```
@@ -921,9 +1059,11 @@ Three warnings look for patterns rather than lists: [`split_below_threshold`](/d
 
 ### Import the employee account list
 
-`POST /v1/employee_accounts/import` (auth: API key)
+`POST /v1/employee_accounts/import` (auth: Signed-in admin)
 
-Replaces the list with these accounts. Needs an admin, or an API key. Returns how many accounts the list now holds, and how many were added and removed.
+Replaces the list with these accounts. Needs a signed-in admin, never an API key, since the list decides which payroll warns instead of holding. Returns how many accounts the list now holds, and how many were added and removed. Every change is a high [security event](/docs/compliance.md#security-events) and is emailed to the admins.
+
+A list that would remove more than half the accounts on file answers `409 confirm_required`; send it again with `confirm: true` to replace the list.
 
 Errors, all `400`: `employees_invalid`, `employee_ref_invalid`, `routing_number_invalid` and `account_number_invalid`. The message names the employee by position.
 
@@ -932,12 +1072,13 @@ Errors, all `400`: `employees_invalid`, `employee_ref_invalid`, `routing_number_
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `employees` | object[] | Yes | 1 to 10,000 accounts, each with `employee_ref` (your own id for the employee, up to 100 characters), `routing_number` and `account_number`. |
+| `confirm` | boolean | No | `true` to replace the list even when the new one removes more than half its accounts. |
 
 Request:
 
 ```bash
 curl -X POST "$QUARTER_API_URL/v1/employee_accounts/import" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
   -H "content-type: application/json" \
   -d '{"employees":[{"employee_ref":"E-1043","routing_number":"071921008","account_number":"88301274"},{"employee_ref":"E-1187","routing_number":"122611005","account_number":"40917736"}]}'
 ```

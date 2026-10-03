@@ -37,7 +37,7 @@ Response:
 | Any request | 400 | `request_invalid`, `limit_invalid`, `json_too_deep`. `request_invalid` covers a body that is not valid JSON; `json_too_deep` one nested more than 32 levels. |
 | Any request | 413, 415 | `payload_too_large`, `unsupported_media_type`. Send `application/json`, up to 256 KB, or 10 MB to the payment run and import routes. |
 | Any request | 401 | `api_key_missing`, `api_key_invalid`, `api_key_expired`, `session_invalid`, `session_expired` |
-| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`, as it does for a released payment file or Positive Pay file. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions, and on downloading those files, when the last check is more than 5 minutes old. |
+| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`, `passkey_awaiting_approval`, `payroll_needs_admin`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`, as it does for a released payment file or Positive Pay file. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console. A first passkey answers `passkey_awaiting_approval` until another admin approves it. A session answers `passkey_check_required` on those decisions, and on downloading those files, when the last check is more than 5 minutes old. |
 | Any request | 429 | `rate_limited`, `too_many_failed_authentications` |
 | Any request | 500 | `internal` |
 | Any request | 404 | `route_not_found`, `vendor_not_found`, `bank_account_not_found`, `payment_run_not_found`, `payment_item_not_found`, `payment_check_not_found`, `verification_request_not_found`, `webhook_delivery_not_found` |
@@ -51,12 +51,13 @@ Response:
 | [Verification links](/docs/verification.md) | 409 | `email_first`, `request_closed`, `bank_login_unavailable` |
 | [Verification links](/docs/verification.md) | 429 | `too_many_attempts` |
 | [Verification links](/docs/verification.md) | 503 | `bank_login_not_configured` |
-| [Payment runs](/docs/payment-runs.md) | 400 | `format_invalid`, `file_required`, `file_invalid`, `items_required`, `amount_invalid`, `no_payments`, `too_many_payments`, `payee_name_invalid` |
+| [Payment runs](/docs/payment-runs.md) | 400 | `format_invalid`, `file_required`, `file_invalid`, `items_required`, `amount_invalid`, `no_payments`, `too_many_payments`, `payee_name_invalid`, `payroll_invalid` |
 | [Payment runs](/docs/payment-runs.md) | 409 | `duplicate_file`, `test_mode_limit`, `trial_ended`, `test_mode_only`, `no_vendors_with_bank_details` |
+| [Payment runs](/docs/payment-runs.md) | 503 | `scan_busy`, `scan_timeout` |
 | [Payment checks](/docs/payment-checks.md) | 400 | `rail_invalid`, `payee_name_required`, `currency_invalid`, `iban_format_invalid`, `bic_invalid` |
 | [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `template_invalid`, `template_does_not_fit` |
 | [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `approver_recently_added`, `releaser_changed_details` |
-| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `payments_held_since_scan`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 400 | `description_required`, `report_not_open` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 429 | `fraud_report_limit` |
 | [Settings](/docs/checks.md#settings) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |

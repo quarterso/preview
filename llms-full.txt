@@ -158,6 +158,7 @@ Response:
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -182,7 +183,8 @@ Response:
       "changed_by_note": null
     }
   ],
-  "evidence": []
+  "evidence": [],
+  "sanctions_findings": []
 }
 ```
 
@@ -215,6 +217,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -255,7 +258,8 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```
 
@@ -599,7 +603,7 @@ Response:
 ## Next
 
 - [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
-- [Checks](/docs/checks.md): all twenty-five checks and how to set each one.
+- [Checks](/docs/checks.md): all twenty-six checks and how to set each one.
 - [Decisions and release](/docs/releases.md): two-person approval, cancel, and what release guarantees.
 - [Payment checks](/docs/payment-checks.md): one wire or instant payment, checked before it is keyed in.
 - [Webhooks](/docs/webhooks.md): hear about held payments as they happen.
@@ -639,6 +643,26 @@ For a request that came by email, send the sender's address as `request_sender`.
 
 A lookup waits at most 4 seconds and is kept for a day. When a registry does not answer, the details are still recorded and the record says `unavailable`. These records add [points](/docs/checks.md#points) and warnings only while the new details are unconfirmed, and never hold a payment by themselves: the change is already held until someone confirms it. They cannot catch a request sent from the vendor's own mailbox after someone took it over, so a call-back is still what confirms a change.
 
+## Vendor health
+
+The vendor health report lists what to clean up in your vendor master. It reads only what is on file, so it works on an import in a test project, before any payment is checked. Blocked vendors are left out, and a vendor can be on more than one list.
+
+| List | A vendor is on it when |
+| --- | --- |
+| `stale` | Its last payment was over 12 months ago: the later of a payment Quarter released and your `last_paid_on`. A vendor with no payment known counts once it has been on file a year. |
+| `duplicate_account` | Its current bank details are also the current details of another vendor. |
+| `duplicate_name` | Its name is almost the same as another vendor's, after legal suffixes, case and punctuation are ignored. |
+| `unverified` | Its first bank details were never confirmed. |
+| `change_unconfirmed` | Its current bank details replaced earlier ones and were not confirmed. |
+| `no_contact` | It has no `email_domain`, and no vendor link or call-back was ever made. |
+| `individual` | It is a person or sole proprietor. |
+
+## Sanctions re-screening
+
+Each payment is screened when it is checked. A vendor can also be added to a list between payments, so when Quarter's copy of a sanctions list changes (a listed name or id added, changed or removed, not just fetched again), the worker screens the name of every vendor that is not blocked again, for every business, the same way.
+
+A possible match not found before is recorded on the vendor in `sanctions_findings`, with the listed name, the list, its programs and when it was found, and in the audit log as `vendor.sanctions_match_found`. Your admins and security contacts get one email listing the new matches. A match found before is never recorded or emailed again. Payments to the vendor are then held as [`sanctions_match`](/docs/checks.md#sanctions-match), whatever name the payment file gives the payee. Findings are never edited or deleted.
+
 ## What Quarter keeps
 
 - The routing number, in full. It names a bank, not an account.
@@ -664,6 +688,7 @@ An `external_id` already used by another of your vendors answers `409 external_i
 | `email_domain` | string | No | The domain the vendor emails from, such as `harborpoint.example`. A verification code sent anywhere else is recorded as a failed check. |
 | `external_id` | string | No | Your own id for the vendor, unique among your vendors. A CSV run can match payments by it. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
+| `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
 | `routing_number` | string | No | The 9-digit ABA routing number. Spaces are ignored. |
 | `account_number` | string | No | 4 to 17 letters or digits. Spaces and dashes are ignored. Sealed at rest; never returned. |
 | `holder_name` | string | No | The name on the bank account, if you have it. Used when matching payee names. |
@@ -690,6 +715,7 @@ Response:
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -714,7 +740,8 @@ Response:
       "changed_by_note": null
     }
   ],
-  "evidence": []
+  "evidence": [],
+  "sanctions_findings": []
 }
 ```
 
@@ -758,6 +785,7 @@ Response:
       "external_id": "V-0388",
       "status": "verified",
       "individual": false,
+      "last_paid_on": "2026-09-30",
       "bank_account": {
         "last4": "1904",
         "status": "verified",
@@ -814,6 +842,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -854,7 +883,8 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```
 
@@ -862,7 +892,7 @@ Response:
 
 `PATCH /v1/vendors/{vendor}` (auth: API key)
 
-Changes the name, the email domain, whether the vendor is a person, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
+Changes the name, the email domain, whether the vendor is a person, the last payment date, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
 
 **Path parameters**
 
@@ -877,6 +907,7 @@ Changes the name, the email domain, whether the vendor is a person, or the statu
 | `name` | string | No | The new name. |
 | `email_domain` | string | No | The new email domain. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
+| `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
 | `status` | string | No | `blocked`, or `unverified` to lift a block. Only a signed-in admin can lift a block; anyone else, and any API key, answers `403 unblock_needs_admin`. |
 
 Request:
@@ -899,6 +930,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -939,7 +971,8 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```
 
@@ -949,13 +982,15 @@ Response:
 
 Loads your vendor master in one request, up to 5,000 vendors, all or nothing. Each row has the same fields as [Add a vendor](/docs/vendors.md#post-v1-vendors). Bank details from an import are recorded with `source: "import"` and start `unverified`.
 
-A row whose `external_id` matches an existing vendor counts as `updated`: its name is kept, and bank details that differ from the current ones are recorded as a change, which holds its payments until confirmed. Every other row creates a vendor. Export your vendor list as CSV from your accounting tool and send its rows as JSON.
+A row whose `external_id` matches an existing vendor counts as `updated`: its name is kept, bank details that differ from the current ones are recorded as a change, which holds its payments until confirmed, and a later `last_paid_on` replaces an earlier one. Every other row creates a vendor. Export your vendor list as CSV from your accounting tool and send its rows as JSON.
+
+A test project holds up to 5,000 vendors, so you can import your whole vendor master and read its [health report](/docs/vendors.md#vendor-health) before going live. Test payment runs still stop at 50 payments.
 
 **Body**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
+| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `last_paid_on`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
 
 Request:
 
@@ -1020,6 +1055,7 @@ Response:
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -1089,6 +1125,66 @@ Response:
       "actor": "dana@yourcompany",
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
+    }
+  ],
+  "sanctions_findings": []
+}
+```
+
+### Report vendor health
+
+`GET /v1/reports/vendor_health` (auth: API key)
+
+The [vendor health](/docs/vendors.md#vendor-health) lists, each with a complete `count` and up to 1,000 vendors in `data`; `truncated` says when there are more, and on `duplicate_name` also when the vendor master has so many similar names that the count may be short. `vendors` counts the vendors on file, blocked ones left out. Any role can read it, and an API key can too.
+
+With `format=csv`, the same lists as a CSV file, one row per vendor per list: `list`, `vendor_id`, `vendor_name`, `detail`. A cell that starts with `=`, `+`, `-` or `@` is sent with a leading `'`, so a spreadsheet shows it as text. Any other format answers `400 format_invalid`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `format` | string | No | `json` (default) or `csv`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/reports/vendor_health" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "vendor_health_report",
+  "generated_at": "2026-10-07T09:00:00.000Z",
+  "vendors": 412,
+  "sections": [
+    {
+      "code": "stale",
+      "title": "Not paid in 12 months",
+      "count": 1,
+      "truncated": false,
+      "data": [
+        {
+          "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
+          "vendor_name": "Cedar Ridge Supply Co.",
+          "detail": "last paid 2025-06-30"
+        }
+      ]
+    },
+    {
+      "code": "change_unconfirmed",
+      "title": "Bank details changed and not confirmed",
+      "count": 1,
+      "truncated": false,
+      "data": [
+        {
+          "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+          "vendor_name": "Harbor Point Logistics LLC",
+          "detail": "account ending 8226, changed 2026-10-07"
+        }
+      ]
     }
   ]
 }
@@ -1479,6 +1575,7 @@ Response:
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
+  "last_paid_on": null,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -1519,7 +1616,8 @@ Response:
       "created_at": "2026-10-05T13:52:40.000Z",
       "object": "evidence"
     }
-  ]
+  ],
+  "sanctions_findings": []
 }
 ```
 
@@ -1537,7 +1635,7 @@ The body is JSON. `format` says what the run is: `nacha`, `csv` or `check_regist
 
 ### NACHA files
 
-A standard NACHA file of 94-character records, as your accounting system or bank portal writes it. Quarter checks every credit entry, which is every payment out. Debits and prenotes are not checked, and they stay in the released file as they were. An entry with a transaction code a business does not send, such as a return (codes 21, 31, 41 and 51), refuses the whole file with `400 file_invalid`.
+A standard NACHA file of 94-character records, as your accounting system or bank portal writes it. Quarter checks every credit entry, which is every payment out. Debits and prenotes are not checked, and they stay in the released file as they were. An entry with a transaction code a business does not send, such as a return (codes 21, 31, 41 and 51), refuses the whole file with `400 file_invalid`. So do a record with a character that is not plain ASCII, such as a lone carriage return, and an IAT (international) batch, whose payee and bank sit in addenda records Quarter does not read yet.
 
 | Item field | Taken from |
 | --- | --- |
@@ -1580,7 +1678,9 @@ Accounting tools and bank portals export payments as CSV, each with its own colu
 - The first row is the header. Other columns are ignored and kept in the released file.
 - A file the bank could read differently from Quarter is refused with `400 file_invalid`: two columns for the payee, routing number, account number or amount, such as `amount` and `total`, or a column Quarter does not read whose name looks like an account, a routing number or an amount, such as `iban` or `amount_due`. Rename or remove the column.
 - Amounts are positive dollars, with or without `$` and thousands separators: `48250`, `48,250.00` and `$48,250.00` all work. A bad amount refuses the whole file with `400 file_invalid` and the row number.
-- Quoted fields may hold commas, quotes and line breaks.
+- Quoted fields may hold commas and quotes, except the payee and the reference: a comma or quote there refuses the file, since a bank importer that splits on commas would read another field.
+- A cell with a line break or another control character, in any column, refuses the file with `400 file_invalid` and its row and column. A bank importer that splits lines first would read the rest as a payment of its own.
+- A routing number is 9 digits. 8 digits are read as a routing number whose leading zero a spreadsheet dropped, and the released file carries all 9. Anything else refuses the file. An account number is 4 to 17 letters or digits, with spaces and dashes taken out.
 - A date is kept as `effective_date` when it is written `YYYY-MM-DD`.
 
 Headers Quarter reads:
@@ -1593,7 +1693,7 @@ Beneficiary Name,ABA,Beneficiary Account,Payment Amount,Effective Date,Reference
 
 ### JSON items
 
-Send the payments directly, for example from your own payables system. The released file is the same list, as JSON, without the rejected items. Only `amount` is checked for shape: a payment with no routing number is held as `routing_invalid`, and one with no payee name matches no vendor.
+Send the payments directly, for example from your own payables system. The released file is the same list, as JSON, without the rejected items and with only the fields Quarter read. `amount` must be a positive amount, `routing_number` 9 digits and `account_number` 4 to 17 letters or digits, or the list is refused naming the item. A payment with no payee name matches no vendor, and a payee name with a line break refuses the list.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -1682,7 +1782,7 @@ A payment that finds no vendor is held as [`unknown_payee`](/docs/checks.md#unkn
 
 ## The same file twice
 
-Uploading a file that is byte for byte the same as a run that was not cancelled answers `409 duplicate_file`, with the id of the earlier run. Sending the same file to the bank twice pays everyone twice. The same file uploaded twice at the same moment is refused too. Two different files uploaded together are checked one after the other, so a payment in both is held as [`duplicate_payment`](/docs/checks.md#duplicate-payment) in the file checked second.
+Uploading a file that is byte for byte the same as a run that was not cancelled answers `409 duplicate_file`, with the id of the earlier run. Sending the same file to the bank twice pays everyone twice. The same file uploaded twice at the same moment is refused too. Two different files uploaded together are checked one after the other, so a payment in both is held as [`duplicate_payment`](/docs/checks.md#duplicate-payment) in the file checked second. A file that waits more than 55 seconds behind another answers `503 scan_busy` and nothing is recorded; send it again.
 
 ## Endpoints
 
@@ -1705,7 +1805,7 @@ In this example, Harbor Point and Cedar Ridge are known vendors with confirmed b
 | `items` | object[] | No | The payments. Required for `json`. See [JSON items](/docs/payment-runs.md#json). |
 | `name` | string | No | A name for the run, up to 200 characters. Default `Payment run YYYY-MM-DD`. |
 | `uploaded_by` | string | No | Email of the person uploading. Defaults to the person signed in, or the API key. |
-| `payroll` | boolean | No | `true` for a payroll CSV, check register or list: its payments [warn and never hold](/docs/checks.md#payroll), except the checks that always hold. A NACHA file says this in each batch's entry class, so sending `payroll` with one answers `400 payroll_invalid`. |
+| `payroll` | boolean | No | `true` for a payroll CSV, check register or list, from a signed-in admin only (anyone else is answered `403 payroll_needs_admin`): pay to an account on your employee list [warns instead of holding](/docs/checks.md#payroll), and the checks that always hold still hold. A NACHA file says this in each batch's entry class, so sending `payroll` with one answers `400 payroll_invalid`. |
 
 Request:
 
@@ -2175,6 +2275,10 @@ Decisions and releases are made by people signed in to the Quarter console, with
 - Nobody approves a payment to a vendor whose bank details they added in the last 90 days: `403 approver_changed_details`. Rejecting is allowed. See [segregation of duties](/docs/compliance.md#segregation-of-duties).
 - Nobody releases a run with a clear payment to a vendor whose bank details they added in the last 90 days: `403 releaser_changed_details`. Someone else releases it. A payment to that vendor that someone else approved does not stop the release.
 
+## Checked again at release
+
+Things change between a scan and a release. So releasing a run runs the checks again on every payment it would send. A payment that now holds for a new reason is held again. Its vendor was blocked, say, or its bank details changed, its payee was added to a sanctions list, or its account was reported or left your employee list. Its earlier approval is taken back, since it was given for other reasons, and the release answers `409 payments_held_since_scan`. Decide those payments, then release. The checks about other payments (duplicates, totals for two people, check numbers) were settled at the scan and are not run again. A payment check keeps no account number, so before an approval releases it Quarter looks again only for a blocked vendor and a sanctions match. A NetSuite bill already cleared is held again when its vendor is blocked in Quarter or its bill or bank details change in NetSuite; other new reasons wait until the bill next changes.
+
 ## What a hold turned out to be
 
 Once a held payment has a decision, a person records what it was: `fraud_attempt`, `error` (wrong amount, duplicate or wrong details), `legitimate` or `unknown`, with a required `reason` and an optional note. The console asks for it when someone rejects a payment; an approval may leave it for later. It moves no money and changes no decision.
@@ -2210,6 +2314,8 @@ Fraud often comes to light when the real vendor asks why it was not paid. So Qua
 
 Every payment at or above the two-person threshold is held as [`second_person_required`](/docs/checks.md#second-person-required), even when no other check holds it, and its approval needs two different people. The threshold is `two_person_threshold` in [settings](/docs/checks.md#settings), $50,000 by default. The first approval is recorded and the payment stays `held`. A second approval by a different person makes it `approved`. The same person approving twice answers `409 second_approver_required`.
 
+The threshold also applies to what one person would send to one payee in pieces. Payments under it to one account, one vendor or one check payee, in this run and in runs of the last 7 days, that together reach it are each held for two people, payroll included. Payments two people approved, and rejected ones, are not counted.
+
 A rejection needs one person, whatever the amount. People are compared by their email, ignoring case.
 
 A $62,400.00 payment, after each approval, After the first:
@@ -2243,8 +2349,8 @@ A $62,400.00 payment, after each approval, After the second:
 ## What release returns
 
 - **NACHA:** the same file without the rejected entries and their addenda. Batch control and file control totals (entry count, entry hash, debit and credit totals, batch and block counts) are recomputed, empty batches are dropped, and the file is padded to a multiple of ten records. Every other byte is as you sent it, including line endings.
-- **CSV:** the same header and rows, without the rejected rows.
-- **JSON:** the items you sent, as a JSON array in `file`, without the rejected ones.
+- **CSV:** the same header and rows, without the rejected rows. Routing and account numbers are written as Quarter checked them: 9 digits, a leading zero a spreadsheet dropped put back, spaces and dashes taken out.
+- **JSON:** the items you sent, as a JSON array in `file`, without the rejected ones, and with only the fields Quarter read: `payee_name`, `routing_number`, `account_number`, `amount`, and `effective_date`, `reference` and `vendor_id` where given.
 - **Check register:** the issued-check file for your bank's [Positive Pay](/docs/releases.md#positive-pay), in the layout you chose.
 
 Upload `file` to your bank as you would have uploaded the original. Quarter does not send it anywhere.
@@ -2639,7 +2745,7 @@ Response:
 
 `POST /v1/payment_runs/{run}/release` (auth: Signed-in approver)
 
-Releases the run once no payment is held, and returns the file to send. While a payment is held, the answer is `409 payments_still_held` with how many. The `payment_run.released` [event](/docs/webhooks.md#event-types) fires.
+Releases the run once no payment is held, and returns the file to send with its SHA-256 (`sha256`), so you can compare it with the file your bank receives. While a payment is held, the answer is `409 payments_still_held` with how many. Every payment is [checked again](/docs/releases.md#release-recheck) first; one that now holds is held again and the answer is `409 payments_held_since_scan`. The `payment_run.released` [event](/docs/webhooks.md#event-types) fires, and the answer, which carries full account numbers, is a `full_numbers_downloaded` [security event](/docs/compliance.md#security-events).
 
 A [payment check](/docs/payment-checks.md) is released by itself when it is clear or approved. Releasing one that is held or rejected answers `409 released_when_approved`.
 
@@ -2674,7 +2780,8 @@ Response:
   "object": "payment_run_release",
   "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
   "format": "nacha",
-  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n",
+  "sha256": "bc9d67721d4f3e0d93e2a0a865abb6487e86c992c467cf58580fa7056e0a18bc"
 }
 ```
 
@@ -2703,6 +2810,7 @@ Releasing a check run:
   "run_id": "run_3KxP9vLq2TmW7nRb5HcZ",
   "format": "check_register",
   "file": "account_number,check_number,amount,issue_date,payee,record_type\r\n4400193318,10452,3912.40,10/06/2026,Cedar Ridge Supply Co.,I\r\n4400193318,10453,2150.00,10/06/2026,Harbor Point Logistics LLC,V\r\n",
+  "sha256": "c5979c76d58538b3744fb09bcf6cfb046cab044915a910404d74f8b3f7ce0d71",
   "template": "generic_csv",
   "extension": "csv"
 }
@@ -2734,7 +2842,49 @@ Response:
   "object": "payment_run_file",
   "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
   "format": "nacha",
-  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n",
+  "sha256": "bc9d67721d4f3e0d93e2a0a865abb6487e86c992c467cf58580fa7056e0a18bc"
+}
+```
+
+### Check a file against its run
+
+`POST /v1/payment_runs/{run}/file_checks` (auth: API key)
+
+Says whether a file is the one Quarter released for the run (`released`), the one uploaded to it (`uploaded`), or neither (`null`). Use it before you upload a file to your bank, or on the copy your bank says it received, to show that the file sent is the file that was checked. Malware or a person that changes one account number after download makes the answer `null`.
+
+Quarter compares a keyed hash it recorded at upload and at release, and keeps nothing of the file you send. Any role and API keys may ask, 30 times a minute per organization. Each check is recorded in the audit log with its answer. A payment check or a NetSuite run answers `409 no_payment_file`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `file` | string | Yes | The text of the file. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/file_checks" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"file":"101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"}'
+```
+
+Response:
+
+```json
+{
+  "object": "file_check",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "matches": "released",
+  "sha256": "bc9d67721d4f3e0d93e2a0a865abb6487e86c992c467cf58580fa7056e0a18bc",
+  "released_at": "2026-10-06T09:30:00.000Z"
 }
 ```
 
@@ -2772,6 +2922,7 @@ Response:
   "template": "generic_csv",
   "extension": "csv",
   "file": "account_number,check_number,amount,issue_date,payee,record_type\r\n4400193318,10452,3912.40,10/06/2026,Cedar Ridge Supply Co.,I\r\n4400193318,10453,2150.00,10/06/2026,Harbor Point Logistics LLC,V\r\n",
+  "sha256": "c5979c76d58538b3744fb09bcf6cfb046cab044915a910404d74f8b3f7ce0d71",
   "issued": 1,
   "issued_amount": 3912.4,
   "voids": 1,
@@ -3413,7 +3564,7 @@ Response:
 
 # Checks and settings
 
-> The twenty-five checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
+> The twenty-six checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
 
 Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a `code`, a `severity`, a `message` and its `points`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
 
@@ -3445,20 +3596,21 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | 30 | The same amount to the same account twice. |
 | [`shared_account`](/docs/checks.md#shared-account) | Hold | 30 | Another of your vendors is paid at this same account. |
 | [`network_flagged`](/docs/checks.md#network-flagged) | Warn | 30 | A business on Quarter reported this account in connection with a payment fraud. |
-| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened) | The payee name resembles a name on OFAC's SDN or Consolidated lists. |
+| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened) | The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists. |
 | [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | 25 | The routing number is not a valid US bank routing number. |
 | [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | 25 | The IBAN on an international payment fails its checksum. |
 | [`check_number_reused`](/docs/checks.md#check-number-reused) | Hold | 30 | A check number already used on the same account. |
 | [`payee_name_altered`](/docs/checks.md#payee-name-altered) | Warn | 20 | A check's payee line is close to the vendor's name on file, but not the same. |
 | [`just_under_threshold`](/docs/checks.md#just-under-threshold) | Warn | 10 | A check for just under the two-person threshold. |
 | [`employee_account_match`](/docs/checks.md#employee-account-match) | Hold | 40; 10 (payroll to an employee account, employee id not compared) | The account paid, or the vendor's account on file, is on your employee account list. |
+| [`payroll_account_unlisted`](/docs/checks.md#payroll-account-unlisted) | Hold (always) | 30; 30 (several payroll entries to one account); 10 (payroll that could not be compared with an employee list) | A payroll payment that Quarter cannot tell from a payment to anyone. |
 | [`vendor_dormant_reactivated`](/docs/checks.md#vendor-dormant-reactivated) | Warn | 20 | A vendor not paid for a year has bank details that changed since its last payment. |
 | [`split_below_threshold`](/docs/checks.md#split-below-threshold) | Warn | 15 | Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more. |
 | [`vendor_new_paid_fast`](/docs/checks.md#vendor-new-paid-fast) | Warn | 15 | A vendor added in the last 14 days is paid for the first time by the person who added it. |
 | [`request_domain_lookalike`](/docs/checks.md#request-domain-lookalike) | Warn | 40; 15 (change request came from a domain other than the vendor's) | The request for the unconfirmed bank details came by email from a domain that imitates the vendor's, or from a domain other than the vendor's. |
 | [`request_domain_new`](/docs/checks.md#request-domain-new) | Warn | 30 | The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added. |
 | [`request_domain_no_dmarc`](/docs/checks.md#request-domain-no-dmarc) | Warn | 5 | The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name. |
-| [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details) | The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days. |
+| [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details); 0 (payments to one payee add up to the two-person threshold) | The payment is at or above the two-person threshold, it is one of several payments to one payee that together reach it, or the person paying changed the vendor's bank details in the last 90 days. |
 
 ## Points and the order of held payments
 
@@ -3473,13 +3625,14 @@ Each check has a fixed number of points, in the table above. A payment's `score`
 
 ## Payroll
 
-Payroll and other payments to people are checked like any payment, but most findings warn instead of holding, so wages are not held up. A payment is payroll when its NACHA batch has a consumer entry class (`PPD`, or `WEB`, `TEL`, `CIE`, `POP`, `ARC`, `BOC`, `RCK`, `POS`, `MTE`, `SHR`), or when a CSV, check register or list is sent with `payroll: true`. Its item shows `payroll: true` and, for NACHA, its `entry_class`.
+Payroll and other payments to people are checked like any payment. Pay to an account on your employee account list, once in the run, warns instead of holding, so wages are not held up. Anything Quarter cannot tell from a payment to anyone holds. A payment is payroll when its NACHA batch has a consumer entry class (`PPD`, or `WEB`, `TEL`, `CIE`, `POP`, `ARC`, `BOC`, `RCK`, `POS`, `MTE`, `SHR`), or when a signed-in admin sends a CSV, check register or list with `payroll: true`. Its item shows `payroll: true` and, for NACHA, its `entry_class`.
 
-- A finding that would hold is a warning instead, whatever your settings say for that check.
-- `sanctions_match` and `second_person_required` still hold: a payroll payment at or above the two-person threshold needs two people, and so does one paid by the person who changed the payee's bank details.
+- A finding that would hold is a warning instead, whatever your settings say for that check, except the checks that always hold.
+- [`payroll_account_unlisted`](/docs/checks.md#payroll-account-unlisted) holds pay to an account not on your employee list, several entries to one account, and payroll with no list to compare with, or by check.
+- `sanctions_match` and `second_person_required` still hold: a payroll payment at or above the two-person threshold needs two people, and so do payroll payments to one account that together reach it, and one paid by the person who changed the payee's bank details.
 - [`employee_account_match`](/docs/checks.md#employee-account-match) holds a payroll payment to an employee's account made under another employee's id, and warns when the id cannot be compared.
 - `unknown_payee` does not run on payroll: paying people who are not vendors is what payroll does.
-- Anyone who can upload a run, a signed-in person or an API key, can send a payroll file. The audit log records who uploaded it and how many of its payments were payroll.
+- Only a signed-in admin can send `payroll: true`; anyone else is answered `403 payroll_needs_admin`. A NACHA file needs no mark, since its entry class says it, and the checks above apply to it the same. The audit log records who uploaded it and how many of its payments were payroll.
 - A payroll entry that pays a vendor on file, by its id, account or name, is checked as a vendor payment, so marking a file as payroll never lets a held vendor payment through.
 
 ## Checks on paper checks
@@ -3545,6 +3698,7 @@ Response:
     "payee_name_altered": "default",
     "just_under_threshold": "default",
     "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
@@ -3556,6 +3710,7 @@ Response:
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
+    "payroll_account_unlisted",
     "second_person_required"
   ],
   "defaults": {
@@ -3577,6 +3732,7 @@ Response:
     "payee_name_altered": "warn",
     "just_under_threshold": "warn",
     "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
@@ -3604,6 +3760,7 @@ Response:
     "payee_name_altered": "Payee line differs from the vendor name",
     "just_under_threshold": "Just under the two-person threshold",
     "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
@@ -3668,6 +3825,10 @@ Response:
         {
           "name": "Sanctions list out of date, so not screened",
           "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
         }
       ]
     },
@@ -3696,6 +3857,19 @@ Response:
       "variants": [
         {
           "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
           "points": 10
         }
       ]
@@ -3735,6 +3909,10 @@ Response:
         {
           "name": "Paid by the person who changed the bank details",
           "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
         }
       ]
     }
@@ -3797,6 +3975,7 @@ Response:
     "payee_name_altered": "default",
     "just_under_threshold": "default",
     "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
@@ -3808,6 +3987,7 @@ Response:
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
+    "payroll_account_unlisted",
     "second_person_required"
   ],
   "defaults": {
@@ -3829,6 +4009,7 @@ Response:
     "payee_name_altered": "warn",
     "just_under_threshold": "warn",
     "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
@@ -3856,6 +4037,7 @@ Response:
     "payee_name_altered": "Payee line differs from the vendor name",
     "just_under_threshold": "Just under the two-person threshold",
     "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
@@ -3920,6 +4102,10 @@ Response:
         {
           "name": "Sanctions list out of date, so not screened",
           "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
         }
       ]
     },
@@ -3948,6 +4134,19 @@ Response:
       "variants": [
         {
           "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
           "points": 10
         }
       ]
@@ -3987,6 +4186,10 @@ Response:
         {
           "name": "Paid by the person who changed the bank details",
           "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
         }
       ]
     }
@@ -4024,6 +4227,8 @@ Message:
 ```
 
 Set with `PATCH /v1/vendors/{vendor}` and `status: blocked`. It always holds and cannot be changed in settings.
+
+A vendor blocked after a run was scanned is caught at release: Quarter checks every payment again then, and holds one to a blocked vendor (see [release](/docs/releases.md#release-recheck)). A NetSuite bill already cleared is held again at the next sync.
 
 ### `unverified_account`
 
@@ -4145,18 +4350,24 @@ The finding gives a count, never who reported. See [fraud reports](/docs/network
 
 ### `sanctions_match`
 
-**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened).** The payee name resembles a name on OFAC's SDN or Consolidated lists.
+**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened).** The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists.
 
 Messages:
 
 ```shell
 the payee name resembles a listed party: {listed name}, on {list}
+the vendor's name on file, {vendor name}, resembles a listed party: {listed name}, on {list}
 Quarter's sanctions list is missing or out of date, so this payee could not be screened
+"{name}" is written in letters Quarter cannot compare with the sanctions lists, so it was not screened; check it against the lists yourself
 ```
 
 Name screening against OFAC's SDN list and its Consolidated (non-SDN) list, which Quarter loads twice a day, and the Commerce Department's Consolidated Screening List where the deployment loads it. The message names the list. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off.
 
-In a live project, while Quarter's copy of either OFAC list is missing or more than 48 hours old, every payment is held with the second message. Test projects are not held for it.
+In a live project, while Quarter's copy of either OFAC list is missing or more than 48 hours old, every payment is held with the third message. Test projects are not held for it.
+
+The lists are written in Latin letters, and Quarter does not transliterate. So a payee or vendor name in another script, such as Cyrillic or Arabic, cannot be compared with them. It holds a live payment with the fourth message, and warns on a test one. A name under 3 letters is compared by exact match. Latin letters such as ß, ø and ł are read as the lists write them (ss, o, l).
+
+When a list changes, Quarter screens every vendor name again, records each new possible match on the vendor (`sanctions_findings`), and emails your admins and security contacts once, listing them. See [sanctions re-screening](/docs/vendors.md#sanctions-rescreening).
 
 Name screening compares names. It cannot find a business blocked only because listed parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, because neither is on a list. Quarter never says a payee is cleared.
 
@@ -4232,9 +4443,29 @@ this account belongs to {employee ids} on your employee account list, but the pa
 this account belongs to {employee ids} on your employee account list; the payroll entry's employee id could not be compared
 ```
 
+Signed-in admins keep the list. Every import is a high [security event](/docs/compliance.md#security-events) and is emailed to the admins.
+
 You keep the list with [`POST /v1/employee_accounts/import`](/docs/compliance.md#post-v1-employee-accounts-import). A vendor paid at an employee's own account is a common insider fraud. On a check, the vendor's account on file is compared.
 
 On [payroll](/docs/checks.md#payroll), paying an employee's own account is expected, so Quarter compares the entry's employee id (a NACHA entry's individual id, or a CSV's reference) with the employee the account belongs to, ignoring case, spaces, dashes and leading zeros. A match says nothing. A different id, or none, holds with the second message, which is how a payroll clerk paying a made-up or another employee's wage into their own account shows. Quarter trusts the comparison only once another entry in the same run matches its owner; until then a mismatch only warns, with the third message, so a list kept under other ids never holds a whole payroll.
+
+### `payroll_account_unlisted`
+
+**Default: hold, cannot be turned off. Points: 30; 30 (several payroll entries to one account); 10 (payroll that could not be compared with an employee list).** A payroll payment that Quarter cannot tell from a payment to anyone.
+
+Messages:
+
+```shell
+this payroll entry pays an account that is not on your employee account list
+this account gets {count} payroll entries in this run
+this payee gets {count} payroll checks in this run
+there is no employee account list to compare this payroll entry with; an admin imports one in Settings
+a payroll check pays a name, which the employee account list cannot confirm
+```
+
+[Payroll](/docs/checks.md#payroll) only. It holds pay to an account not on your employee account list. It holds every entry to an account or check payee paid more than once in the run. And it holds payroll that cannot be compared with a list: there is none, or it is a check, which pays a name.
+
+This check always holds and cannot be turned off. It is what keeps the payroll mark from being a way to pay anyone without a hold.
 
 ### `vendor_dormant_reactivated`
 
@@ -4314,18 +4545,21 @@ Fires when the sender's domain is the vendor's, or the vendor has no email domai
 
 ### `second_person_required`
 
-**Default: hold, cannot be turned off. Points: 0; 30 (paid by the person who changed the bank details).** The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days.
+**Default: hold, cannot be turned off. Points: 0; 30 (paid by the person who changed the bank details); 0 (payments to one payee add up to the two-person threshold).** The payment is at or above the two-person threshold, it is one of several payments to one payee that together reach it, or the person paying changed the vendor's bank details in the last 90 days.
 
 Messages:
 
 ```shell
 {amount} is at or above the two-person threshold of {threshold}, so two different people must approve it
+with {count} other payments to the same payee within 7 days, {total} would go out on one person's approval, at or above the two-person threshold of {threshold}, so two different people must approve it
 {person} changed {vendor name}'s bank details {when} and is also paying it, so someone else must approve it
 ```
 
 The first message holds every payment of `two_person_threshold` or more, even when no other check holds it. Its approval needs [two different people](/docs/releases.md#two-person-approval).
 
-The second holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in `uploaded_by` or `requested_by`. Bank details added with an API key are not traced to a person, so they do not fire it.
+The second holds every payment under the threshold to one account, one vendor or one check payee when, with the others to it in this run and in runs of the last 7 days, they add up to `two_person_threshold` or more. Payments that two people approved, and rejected ones, are left out. It applies to payroll too. Each needs two different people, like a large payment.
+
+The third holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in `uploaded_by` or `requested_by`. Bank details added with an API key count as added by the admin who created the key.
 
 This check always holds and cannot be turned off. The threshold itself is a setting.
 
@@ -4398,7 +4632,8 @@ Response:
   },
   "network": {
     "verified_by": 1,
-    "flagged_by": 0
+    "flagged_by": 0,
+    "disputed": false
   },
   "on_file": [
     {
@@ -4424,7 +4659,8 @@ An account reported by two businesses:
   },
   "network": {
     "verified_by": 0,
-    "flagged_by": 2
+    "flagged_by": 2,
+    "disputed": false
   },
   "on_file": [],
   "sanctions": [],
@@ -4443,6 +4679,10 @@ When a fraudster gets you to pay an account, or tries to, a person signed in to 
 - Nothing from your description. The description stays with your report, for your records and for any dispute.
 
 Each business counts once per account, however many reports it makes. The `fraud_report.created` [event](/docs/webhooks.md#event-types) goes to your own webhooks only.
+
+### Disputes
+
+A business that says a report about its account is wrong can write to Quarter. Quarter staff open a dispute and check it, with the business and with the reporters. While it is open, the reports still count, so a complaint alone never clears a reported account, and an account check answers `disputed: true`. If Quarter upholds the dispute, every report made before the decision stops counting toward `flagged_by`. A report made afterwards counts, since it is new. Your own report stays in your records either way.
 
 ### Retracting a report
 
@@ -4648,8 +4888,27 @@ Each organization's audit log is a hash chain. The database gives every entry it
 
 - An admin checks the whole chain in the console, under Compliance, or with [`GET /v1/audit_log/verify`](/docs/compliance.md#get-v1-audit-log-verify). It names the first entry that was changed or removed.
 - Someone who could rewrite every hash after a change could make the chain look whole again. So once a day Quarter emails the latest hash of each organization's chain to its own staff inbox, outside the database and its host. Pass a hash you kept as `anchor_seq` and `anchor_hash`, and the check also says whether that entry still has it.
-- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Those entries are marked, and the check counts them as `redacted`: their links are checked, their content is not.
+- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Those entries are marked, and the check counts them as `redacted` apart from `content_checked`: their links and their shape are checked, their content cannot be. An entry marked redacted breaks the chain as `redaction_invalid` unless it has the one shape a privacy request leaves and a privacy request is recorded at that moment or after.
 - Entries written before the chain existed were chained in order, oldest first, when it was added.
+
+## Security events
+
+Quarter keeps a separate record of security events, with who acted, from which address, and when. It is append-only, and each organization's events form their own hash chain, built and anchored in the daily email the same way as the audit log.
+
+| Event | Severity |
+| --- | --- |
+| A passkey reset by an admin | High |
+| The employee account list replaced | High |
+| A webhook endpoint added, which receives payee names and amounts | High |
+| The NetSuite connection made or removed, a certificate created, or the payment flow turned on or off | High |
+| An API key used from a network it was not used from before (an IPv4 /24 or IPv6 /48; its first use sets the start) | High |
+| Security contacts or evidence retention changed | High |
+| One person downloading more than 5 files with full account numbers in 24 hours | High |
+| A passkey added or removed; a member's first passkey approved; an API key created or revoked | Medium |
+| A member invited or removed, or a role changed; check settings changed (admins are already emailed each of these) | Medium |
+| An export downloaded: the organization export, a claim file, the vendor health CSV, the vendor changes report, or a page of the audit log past the first or longer than 100 entries. A run released, or a payment or Positive Pay file downloaded: each carries full account numbers | Medium |
+
+High events are emailed to your admins and security contacts, all waiting events in one email, at most every 15 minutes. Alert emails stop at 40 a day across Quarter, so they never use up the mail that sign-in links and vendor codes need; organizations' alerts go first, and past the limit alerts wait until the next day. An address that sends 20 unknown or expired credentials in a minute is recorded in Quarter's own chain and Quarter's staff are told, at most every 3 hours, because nothing names whose account it was after.
 
 ## The claim file
 
@@ -4735,6 +4994,7 @@ Response:
     "payee_name_altered": "default",
     "just_under_threshold": "default",
     "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
@@ -4746,6 +5006,7 @@ Response:
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
+    "payroll_account_unlisted",
     "second_person_required"
   ],
   "defaults": {
@@ -4767,6 +5028,7 @@ Response:
     "payee_name_altered": "warn",
     "just_under_threshold": "warn",
     "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
@@ -4794,6 +5056,7 @@ Response:
     "payee_name_altered": "Payee line differs from the vendor name",
     "just_under_threshold": "Just under the two-person threshold",
     "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
@@ -4858,6 +5121,10 @@ Response:
         {
           "name": "Sanctions list out of date, so not screened",
           "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
         }
       ]
     },
@@ -4886,6 +5153,19 @@ Response:
       "variants": [
         {
           "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
           "points": 10
         }
       ]
@@ -4925,6 +5205,10 @@ Response:
         {
           "name": "Paid by the person who changed the bank details",
           "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
         }
       ]
     }
@@ -5071,7 +5355,7 @@ Response:
 
 `GET /v1/audit_log/verify` (auth: API key or signed-in admin)
 
-Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed` or `hash_changed`. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
+Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed`, `hash_changed` or `redaction_invalid`. `content_checked` counts the entries whose content was recomputed and matched; `redacted` ones are counted apart. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
 
 **Query parameters**
 
@@ -5095,6 +5379,7 @@ Response:
   "organization_id": "org_5RkT8wPq3NmV7xLc2BzH",
   "intact": true,
   "entries": 43,
+  "content_checked": 43,
   "redacted": 0,
   "complete": true,
   "head": {
@@ -5108,6 +5393,99 @@ Response:
     "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532",
     "matches": true
   },
+  "checked_at": "2026-10-07T08:00:00.000Z"
+}
+```
+
+### List security events
+
+`GET /v1/security_events` (auth: Signed-in admin)
+
+Your [security events](/docs/compliance.md#security-events), newest first, a page at a time: pass the `id` of the last event you have as `after` while `has_more` is true. `alerted_at` is when the alert email went out, for high events. An API key answers `403 session_required`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `severity` | string | No | `high` or `medium`. Anything else answers `400 severity_invalid`. |
+| `limit` | integer | No | 1 to 200. Default 50. |
+| `after` | string | No | The `id` of the last event of the previous page. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/security_events?severity=high&limit=1" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "sev_8LmQ2vTx5RnK9wPc4HdJ",
+      "object": "security_event",
+      "kind": "organization_settings_changed",
+      "severity": "high",
+      "title": "Security contacts or evidence retention changed",
+      "actor": "controller@yourcompany",
+      "address": "203.0.113.24",
+      "subject": {
+        "type": "organization",
+        "id": "org_5RkT8wPq3NmV7xLc2BzH"
+      },
+      "details": {
+        "fields": [
+          "security_contacts"
+        ]
+      },
+      "created_at": "2026-10-06T14:02:51.000Z",
+      "alerted_at": "2026-10-06T14:02:52.000Z"
+    }
+  ]
+}
+```
+
+### Check the security events were not altered
+
+`GET /v1/security_events/verify` (auth: Signed-in admin)
+
+Recomputes your security event chain, exactly as [Check the audit log was not altered](/docs/compliance.md#get-v1-audit-log-verify) does the audit log, and answers in the same shape with `object: "security_chain_verification"`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `anchor_seq` | integer | No | The number of an event whose hash you kept. |
+| `anchor_hash` | string | No | That hash: 64 characters, `0` to `9` and `a` to `f`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/security_events/verify" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "security_chain_verification",
+  "organization_id": "org_5RkT8wPq3NmV7xLc2BzH",
+  "intact": true,
+  "entries": 12,
+  "content_checked": 12,
+  "redacted": 0,
+  "complete": true,
+  "head": {
+    "chain_seq": 12,
+    "hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b",
+    "created_at": "2026-10-06T14:02:51.000Z"
+  },
+  "first_break": null,
   "checked_at": "2026-10-07T08:00:00.000Z"
 }
 ```
@@ -5476,9 +5854,11 @@ Three warnings look for patterns rather than lists: [`split_below_threshold`](/d
 
 ### Import the employee account list
 
-`POST /v1/employee_accounts/import` (auth: API key)
+`POST /v1/employee_accounts/import` (auth: Signed-in admin)
 
-Replaces the list with these accounts. Needs an admin, or an API key. Returns how many accounts the list now holds, and how many were added and removed.
+Replaces the list with these accounts. Needs a signed-in admin, never an API key, since the list decides which payroll warns instead of holding. Returns how many accounts the list now holds, and how many were added and removed. Every change is a high [security event](/docs/compliance.md#security-events) and is emailed to the admins.
+
+A list that would remove more than half the accounts on file answers `409 confirm_required`; send it again with `confirm: true` to replace the list.
 
 Errors, all `400`: `employees_invalid`, `employee_ref_invalid`, `routing_number_invalid` and `account_number_invalid`. The message names the employee by position.
 
@@ -5487,12 +5867,13 @@ Errors, all `400`: `employees_invalid`, `employee_ref_invalid`, `routing_number_
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `employees` | object[] | Yes | 1 to 10,000 accounts, each with `employee_ref` (your own id for the employee, up to 100 characters), `routing_number` and `account_number`. |
+| `confirm` | boolean | No | `true` to replace the list even when the new one removes more than half its accounts. |
 
 Request:
 
 ```bash
 curl -X POST "$QUARTER_API_URL/v1/employee_accounts/import" \
-  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
   -H "content-type: application/json" \
   -d '{"employees":[{"employee_ref":"E-1043","routing_number":"071921008","account_number":"88301274"},{"employee_ref":"E-1187","routing_number":"122611005","account_number":"40917736"}]}'
 ```
@@ -5638,7 +6019,13 @@ When NetSuite names no employee (a script, an import or the system), names one w
 
 ## Connecting
 
-Connect NetSuite from the console's Integrations settings, as an admin. Quarter uses OAuth 2.0 client credentials with a certificate: an RSA key of 3072 bits or more, or EC P-256. The credentials are tested against NetSuite before they are saved, then sealed. They are never returned, logged or put in the audit log, and they are wiped on disconnect.
+Connect NetSuite from the console's Integrations settings, as an admin. Quarter uses OAuth 2.0 client credentials with a certificate. The credentials are tested against NetSuite before they are saved, then sealed. They are never returned, logged or put in the audit log, and they are wiped on disconnect.
+
+1. In Quarter, create a certificate. Quarter makes an EC P-256 key pair and a certificate valid for 2 years. It keeps the private key sealed and never shows it, so no copy sits on a laptop or in a download folder.
+2. Download the certificate and upload it in NetSuite under Setup > Integration > OAuth 2.0 Client Credentials (M2M) Setup, for the integration record, an employee and the role.
+3. Connect with the account id, the integration's client id and the certificate id NetSuite shows. Quarter uses its newest certificate, or the one you name in `certificate`.
+
+Admins and security contacts are emailed 60 days and again 14 days before the certificate in use expires. To replace it, create a new certificate, upload it in NetSuite (NetSuite accepts several at once), and connect again with its certificate id: the old one is retired and its private key deleted. A key pair you made yourself still works, sent once as `private_key`, but a copy of it stays wherever it was made.
 
 These routes take a signed-in admin's session, never an API key: an API key answers `403 session_required`. A test project can connect Quarter's sample account of four vendors with `sandbox: true`. A live project refuses NetSuite sandbox accounts.
 
@@ -5647,7 +6034,7 @@ These routes take a signed-in admin's session, never an API key: an API key answ
 A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Payment button is gone, the bill is left off the Pay Bills page, and Electronic Bank Payments does not process it. Oracle's NetSuite help says so on its page Entering a Vendor Bill. Quarter uses that box, so a held bill is stopped by NetSuite itself, before any payment file exists.
 
 1. A workflow you add holds every new bill, with Quarter's field saying `Held by Quarter until checked`. It holds a bill again when its amount or vendor changes.
-2. Every 15 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
+2. Every 5 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
 3. Quarter writes each result to the bill. A clear bill comes off hold, and Quarter's field says it was cleared, with a link to the run. A held bill stays on hold, and the field says why and where to decide.
 4. A person approves or rejects the held payment in Quarter, signed in, never with an API key. Two different people approve at or above your two-person threshold. Quarter then takes the hold off an approved bill and keeps it on a rejected one.
 5. A bill that changes after its check, in amount, vendor or bank details, is checked again in a new run and held again if it needs to be. The first check is closed as rejected, with the reason.
@@ -5656,7 +6043,7 @@ A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Pay
 
 - Someone with edit access to bills in NetSuite can clear Payment Hold and pay at once. Quarter puts the hold back at the next sync and sends `integration.hold_overridden`, but a payment made in between is made. A bill that leaves the open bills while Quarter holds it is recorded in the audit log, since it was paid, voided or deleted in NetSuite.
 - Payments that do not come from a vendor bill: checks written directly, journal entries, and payments keyed in your bank portal.
-- A bank change made on the vendor in NetSuite after a bill was cleared is seen at the next sync, at most 15 minutes later. Sync now before a payment run to close that gap.
+- A bank change made on the vendor in NetSuite after a bill was cleared, or a vendor blocked in Quarter after its bill was cleared, holds the bill again at the next sync, at most 5 minutes later. Until then NetSuite can still pay it. Sync now before a payment run to close that gap, or have your NetSuite administrator set Payment Hold on the open bills of a vendor whose bank details change, with a workflow or script on Entity Bank Details.
 - Without the workflow, a new bill can be paid before Quarter first sees it. Quarter counts bills that arrive without a hold and shows the count in the console.
 - A payment file Electronic Bank Payments already generated. Quarter acts on the bill, before the file.
 
@@ -5709,6 +6096,8 @@ Turning the payment flow off stops every write and leaves every hold where it is
 
 Tests the credentials against NetSuite, saves them sealed and starts the first sync. Nothing is saved when NetSuite refuses them.
 
+Without `private_key`, the connection uses the newest certificate Quarter made for the project, or the one named in `certificate`; with none, it answers `409 certificate_required`.
+
 Errors: `account_id_invalid`, `client_id_invalid`, `certificate_id_invalid`, `private_key_invalid`, `sandbox_invalid`, `sandbox_test_only`, `sandbox_account_in_live`, `netsuite_unauthorized`, `netsuite_forbidden`, `netsuite_bank_details_unavailable`, `netsuite_query_failed` and `netsuite_response_too_large`, all `400`; `netsuite_account_changed`, `409`; `netsuite_unreachable`, `503`.
 
 **Body**
@@ -5717,8 +6106,9 @@ Errors: `account_id_invalid`, `client_id_invalid`, `certificate_id_invalid`, `pr
 | --- | --- | --- | --- |
 | `account_id` | string | Yes | Your NetSuite account id, such as `1234567`, or `1234567_SB1` for a sandbox (test projects only). |
 | `client_id` | string | Yes | The integration record's client id. |
-| `certificate_id` | string | Yes | The certificate id from the OAuth 2.0 client credentials mapping. |
-| `private_key` | string | Yes | The PEM private key of that certificate. |
+| `certificate_id` | string | Yes | The certificate id NetSuite shows for the uploaded certificate, in the OAuth 2.0 client credentials mapping. |
+| `certificate` | string | No | The id of a certificate Quarter made. Default: the newest. |
+| `private_key` | string | No | Only for a key pair you made yourself: its PEM private key, RSA of 3072 bits or more, or EC P-256. Leave it out to use the certificate Quarter made. |
 | `sandbox` | boolean | No | Test projects only: connect Quarter's sample account instead. No other field is needed. |
 
 Request:
@@ -5727,7 +6117,7 @@ Request:
 curl -X PUT "$QUARTER_API_URL/v1/integrations/netsuite" \
   -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
   -H "content-type: application/json" \
-  -d '{"account_id":"1234567","client_id":"<client id>","certificate_id":"<certificate id>","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"}'
+  -d '{"account_id":"1234567","client_id":"<client id>","certificate_id":"<certificate id>"}'
 ```
 
 Response:
@@ -5767,7 +6157,51 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
+}
+```
+
+### Create a certificate
+
+`POST /v1/integrations/netsuite/certificates` (auth: Signed-in admin)
+
+Makes an EC P-256 key pair and a self-signed certificate valid for 2 years, and keeps the private key sealed. The answer has the certificate to upload in NetSuite, never the key. The certificate in use keeps working until you connect with the new one.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/integrations/netsuite/certificates" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+  "object": "netsuite_certificate",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+  "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+  "not_before": "2026-10-05T15:12:40.000Z",
+  "not_after": "2028-10-04T15:12:40.000Z",
+  "days_left": 729,
+  "in_use": false,
+  "created_by": "dana@yourcompany",
+  "created_at": "2026-10-05T15:12:40.000Z"
 }
 ```
 
@@ -5840,7 +6274,21 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```
 
@@ -5848,7 +6296,7 @@ Response:
 
 `POST /v1/integrations/netsuite/sync` (auth: Signed-in admin)
 
-Starts a sync now instead of at the next one, which is every hour, or every 15 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
+Starts a sync now instead of at the next one, which is every hour, or every 5 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
 
 Request:
 
@@ -5902,7 +6350,21 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```
 
@@ -5910,7 +6372,7 @@ Response:
 
 `PUT /v1/integrations/netsuite/payment_flow` (auth: Signed-in admin)
 
-On, Quarter checks open bills every 15 minutes and writes its result to each one. Off, Quarter stops writing and leaves every hold where it is. Before turning it on, Quarter reads one bill with Payment Hold and its own field.
+On, Quarter checks open bills every 5 minutes and writes its result to each one. Off, Quarter stops writing and leaves every hold where it is. Before turning it on, Quarter reads one bill with Payment Hold and its own field.
 
 Errors: `enabled_invalid`, `production_account_in_test`, `netsuite_field_missing`, `netsuite_unauthorized` and `netsuite_forbidden`, all `400`; `not_connected`, `409`; `netsuite_unreachable`, `503`.
 
@@ -5974,7 +6436,21 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```
 
@@ -6086,7 +6562,21 @@ Response:
       "check_failed": 0,
       "write_failed": 0
     }
-  }
+  },
+  "certificates": [
+    {
+      "id": "nsc_4TqW8nLx2RcV6mPz9KdB",
+      "object": "netsuite_certificate",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBijCCATCgAwIBAgIQ...\n-----END CERTIFICATE-----\n",
+      "fingerprint_sha256": "6316c24235f036327e0b0d6a4f1c8e2b9a7d5c3e1f0a9b8c7d6e5f4a3b2c1d0e",
+      "not_before": "2026-10-05T15:12:40.000Z",
+      "not_after": "2028-10-04T15:12:40.000Z",
+      "days_left": 729,
+      "in_use": true,
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-05T15:12:40.000Z"
+    }
+  ]
 }
 ```
 
@@ -6420,7 +6910,7 @@ Response:
 | Any request | 400 | `request_invalid`, `limit_invalid`, `json_too_deep`. `request_invalid` covers a body that is not valid JSON; `json_too_deep` one nested more than 32 levels. |
 | Any request | 413, 415 | `payload_too_large`, `unsupported_media_type`. Send `application/json`, up to 256 KB, or 10 MB to the payment run and import routes. |
 | Any request | 401 | `api_key_missing`, `api_key_invalid`, `api_key_expired`, `session_invalid`, `session_expired` |
-| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`, as it does for a released payment file or Positive Pay file. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions, and on downloading those files, when the last check is more than 5 minutes old. |
+| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`, `passkey_awaiting_approval`, `payroll_needs_admin`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`, as it does for a released payment file or Positive Pay file. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console. A first passkey answers `passkey_awaiting_approval` until another admin approves it. A session answers `passkey_check_required` on those decisions, and on downloading those files, when the last check is more than 5 minutes old. |
 | Any request | 429 | `rate_limited`, `too_many_failed_authentications` |
 | Any request | 500 | `internal` |
 | Any request | 404 | `route_not_found`, `vendor_not_found`, `bank_account_not_found`, `payment_run_not_found`, `payment_item_not_found`, `payment_check_not_found`, `verification_request_not_found`, `webhook_delivery_not_found` |
@@ -6434,12 +6924,13 @@ Response:
 | [Verification links](/docs/verification.md) | 409 | `email_first`, `request_closed`, `bank_login_unavailable` |
 | [Verification links](/docs/verification.md) | 429 | `too_many_attempts` |
 | [Verification links](/docs/verification.md) | 503 | `bank_login_not_configured` |
-| [Payment runs](/docs/payment-runs.md) | 400 | `format_invalid`, `file_required`, `file_invalid`, `items_required`, `amount_invalid`, `no_payments`, `too_many_payments`, `payee_name_invalid` |
+| [Payment runs](/docs/payment-runs.md) | 400 | `format_invalid`, `file_required`, `file_invalid`, `items_required`, `amount_invalid`, `no_payments`, `too_many_payments`, `payee_name_invalid`, `payroll_invalid` |
 | [Payment runs](/docs/payment-runs.md) | 409 | `duplicate_file`, `test_mode_limit`, `trial_ended`, `test_mode_only`, `no_vendors_with_bank_details` |
+| [Payment runs](/docs/payment-runs.md) | 503 | `scan_busy`, `scan_timeout` |
 | [Payment checks](/docs/payment-checks.md) | 400 | `rail_invalid`, `payee_name_required`, `currency_invalid`, `iban_format_invalid`, `bic_invalid` |
 | [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `template_invalid`, `template_does_not_fit` |
 | [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `approver_recently_added`, `releaser_changed_details` |
-| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `payments_held_since_scan`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 400 | `description_required`, `report_not_open` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 429 | `fraud_report_limit` |
 | [Settings](/docs/checks.md#settings) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |

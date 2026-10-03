@@ -1,6 +1,6 @@
 # Checks and settings
 
-> The twenty-five checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
+> The twenty-six checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
 
 Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a `code`, a `severity`, a `message` and its `points`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
 
@@ -32,20 +32,21 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | 30 | The same amount to the same account twice. |
 | [`shared_account`](/docs/checks.md#shared-account) | Hold | 30 | Another of your vendors is paid at this same account. |
 | [`network_flagged`](/docs/checks.md#network-flagged) | Warn | 30 | A business on Quarter reported this account in connection with a payment fraud. |
-| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened) | The payee name resembles a name on OFAC's SDN or Consolidated lists. |
+| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened) | The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists. |
 | [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | 25 | The routing number is not a valid US bank routing number. |
 | [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | 25 | The IBAN on an international payment fails its checksum. |
 | [`check_number_reused`](/docs/checks.md#check-number-reused) | Hold | 30 | A check number already used on the same account. |
 | [`payee_name_altered`](/docs/checks.md#payee-name-altered) | Warn | 20 | A check's payee line is close to the vendor's name on file, but not the same. |
 | [`just_under_threshold`](/docs/checks.md#just-under-threshold) | Warn | 10 | A check for just under the two-person threshold. |
 | [`employee_account_match`](/docs/checks.md#employee-account-match) | Hold | 40; 10 (payroll to an employee account, employee id not compared) | The account paid, or the vendor's account on file, is on your employee account list. |
+| [`payroll_account_unlisted`](/docs/checks.md#payroll-account-unlisted) | Hold (always) | 30; 30 (several payroll entries to one account); 10 (payroll that could not be compared with an employee list) | A payroll payment that Quarter cannot tell from a payment to anyone. |
 | [`vendor_dormant_reactivated`](/docs/checks.md#vendor-dormant-reactivated) | Warn | 20 | A vendor not paid for a year has bank details that changed since its last payment. |
 | [`split_below_threshold`](/docs/checks.md#split-below-threshold) | Warn | 15 | Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more. |
 | [`vendor_new_paid_fast`](/docs/checks.md#vendor-new-paid-fast) | Warn | 15 | A vendor added in the last 14 days is paid for the first time by the person who added it. |
 | [`request_domain_lookalike`](/docs/checks.md#request-domain-lookalike) | Warn | 40; 15 (change request came from a domain other than the vendor's) | The request for the unconfirmed bank details came by email from a domain that imitates the vendor's, or from a domain other than the vendor's. |
 | [`request_domain_new`](/docs/checks.md#request-domain-new) | Warn | 30 | The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added. |
 | [`request_domain_no_dmarc`](/docs/checks.md#request-domain-no-dmarc) | Warn | 5 | The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name. |
-| [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details) | The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days. |
+| [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details); 0 (payments to one payee add up to the two-person threshold) | The payment is at or above the two-person threshold, it is one of several payments to one payee that together reach it, or the person paying changed the vendor's bank details in the last 90 days. |
 
 ## Points and the order of held payments
 
@@ -60,13 +61,14 @@ Each check has a fixed number of points, in the table above. A payment's `score`
 
 ## Payroll
 
-Payroll and other payments to people are checked like any payment, but most findings warn instead of holding, so wages are not held up. A payment is payroll when its NACHA batch has a consumer entry class (`PPD`, or `WEB`, `TEL`, `CIE`, `POP`, `ARC`, `BOC`, `RCK`, `POS`, `MTE`, `SHR`), or when a CSV, check register or list is sent with `payroll: true`. Its item shows `payroll: true` and, for NACHA, its `entry_class`.
+Payroll and other payments to people are checked like any payment. Pay to an account on your employee account list, once in the run, warns instead of holding, so wages are not held up. Anything Quarter cannot tell from a payment to anyone holds. A payment is payroll when its NACHA batch has a consumer entry class (`PPD`, or `WEB`, `TEL`, `CIE`, `POP`, `ARC`, `BOC`, `RCK`, `POS`, `MTE`, `SHR`), or when a signed-in admin sends a CSV, check register or list with `payroll: true`. Its item shows `payroll: true` and, for NACHA, its `entry_class`.
 
-- A finding that would hold is a warning instead, whatever your settings say for that check.
-- `sanctions_match` and `second_person_required` still hold: a payroll payment at or above the two-person threshold needs two people, and so does one paid by the person who changed the payee's bank details.
+- A finding that would hold is a warning instead, whatever your settings say for that check, except the checks that always hold.
+- [`payroll_account_unlisted`](/docs/checks.md#payroll-account-unlisted) holds pay to an account not on your employee list, several entries to one account, and payroll with no list to compare with, or by check.
+- `sanctions_match` and `second_person_required` still hold: a payroll payment at or above the two-person threshold needs two people, and so do payroll payments to one account that together reach it, and one paid by the person who changed the payee's bank details.
 - [`employee_account_match`](/docs/checks.md#employee-account-match) holds a payroll payment to an employee's account made under another employee's id, and warns when the id cannot be compared.
 - `unknown_payee` does not run on payroll: paying people who are not vendors is what payroll does.
-- Anyone who can upload a run, a signed-in person or an API key, can send a payroll file. The audit log records who uploaded it and how many of its payments were payroll.
+- Only a signed-in admin can send `payroll: true`; anyone else is answered `403 payroll_needs_admin`. A NACHA file needs no mark, since its entry class says it, and the checks above apply to it the same. The audit log records who uploaded it and how many of its payments were payroll.
 - A payroll entry that pays a vendor on file, by its id, account or name, is checked as a vendor payment, so marking a file as payroll never lets a held vendor payment through.
 
 ## Checks on paper checks
@@ -132,6 +134,7 @@ Response:
     "payee_name_altered": "default",
     "just_under_threshold": "default",
     "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
@@ -143,6 +146,7 @@ Response:
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
+    "payroll_account_unlisted",
     "second_person_required"
   ],
   "defaults": {
@@ -164,6 +168,7 @@ Response:
     "payee_name_altered": "warn",
     "just_under_threshold": "warn",
     "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
@@ -191,6 +196,7 @@ Response:
     "payee_name_altered": "Payee line differs from the vendor name",
     "just_under_threshold": "Just under the two-person threshold",
     "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
@@ -255,6 +261,10 @@ Response:
         {
           "name": "Sanctions list out of date, so not screened",
           "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
         }
       ]
     },
@@ -283,6 +293,19 @@ Response:
       "variants": [
         {
           "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
           "points": 10
         }
       ]
@@ -322,6 +345,10 @@ Response:
         {
           "name": "Paid by the person who changed the bank details",
           "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
         }
       ]
     }
@@ -384,6 +411,7 @@ Response:
     "payee_name_altered": "default",
     "just_under_threshold": "default",
     "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
@@ -395,6 +423,7 @@ Response:
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
+    "payroll_account_unlisted",
     "second_person_required"
   ],
   "defaults": {
@@ -416,6 +445,7 @@ Response:
     "payee_name_altered": "warn",
     "just_under_threshold": "warn",
     "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
@@ -443,6 +473,7 @@ Response:
     "payee_name_altered": "Payee line differs from the vendor name",
     "just_under_threshold": "Just under the two-person threshold",
     "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
@@ -507,6 +538,10 @@ Response:
         {
           "name": "Sanctions list out of date, so not screened",
           "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
         }
       ]
     },
@@ -535,6 +570,19 @@ Response:
       "variants": [
         {
           "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
           "points": 10
         }
       ]
@@ -574,6 +622,10 @@ Response:
         {
           "name": "Paid by the person who changed the bank details",
           "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
         }
       ]
     }
@@ -611,6 +663,8 @@ Message:
 ```
 
 Set with `PATCH /v1/vendors/{vendor}` and `status: blocked`. It always holds and cannot be changed in settings.
+
+A vendor blocked after a run was scanned is caught at release: Quarter checks every payment again then, and holds one to a blocked vendor (see [release](/docs/releases.md#release-recheck)). A NetSuite bill already cleared is held again at the next sync.
 
 ### `unverified_account`
 
@@ -732,18 +786,24 @@ The finding gives a count, never who reported. See [fraud reports](/docs/network
 
 ### `sanctions_match`
 
-**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened).** The payee name resembles a name on OFAC's SDN or Consolidated lists.
+**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened).** The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists.
 
 Messages:
 
 ```shell
 the payee name resembles a listed party: {listed name}, on {list}
+the vendor's name on file, {vendor name}, resembles a listed party: {listed name}, on {list}
 Quarter's sanctions list is missing or out of date, so this payee could not be screened
+"{name}" is written in letters Quarter cannot compare with the sanctions lists, so it was not screened; check it against the lists yourself
 ```
 
 Name screening against OFAC's SDN list and its Consolidated (non-SDN) list, which Quarter loads twice a day, and the Commerce Department's Consolidated Screening List where the deployment loads it. The message names the list. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off.
 
-In a live project, while Quarter's copy of either OFAC list is missing or more than 48 hours old, every payment is held with the second message. Test projects are not held for it.
+In a live project, while Quarter's copy of either OFAC list is missing or more than 48 hours old, every payment is held with the third message. Test projects are not held for it.
+
+The lists are written in Latin letters, and Quarter does not transliterate. So a payee or vendor name in another script, such as Cyrillic or Arabic, cannot be compared with them. It holds a live payment with the fourth message, and warns on a test one. A name under 3 letters is compared by exact match. Latin letters such as ß, ø and ł are read as the lists write them (ss, o, l).
+
+When a list changes, Quarter screens every vendor name again, records each new possible match on the vendor (`sanctions_findings`), and emails your admins and security contacts once, listing them. See [sanctions re-screening](/docs/vendors.md#sanctions-rescreening).
 
 Name screening compares names. It cannot find a business blocked only because listed parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, because neither is on a list. Quarter never says a payee is cleared.
 
@@ -819,9 +879,29 @@ this account belongs to {employee ids} on your employee account list, but the pa
 this account belongs to {employee ids} on your employee account list; the payroll entry's employee id could not be compared
 ```
 
+Signed-in admins keep the list. Every import is a high [security event](/docs/compliance.md#security-events) and is emailed to the admins.
+
 You keep the list with [`POST /v1/employee_accounts/import`](/docs/compliance.md#post-v1-employee-accounts-import). A vendor paid at an employee's own account is a common insider fraud. On a check, the vendor's account on file is compared.
 
 On [payroll](/docs/checks.md#payroll), paying an employee's own account is expected, so Quarter compares the entry's employee id (a NACHA entry's individual id, or a CSV's reference) with the employee the account belongs to, ignoring case, spaces, dashes and leading zeros. A match says nothing. A different id, or none, holds with the second message, which is how a payroll clerk paying a made-up or another employee's wage into their own account shows. Quarter trusts the comparison only once another entry in the same run matches its owner; until then a mismatch only warns, with the third message, so a list kept under other ids never holds a whole payroll.
+
+### `payroll_account_unlisted`
+
+**Default: hold, cannot be turned off. Points: 30; 30 (several payroll entries to one account); 10 (payroll that could not be compared with an employee list).** A payroll payment that Quarter cannot tell from a payment to anyone.
+
+Messages:
+
+```shell
+this payroll entry pays an account that is not on your employee account list
+this account gets {count} payroll entries in this run
+this payee gets {count} payroll checks in this run
+there is no employee account list to compare this payroll entry with; an admin imports one in Settings
+a payroll check pays a name, which the employee account list cannot confirm
+```
+
+[Payroll](/docs/checks.md#payroll) only. It holds pay to an account not on your employee account list. It holds every entry to an account or check payee paid more than once in the run. And it holds payroll that cannot be compared with a list: there is none, or it is a check, which pays a name.
+
+This check always holds and cannot be turned off. It is what keeps the payroll mark from being a way to pay anyone without a hold.
 
 ### `vendor_dormant_reactivated`
 
@@ -901,17 +981,20 @@ Fires when the sender's domain is the vendor's, or the vendor has no email domai
 
 ### `second_person_required`
 
-**Default: hold, cannot be turned off. Points: 0; 30 (paid by the person who changed the bank details).** The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days.
+**Default: hold, cannot be turned off. Points: 0; 30 (paid by the person who changed the bank details); 0 (payments to one payee add up to the two-person threshold).** The payment is at or above the two-person threshold, it is one of several payments to one payee that together reach it, or the person paying changed the vendor's bank details in the last 90 days.
 
 Messages:
 
 ```shell
 {amount} is at or above the two-person threshold of {threshold}, so two different people must approve it
+with {count} other payments to the same payee within 7 days, {total} would go out on one person's approval, at or above the two-person threshold of {threshold}, so two different people must approve it
 {person} changed {vendor name}'s bank details {when} and is also paying it, so someone else must approve it
 ```
 
 The first message holds every payment of `two_person_threshold` or more, even when no other check holds it. Its approval needs [two different people](/docs/releases.md#two-person-approval).
 
-The second holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in `uploaded_by` or `requested_by`. Bank details added with an API key are not traced to a person, so they do not fire it.
+The second holds every payment under the threshold to one account, one vendor or one check payee when, with the others to it in this run and in runs of the last 7 days, they add up to `two_person_threshold` or more. Payments that two people approved, and rejected ones, are left out. It applies to payroll too. Each needs two different people, like a large payment.
+
+The third holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in `uploaded_by` or `requested_by`. Bank details added with an API key count as added by the admin who created the key.
 
 This check always holds and cannot be turned off. The threshold itself is a setting.
