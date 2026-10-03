@@ -11,9 +11,9 @@ Quarter records each change as an event and sends it to your webhook endpoints. 
 | `vendor.created` | A vendor was added. | `name` |
 | `vendor.bank_account_changed` | A vendor got new bank details. Its payments are held until they are confirmed. | `vendor_id`, `bank_account_id`, `last4`, `previous_last4` |
 | `vendor.verified` | Bank details were confirmed, by bank login or call-back. | `vendor_id`, `bank_account_id`, `last4`, `method` |
-| `verification_request.completed` | A vendor finished a verification link. | `vendor_id`, `request_id` |
+| `verification_request.completed` | A vendor finished a verification link with a bank login that matched the details on file. | `vendor_id`, `request_id`, `verified`, and `reason: "callback_required"` when `verified` is `false` because the link went to a [new contact](/docs/verification.md#new-contact) |
 | `payment_run.scanned` | A run was uploaded and checked. | `run_id` |
-| `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes) |
+| `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes), `score` ([points](/docs/checks.md#points)) |
 | `payment_run.released` | A run was released. | `run_id`, `released_by`, `rejected` (how many payments were left out), and `release_code` for a [payment check](/docs/payment-checks.md) |
 | `fraud_report.created` | You reported an account. | `id`, `routing_number`, `last4` |
 | `integration.synced` | A [NetSuite](/docs/netsuite.md) sync finished. | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed`; with the [payment flow](/docs/netsuite.md#payment-flow) on, `bills` with its own counts |
@@ -44,7 +44,8 @@ Body:
     "amount": 12000,
     "findings": [
       "account_not_on_file"
-    ]
+    ],
+    "score": 40
   }
 }
 ```
@@ -209,7 +210,8 @@ Response:
         "amount": 12000,
         "findings": [
           "account_not_on_file"
-        ]
+        ],
+        "score": 40
       }
     }
   ]

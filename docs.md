@@ -27,13 +27,83 @@ Otherwise, you give Quarter a payment run, as a NACHA file, a CSV, a list of pay
 
 Send your API key as a Bearer token on every `/v1` request. Test keys start with `qk_test_` and live keys with `qk_live_`. A test key never sees live data, and a live key never sees test data. Keep keys on your server.
 
-An API key acts for your integration. It adds vendors and bank details, uploads runs, checks payments and reads the results. It never approves, rejects or releases a payment, records a call-back, reports fraud or changes settings. Those need a person signed in to the console, and an API key answers `403 session_required`.
+An API key acts for your integration. It adds vendors and bank details, uploads runs, checks payments and reads the results. It never approves, rejects or releases a payment, records a call-back, reports fraud or changes settings. It never downloads a released payment file or Positive Pay file, because those carry full account numbers. Those need a person signed in to the console, and an API key answers `403 session_required`.
 
-An admin creates API keys in the console, under Settings, and each key is shown once. Before launch, Quarter sets up your organization and gives you the API URL. The examples use `$QUARTER_API_URL` and `$QUARTER_API_KEY`.
+An admin creates API keys in the console, under Settings, and each key is shown once. The console offers expiries of 30, 90, 180 or 365 days; the API takes `expires_in_days` from 1 to 730, and a key created without it does not expire. An expired key answers `401 api_key_expired`. Each key shows `last_used_at`, to the minute, and `expires_at`, so a key nobody uses can be revoked. Before launch, Quarter sets up your organization and gives you the API URL. The examples use `$QUARTER_API_URL` and `$QUARTER_API_KEY`.
 
 ```bash
 export QUARTER_API_URL="<your API URL>"
 export QUARTER_API_KEY="qk_test_..."
+```
+
+### List your project's API keys
+
+`GET /v1/api_keys` (auth: Signed-in admin)
+
+Every key of the project the session is on, revoked ones included, with when each was last used and when it expires. The key itself is never shown again.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/api_keys" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "key_8RmT2vLq5WnK9pXc3HbZ",
+      "object": "api_key",
+      "prefix": "qk_test_H17l",
+      "environment": "test",
+      "created_at": "2026-10-05T14:02:11.000Z",
+      "revoked_at": null,
+      "last_used_at": "2026-10-06T09:15:00.000Z",
+      "expires_at": "2027-01-03T14:02:11.000Z"
+    }
+  ]
+}
+```
+
+### Create an API key
+
+`POST /v1/api_keys` (auth: Signed-in admin)
+
+A key for the project the session is on. `key` is in this answer only; Quarter keeps its hash. An API key answers `403 session_required`, so a leaked key cannot make more.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `expires_in_days` | integer | No | 1 to 730. Left out, the key does not expire. Anything else answers `400 expires_in_days_invalid`. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/api_keys" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"expires_in_days":90}'
+```
+
+Response:
+
+```json
+{
+  "id": "key_8RmT2vLq5WnK9pXc3HbZ",
+  "object": "api_key",
+  "prefix": "qk_test_H17l",
+  "environment": "test",
+  "created_at": "2026-10-05T14:02:11.000Z",
+  "revoked_at": null,
+  "last_used_at": null,
+  "expires_at": "2027-01-03T14:02:11.000Z",
+  "key": "qk_test_H17lq3VbXo9N2rT5kWm8Yc4Ae6Ud1Pz0"
+}
 ```
 
 The routes under `/verify` are for your vendor, not for you. They take no key: the token in the verification link is the only credential. See [Verification links](/docs/verification.md).

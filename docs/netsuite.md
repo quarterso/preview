@@ -16,6 +16,12 @@ With the [payment flow](#payment-flow) on, Quarter also checks every open vendor
 - Each sync fires `integration.synced` with the counts, or `integration.failed` with the reason. See [event types](/docs/webhooks.md#event-types).
 - A project stays with the NetSuite account its vendors came from. Connect another account to another project.
 
+### Who changed bank details in NetSuite
+
+When a vendor's bank details changed, the sync reads the system notes of its Entity Bank Details record and takes the employee who made the latest change to the account or routing number, from a day before the previous sync on. A note on any other field never names who changed the details. Quarter keeps the employee's NetSuite id with the change. Quarter matches that employee to a member of your organization by email and records them as the person who changed the details. That person then cannot confirm the details, approve a payment to them, or release one alone for 90 days, the same rules as for a change made in Quarter.
+
+When NetSuite names no employee (a script, an import or the system), names one without an email, or shows no note, the person is recorded as unknown with the reason, and those rules cannot apply to anyone. A NetSuite role sees only the system notes NetSuite lets it see: give Quarter's role permission to read system notes and employees, or every change made in NetSuite stays unknown. Tested against a simulated NetSuite account; not yet run against a real one.
+
 ## Connecting
 
 Connect NetSuite from the console's Integrations settings, as an admin. Quarter uses OAuth 2.0 client credentials with a certificate: an RSA key of 3072 bits or more, or EC P-256. The credentials are tested against NetSuite before they are saved, then sealed. They are never returned, logged or put in the audit log, and they are wiped on disconnect.
@@ -39,6 +45,10 @@ A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Pay
 - A bank change made on the vendor in NetSuite after a bill was cleared is seen at the next sync, at most 15 minutes later. Sync now before a payment run to close that gap.
 - Without the workflow, a new bill can be paid before Quarter first sees it. Quarter counts bills that arrive without a hold and shows the count in the console.
 - A payment file Electronic Bank Payments already generated. Quarter acts on the bill, before the file.
+
+### Checks and Positive Pay
+
+NetSuite's own Positive Pay payment format has templates for three banks only: Bank of America Merrill Lynch, Royal Bank of Canada and Silicon Valley Bank controlled disbursement accounts (Oracle NetSuite Help, Positive Pay Payment Format). Quarter writes the issued-check file for any bank whose layout is a delimited or fixed-width file of the fields it knows: check number, amount, issue date, payee, account and a void marker. Export the checks you are about to print from NetSuite as a CSV and upload it as a [check run](/docs/payment-runs.md). Quarter checks each check, and at release writes the file in a preset layout, Jack Henry Banno's among them, or in [your bank's own layout](/docs/releases.md#custom-layout). You upload the file to your bank; Quarter never sends it.
 
 ### When something fails
 

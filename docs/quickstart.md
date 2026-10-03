@@ -36,6 +36,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "unverified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -49,7 +50,15 @@ Response:
       "verified_at": null,
       "verified_method": null,
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": []
@@ -84,6 +93,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -97,7 +107,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -184,12 +202,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20931",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 5,
       "findings": [
         {
           "code": "first_payment",
           "severity": "warn",
-          "message": "first payment to Harbor Point Logistics LLC"
+          "message": "first payment to Harbor Point Logistics LLC",
+          "points": 5
         }
       ],
       "decision": null,
@@ -211,12 +233,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-0412",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 20,
       "findings": [
         {
           "code": "unknown_payee",
           "severity": "hold",
-          "message": "J. Reyes Consulting is not a vendor on file"
+          "message": "J. Reyes Consulting is not a vendor on file",
+          "points": 20
         }
       ],
       "decision": null,
@@ -279,12 +305,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20931",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 5,
       "findings": [
         {
           "code": "first_payment",
           "severity": "warn",
-          "message": "first payment to Harbor Point Logistics LLC"
+          "message": "first payment to Harbor Point Logistics LLC",
+          "points": 5
         }
       ],
       "decision": null,
@@ -306,12 +336,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-0412",
+      "entry_class": null,
+      "payroll": false,
       "status": "rejected",
+      "score": 20,
       "findings": [
         {
           "code": "unknown_payee",
           "severity": "hold",
-          "message": "J. Reyes Consulting is not a vendor on file"
+          "message": "J. Reyes Consulting is not a vendor on file",
+          "points": 20
         }
       ],
       "decision": {
@@ -386,12 +420,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20931",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 5,
       "findings": [
         {
           "code": "first_payment",
           "severity": "warn",
-          "message": "first payment to Harbor Point Logistics LLC"
+          "message": "first payment to Harbor Point Logistics LLC",
+          "points": 5
         }
       ],
       "decision": null,
@@ -413,12 +451,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-0412",
+      "entry_class": null,
+      "payroll": false,
       "status": "rejected",
+      "score": 20,
       "findings": [
         {
           "code": "unknown_payee",
           "severity": "hold",
-          "message": "J. Reyes Consulting is not a vendor on file"
+          "message": "J. Reyes Consulting is not a vendor on file",
+          "points": 20
         }
       ],
       "decision": {
@@ -436,7 +478,7 @@ Response:
 ## Next
 
 - [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
-- [Checks](/docs/checks.md): all twenty-two checks and how to set each one.
+- [Checks](/docs/checks.md): all twenty-five checks and how to set each one.
 - [Decisions and release](/docs/releases.md): two-person approval, cancel, and what release guarantees.
 - [Payment checks](/docs/payment-checks.md): one wire or instant payment, checked before it is keyed in.
 - [Webhooks](/docs/webhooks.md): hear about held payments as they happen.

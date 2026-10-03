@@ -20,6 +20,12 @@ The email code goes only to the `contact_email` you gave when you created the li
 
 Email alone never verifies anything. Most of this fraud starts in an email inbox, so the code step only shows the person controls the contact address. The bank login is what verifies.
 
+## A link after a bank change goes to a contact you already had
+
+Whoever sent a fake change request may also supply a new contact, then log in to their own bank under a name close to the vendor's. So when the vendor's current details replaced earlier ones, a link counts only if its contact was on file before the change: an address on the vendor's `email_domain` that a link went to before the details changed. Any other contact is a `new_contact`, and the answer says why in `new_contact_reason`.
+
+Quarter still creates the link, and the vendor can still log in. A bank login through it is recorded as evidence, but it does not confirm the change: the details stay unconfirmed, the payment stays held, and the vendor page tells the vendor that you still need to confirm the details with them by phone. Confirm the change with a [call-back](#callbacks) to a number you already had. A vendor's first bank details are not a change, so any contact can confirm them.
+
 ## What the vendor sees
 
 1. A page that names your company and the vendor, and asks them to confirm their bank details. The link works for 14 days.
@@ -38,6 +44,8 @@ Quarter hosts this page. Its routes are public and listed below, in the order th
 Creates a link for the vendor. Any open link for the same vendor is cancelled. The token in the `url` is shown only here; Quarter keeps only its hash.
 
 With `send: true`, Quarter emails the link to the contact. Otherwise, send the `url` yourself.
+
+`new_contact` is `true` when the vendor's details changed and the contact was not on file before the change; see [above](#new-contact).
 
 **Path parameters**
 
@@ -70,7 +78,9 @@ Response:
   "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
   "contact_email": "ap@harborpoint.example",
   "url": "<Quarter console URL>/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va",
-  "expires_in_days": 14
+  "expires_in_days": 14,
+  "new_contact": false,
+  "new_contact_reason": null
 }
 ```
 
@@ -108,7 +118,8 @@ Response:
   "steps": {
     "email": false,
     "bank": false
-  }
+  },
+  "callback_required": false
 }
 ```
 
@@ -183,7 +194,7 @@ Response:
 
 Returns a Plaid Link token. Open Plaid Link with it; when the vendor finishes, Plaid gives the page a `public_token`.
 
-In a test project without Plaid, `test_bank` is `true`: confirm with the `public_token` `test-bank-match`, or `test-bank-mismatch` to see a refusal. When the plan has used its bank logins for the month, the answer is `409 bank_login_unavailable`.
+In a test project without Plaid, `test_bank` is `true`: confirm with the `public_token` `test-bank-match`, or `test-bank-mismatch` to see a refusal. When the plan has used its bank logins for the month, the answer is `409 bank_login_unavailable`. One link starts at most 5 bank logins; the sixth answers `429 too_many_bank_logins`.
 
 **Path parameters**
 
@@ -213,7 +224,7 @@ Response:
 
 Sends the Plaid `public_token`. The email step must be done first, or the answer is `409 email_first`. Quarter compares the accounts the bank returned with the current details on file and the owner name with the vendor name.
 
-On a match, the details become `verified` with `verified_method: "bank_link"`, the vendor becomes `verified`, the link is completed, and the `vendor.verified` and `verification_request.completed` [events](/docs/webhooks.md#event-types) fire. Otherwise the answer says why: `account_not_on_file` (the vendor logged in to a bank that does not hold the account on file) or `owner_name_mismatch`.
+On a match, the details become `verified` with `verified_method: "bank_link"`, the vendor becomes `verified`, the link is completed, and the `vendor.verified` and `verification_request.completed` (with `verified: true`) [events](/docs/webhooks.md#event-types) fire. A match through a new contact completes the link and fires only `verification_request.completed`, with `verified: false` and `reason: "callback_required"`. Otherwise the answer says why: `account_not_on_file` (the vendor logged in to a bank that does not hold the account on file), `owner_name_mismatch`, or `callback_required` (it matched, but the link went to a [new contact](#new-contact), so a call-back still has to confirm the change).
 
 **Path parameters**
 
@@ -369,6 +380,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -382,7 +394,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [

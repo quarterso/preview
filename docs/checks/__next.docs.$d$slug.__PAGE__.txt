@@ -1,48 +1,59 @@
 1:"$Sreact.fragment"
-2:I[56123,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"CodeBlock"]
-3:I[56448,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],""]
-8c:X
-91:X
-91:C
-0:{"buildId":"fJbpDBOYiot9vcFUpIglk","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Checks and settings"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["The twenty-two checks Quarter runs on payments, the exact message each gives, and the settings that decide whether it holds, warns or is off."]}],["$","a",null,{"href":"/preview/docs/checks.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a ",["$","code","120",{"children":"code"}],", a ",["$","code","130",{"children":"severity"}]," and a ",["$","code","147",{"children":"message"}],". A ",["$","code","160",{"children":"hold"}]," finding keeps the payment out of the released file until a person approves it. A ",["$","code","248",{"children":"warn"}]," finding is shown to the reviewer and does not hold."]}],["$","$L2","1",{"tabs":[{"label":"JSON","language":"json","code":"{\n  \"code\": \"account_not_on_file\",\n  \"severity\": \"hold\",\n  \"message\": \"this pays Harbor Point Logistics LLC at an account that is not the one on file\"\n}"}],"title":"A finding"}],["$","p","2",{"children":["Messages are plain words, written to be shown to the reviewer as they are. In the messages below, the parts in braces are filled in from the payment. Amounts are written like ",["$","code","175",{"children":"$$48,250.00"}],"."]}],["$","h2","3",{"id":"all-checks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#all-checks","className":"docs-module__RdmBMa__anchor","children":["All checks"]}]}],["$","div","4",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Code",{"scope":"col","children":["Code"]}],["$","th","Default",{"scope":"col","children":["Default"]}],["$","th","Fires when",{"scope":"col","children":["Fires when"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#unknown-payee","children":[["$","code","0",{"children":"unknown_payee"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["The payee matches no vendor."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#vendor-blocked","children":[["$","code","0",{"children":"vendor_blocked"}]]}]]}],["$","td","1",{"children":["Hold (always)"]}],["$","td","2",{"children":["You blocked this vendor from being paid."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#unverified-account","children":[["$","code","0",{"children":"unverified_account"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["The account is the one on file, but nobody ever confirmed it with the vendor."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#account-changed-recently","children":[["$","code","0",{"children":"account_changed_recently"}]]}]]}],["$","td","1",{"children":["Hold; warn once confirmed"]}],["$","td","2",{"children":["The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period."]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#account-not-on-file","children":[["$","code","0",{"children":"account_not_on_file"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["The run pays a known vendor at an account other than the one on file."]}]]}],["$","tr","5",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#name-mismatch","children":[["$","code","0",{"children":"name_mismatch"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["The payee name in the file does not match the vendor."]}]]}],"$L4","$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13"]}]]}]}],"$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38","$L39","$L3a","$L3b","$L3c","$L3d","$L3e","$L3f","$L40","$L41","$L42","$L43","$L44","$L45","$L46","$L47","$L48","$L49","$L4a","$L4b","$L4c","$L4d","$L4e","$L4f","$L50","$L51","$L52","$L53","$L54","$L55","$L56","$L57","$L58","$L59","$L5a","$L5b","$L5c","$L5d","$L5e","$L5f","$L60","$L61","$L62","$L63","$L64","$L65","$L66","$L67","$L68","$L69","$L6a","$L6b","$L6c","$L6d","$L6e","$L6f","$L70","$L71","$L72","$L73","$L74","$L75","$L76","$L77","$L78","$L79","$L7a","$L7b","$L7c","$L7d","$L7e","$L7f","$L80","$L81","$L82","$L83","$L84","$L85","$L86"]}],"$L87"]}],"$L88"]}],["$L89"],"$L8a"]}],"isPartial":"$@8b","staleTime":"$8c","varyParams":null},{"rsc":"$L8d","isPartial":"$@8e","staleTime":"$8c","varyParams":null},{"rsc":"$L8f","isPartial":"$@90","staleTime":"$8c","varyParams":"$91"},{"rsc":"$L92","isPartial":"$@93","staleTime":"$8c","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@94","rootVaryParams":null,"needsRuntimeRequest":"$@95"}
-98:I[20795,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
-99:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
-9a:"$Sreact.suspense"
-9c:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
-9d:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
-9e:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
-9f:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
-a0:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
-a1:I[71948,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js"],"DocSidebar"]
-4:["$","tr","6",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#first-payment","children":[["$","code","0",{"children":"first_payment"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["The first payment to this vendor."]}]]}]
-5:["$","tr","7",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#amount-unusual","children":[["$","code","0",{"children":"amount_unusual"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["Far above what this vendor is usually paid."]}]]}]
-6:["$","tr","8",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#duplicate-payment","children":[["$","code","0",{"children":"duplicate_payment"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["The same amount to the same account twice."]}]]}]
-7:["$","tr","9",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#shared-account","children":[["$","code","0",{"children":"shared_account"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["Another of your vendors is paid at this same account."]}]]}]
-8:["$","tr","10",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#network-flagged","children":[["$","code","0",{"children":"network_flagged"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["A business on Quarter reported this account in connection with a payment fraud."]}]]}]
-9:["$","tr","11",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#sanctions-match","children":[["$","code","0",{"children":"sanctions_match"}]]}]]}],["$","td","1",{"children":["Hold (always)"]}],["$","td","2",{"children":["The payee name resembles a name on the OFAC SDN list."]}]]}]
-a:["$","tr","12",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#routing-invalid","children":[["$","code","0",{"children":"routing_invalid"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["The routing number is not a valid US bank routing number."]}]]}]
-b:["$","tr","13",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#iban-invalid","children":[["$","code","0",{"children":"iban_invalid"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["The IBAN on an international payment fails its checksum."]}]]}]
-c:["$","tr","14",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#check-number-reused","children":[["$","code","0",{"children":"check_number_reused"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["A check number already used on the same account."]}]]}]
-d:["$","tr","15",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#payee-name-altered","children":[["$","code","0",{"children":"payee_name_altered"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["A check's payee line is close to the vendor's name on file, but not the same."]}]]}]
-e:["$","tr","16",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#just-under-threshold","children":[["$","code","0",{"children":"just_under_threshold"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["A check for just under the two-person threshold."]}]]}]
-f:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#employee-account-match","children":[["$","code","0",{"children":"employee_account_match"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["The account paid, or the vendor's account on file, is on your employee account list."]}]]}]
-10:["$","tr","18",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#vendor-dormant-reactivated","children":[["$","code","0",{"children":"vendor_dormant_reactivated"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["A vendor not paid for a year has bank details that changed since its last payment."]}]]}]
-11:["$","tr","19",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#split-below-threshold","children":[["$","code","0",{"children":"split_below_threshold"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more."]}]]}]
-12:["$","tr","20",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#vendor-new-paid-fast","children":[["$","code","0",{"children":"vendor_new_paid_fast"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["A vendor added in the last 14 days is paid for the first time by the person who added it."]}]]}]
-13:["$","tr","21",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#second-person-required","children":[["$","code","0",{"children":"second_person_required"}]]}]]}],["$","td","1",{"children":["Hold (always)"]}],["$","td","2",{"children":["The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days."]}]]}]
-14:["$","h2","5",{"id":"paper-checks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#paper-checks","className":"docs-module__RdmBMa__anchor","children":["Checks on paper checks"]}]}]
-15:["$","p","6",{"children":["A ",["$","$L3","2",{"href":"/docs/payment-runs#check-register","children":["check register"]}]," pays names, not accounts. So the checks about the account paid do not apply to a check: ",["$","code","142",{"children":"unverified_account"}],", ",["$","code","164",{"children":"account_changed_recently"}],", ",["$","code","192",{"children":"account_not_on_file"}],", ",["$","code","215",{"children":"shared_account"}],", ",["$","code","233",{"children":"network_flagged"}],", ",["$","code","252",{"children":"routing_invalid"}]," and ",["$","code","274",{"children":"iban_invalid"}],". Three checks apply only to checks: ",["$","code","325",{"children":"check_number_reused"}],", ",["$","code","348",{"children":"payee_name_altered"}]," and ",["$","code","373",{"children":"just_under_threshold"}],". The rest apply to every payment."]}]
-16:["$","aside","7",{"className":"docs-module__RdmBMa__note","data-tone":"info","children":["The checks lower the risk of paying a fraudster. They do not guarantee that every fraud is caught. A held payment is a question for a person, not a verdict."]}]
-17:["$","h2","8",{"id":"settings","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#settings","className":"docs-module__RdmBMa__anchor","children":["Settings"]}]}]
-18:["$","p","9",{"children":["Settings decide how payments are checked for your account. Set any check to ",["$","code","76",{"children":"hold"}],", ",["$","code","84",{"children":"warn"}]," or ",["$","code","94",{"children":"off"}],", or back to ",["$","code","112",{"children":"default"}],", except the three that always hold. The other windows, such as 365 days for a dormant vendor, are fixed. Every change is recorded in the ",["$","$L3","259",{"href":"/docs/compliance#get-v1-audit-log","children":["audit log"]}]," with the settings it produced, and the ",["$","$L3","345",{"href":"/docs/compliance","children":["written procedure"]}]," follows the settings at once, so the document and the controls never disagree."]}]
-19:["$","h3","10",{"id":"fields","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#fields","className":"docs-module__RdmBMa__anchor","children":["Fields"]}]}]
-1a:["$","div","11",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Default",{"scope":"col","children":["Default"]}],["$","th","Meaning",{"scope":"col","children":["Meaning"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"checks"}]]}],["$","td","1",{"children":[["$","code","0",{"children":"default"}]," for each"]}],["$","td","2",{"children":["Each check set to ",["$","code","18",{"children":"hold"}],", ",["$","code","26",{"children":"warn"}],", ",["$","code","34",{"children":"off"}]," or ",["$","code","43",{"children":"default"}]," (the default in ",["$","$L3","69",{"href":"/docs/checks#all-checks","children":["Checks"]}],"). ",["$","code","105",{"children":"vendor_blocked"}],", ",["$","code","123",{"children":"sanctions_match"}]," and ",["$","code","145",{"children":"second_person_required"}]," always show ",["$","code","182",{"children":"hold"}]," and cannot be changed."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"mandatory_checks"}]]}],["$","td","1",{"children":[]}],["$","td","2",{"children":["The checks that cannot be changed. Read only."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"defaults"}]]}],["$","td","1",{"children":[]}],["$","td","2",{"children":["What each check does when left at ",["$","code","34",{"children":"default"}],". Read only."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"check_names"}]]}],["$","td","1",{"children":[]}],["$","td","2",{"children":["The plain name of each check, as the console shows it. Read only."]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"cooling_days"}]]}],["$","td","1",{"children":["10"]}],["$","td","2",{"children":["How long confirmed new bank details still warn, for ",["$","$L3","52",{"href":"/docs/checks#account-changed-recently","children":[["$","code","0",{"children":"account_changed_recently"}]]}],". 0 to 90."]}]]}],["$","tr","5",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"unusual_multiplier"}]]}],["$","td","1",{"children":["3"]}],["$","td","2",{"children":["How many times the usual amount counts as unusual, for ",["$","$L3","55",{"href":"/docs/checks#amount-unusual","children":[["$","code","0",{"children":"amount_unusual"}]]}],". 1.5 to 100."]}]]}],["$","tr","6",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"two_person_threshold"}]]}],["$","td","1",{"children":["50000"]}],["$","td","2",{"children":["In dollars, 0 to 1,000,000,000. Every payment of this amount or more is held as ",["$","$L3","80",{"href":"/docs/checks#second-person-required","children":[["$","code","0",{"children":"second_person_required"}]]}],", and approving it needs ",["$","$L3","168",{"href":"/docs/releases#two-person-approval","children":["two different people"]}],". 0 holds every payment for two people. Also used by ",["$","$L3","279",{"href":"/docs/checks#just-under-threshold","children":[["$","code","0",{"children":"just_under_threshold"}]]}]," and ",["$","$L3","343",{"href":"/docs/checks#split-below-threshold","children":[["$","code","0",{"children":"split_below_threshold"}]]}],"."]}]]}],["$","tr","7",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"last_reviewed_at"}],", ",["$","code","20",{"children":"last_reviewed_by"}]]}],["$","td","1",{"children":[["$","code","0",{"children":"null"}]]}],["$","td","2",{"children":["The last yearly review of the procedure. Set by ",["$","$L3","48",{"href":"/docs/compliance#post-v1-compliance-reviews","children":[["$","code","0",{"children":"POST /v1/compliance/reviews"}]]}],"."]}]]}]]}]]}]}]
-1b:["$","h3","12",{"id":"endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
-1c:["$","h3","13",{"id":"get-v1-settings","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-settings","className":"docs-module__RdmBMa__anchor","children":["Read the settings"]}]}]
-1d:["$","p","14",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/settings"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
-1e:["$","p","15",{"children":["The settings in force. An account that never changed them gets the defaults."]}]
-1f:["$","$L2","16",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/settings\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
-96:Tc48,{
+2:I[56123,["/preview/_next/static/chunks/3q-65fd04-9nl.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"CodeBlock"]
+3:I[56448,["/preview/_next/static/chunks/3q-65fd04-9nl.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],""]
+a5:X
+aa:X
+aa:C
+0:{"buildId":"HMHen7d4lBHYs2fN0EOgD","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Checks and settings"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["The twenty-five checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off."]}],["$","a",null,{"href":"/preview/docs/checks.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a ",["$","code","120",{"children":"code"}],", a ",["$","code","130",{"children":"severity"}],", a ",["$","code","144",{"children":"message"}]," and its ",["$","code","162",{"children":"points"}],". A ",["$","code","174",{"children":"hold"}]," finding keeps the payment out of the released file until a person approves it. A ",["$","code","262",{"children":"warn"}]," finding is shown to the reviewer and does not hold."]}],["$","$L2","1",{"tabs":[{"label":"JSON","language":"json","code":"{\n  \"code\": \"account_not_on_file\",\n  \"severity\": \"hold\",\n  \"message\": \"this pays Harbor Point Logistics LLC at an account that is not the one on file\",\n  \"points\": 40\n}"}],"title":"A finding"}],["$","p","2",{"children":["Messages are plain words, written to be shown to the reviewer as they are. In the messages below, the parts in braces are filled in from the payment. Amounts are written like ",["$","code","175",{"children":"$$48,250.00"}],"."]}],["$","h2","3",{"id":"all-checks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#all-checks","className":"docs-module__RdmBMa__anchor","children":["All checks"]}]}],["$","div","4",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Code",{"scope":"col","children":["Code"]}],["$","th","Default",{"scope":"col","children":["Default"]}],["$","th","Points",{"scope":"col","children":["Points"]}],["$","th","Fires when",{"scope":"col","children":["Fires when"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#unknown-payee","children":[["$","code","0",{"children":"unknown_payee"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["20"]}],["$","td","3",{"children":["The payee matches no vendor."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#vendor-blocked","children":[["$","code","0",{"children":"vendor_blocked"}]]}]]}],["$","td","1",{"children":["Hold (always)"]}],["$","td","2",{"children":["50"]}],["$","td","3",{"children":["You blocked this vendor from being paid."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#unverified-account","children":[["$","code","0",{"children":"unverified_account"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["30"]}],["$","td","3",{"children":["The account is the one on file, but nobody ever confirmed it with the vendor."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#account-changed-recently","children":[["$","code","0",{"children":"account_changed_recently"}]]}]]}],["$","td","1",{"children":["Hold; warn once confirmed"]}],["$","td","2",{"children":["40; 10 (bank details changed recently, and confirmed)"]}],["$","td","3",{"children":["The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period."]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#account-not-on-file","children":[["$","code","0",{"children":"account_not_on_file"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["40"]}],"$L4"]}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18"]}]]}]}],"$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38","$L39","$L3a","$L3b","$L3c","$L3d","$L3e","$L3f","$L40","$L41","$L42","$L43","$L44","$L45","$L46","$L47","$L48","$L49","$L4a","$L4b","$L4c","$L4d","$L4e","$L4f","$L50","$L51","$L52","$L53","$L54","$L55","$L56","$L57","$L58","$L59","$L5a","$L5b","$L5c","$L5d","$L5e","$L5f","$L60","$L61","$L62","$L63","$L64","$L65","$L66","$L67","$L68","$L69","$L6a","$L6b","$L6c","$L6d","$L6e","$L6f","$L70","$L71","$L72","$L73","$L74","$L75","$L76","$L77","$L78","$L79","$L7a","$L7b","$L7c","$L7d","$L7e","$L7f","$L80","$L81","$L82","$L83","$L84","$L85","$L86","$L87","$L88","$L89","$L8a","$L8b","$L8c","$L8d","$L8e","$L8f","$L90","$L91","$L92","$L93","$L94","$L95","$L96","$L97","$L98","$L99","$L9a","$L9b","$L9c","$L9d","$L9e","$L9f"]}],"$La0"]}],"$La1"]}],["$La2"],"$La3"]}],"isPartial":"$@a4","staleTime":"$a5","varyParams":null},{"rsc":"$La6","isPartial":"$@a7","staleTime":"$a5","varyParams":null},{"rsc":"$La8","isPartial":"$@a9","staleTime":"$a5","varyParams":"$aa"},{"rsc":"$Lab","isPartial":"$@ac","staleTime":"$a5","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@ad","rootVaryParams":null,"needsRuntimeRequest":"$@ae"}
+b1:I[20795,["/preview/_next/static/chunks/3q-65fd04-9nl.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
+b2:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+b3:"$Sreact.suspense"
+b5:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+b6:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+b7:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+b8:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+b9:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+ba:I[71948,["/preview/_next/static/chunks/3q-65fd04-9nl.js","/preview/_next/static/chunks/1wg-g500q1kp4.js"],"DocSidebar"]
+4:["$","td","3",{"children":["The run pays a known vendor at an account other than the one on file."]}]
+5:["$","tr","5",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#name-mismatch","children":[["$","code","0",{"children":"name_mismatch"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["15"]}],["$","td","3",{"children":["The payee name in the file does not match the vendor."]}]]}]
+6:["$","tr","6",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#first-payment","children":[["$","code","0",{"children":"first_payment"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["5"]}],["$","td","3",{"children":["The first payment to this vendor."]}]]}]
+7:["$","tr","7",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#amount-unusual","children":[["$","code","0",{"children":"amount_unusual"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["10"]}],["$","td","3",{"children":["Far above what this vendor is usually paid."]}]]}]
+8:["$","tr","8",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#duplicate-payment","children":[["$","code","0",{"children":"duplicate_payment"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["30"]}],["$","td","3",{"children":["The same amount to the same account twice."]}]]}]
+9:["$","tr","9",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#shared-account","children":[["$","code","0",{"children":"shared_account"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["30"]}],["$","td","3",{"children":["Another of your vendors is paid at this same account."]}]]}]
+a:["$","tr","10",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#network-flagged","children":[["$","code","0",{"children":"network_flagged"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["30"]}],["$","td","3",{"children":["A business on Quarter reported this account in connection with a payment fraud."]}]]}]
+b:["$","tr","11",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#sanctions-match","children":[["$","code","0",{"children":"sanctions_match"}]]}]]}],["$","td","1",{"children":["Hold (always)"]}],["$","td","2",{"children":["60; 0 (sanctions list out of date, so not screened)"]}],["$","td","3",{"children":["The payee name resembles a name on OFAC's SDN or Consolidated lists."]}]]}]
+c:["$","tr","12",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#routing-invalid","children":[["$","code","0",{"children":"routing_invalid"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["25"]}],["$","td","3",{"children":["The routing number is not a valid US bank routing number."]}]]}]
+d:["$","tr","13",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#iban-invalid","children":[["$","code","0",{"children":"iban_invalid"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["25"]}],["$","td","3",{"children":["The IBAN on an international payment fails its checksum."]}]]}]
+e:["$","tr","14",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#check-number-reused","children":[["$","code","0",{"children":"check_number_reused"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["30"]}],["$","td","3",{"children":["A check number already used on the same account."]}]]}]
+f:["$","tr","15",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#payee-name-altered","children":[["$","code","0",{"children":"payee_name_altered"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["20"]}],["$","td","3",{"children":["A check's payee line is close to the vendor's name on file, but not the same."]}]]}]
+10:["$","tr","16",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#just-under-threshold","children":[["$","code","0",{"children":"just_under_threshold"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["10"]}],["$","td","3",{"children":["A check for just under the two-person threshold."]}]]}]
+11:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#employee-account-match","children":[["$","code","0",{"children":"employee_account_match"}]]}]]}],["$","td","1",{"children":["Hold"]}],["$","td","2",{"children":["40; 10 (payroll to an employee account, employee id not compared)"]}],["$","td","3",{"children":["The account paid, or the vendor's account on file, is on your employee account list."]}]]}]
+12:["$","tr","18",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#vendor-dormant-reactivated","children":[["$","code","0",{"children":"vendor_dormant_reactivated"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["20"]}],["$","td","3",{"children":["A vendor not paid for a year has bank details that changed since its last payment."]}]]}]
+13:["$","tr","19",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#split-below-threshold","children":[["$","code","0",{"children":"split_below_threshold"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["15"]}],["$","td","3",{"children":["Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more."]}]]}]
+14:["$","tr","20",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#vendor-new-paid-fast","children":[["$","code","0",{"children":"vendor_new_paid_fast"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["15"]}],["$","td","3",{"children":["A vendor added in the last 14 days is paid for the first time by the person who added it."]}]]}]
+15:["$","tr","21",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#request-domain-lookalike","children":[["$","code","0",{"children":"request_domain_lookalike"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["40; 15 (change request came from a domain other than the vendor's)"]}],["$","td","3",{"children":["The request for the unconfirmed bank details came by email from a domain that imitates the vendor's, or from a domain other than the vendor's."]}]]}]
+16:["$","tr","22",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#request-domain-new","children":[["$","code","0",{"children":"request_domain_new"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["30"]}],["$","td","3",{"children":["The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added."]}]]}]
+17:["$","tr","23",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#request-domain-no-dmarc","children":[["$","code","0",{"children":"request_domain_no_dmarc"}]]}]]}],["$","td","1",{"children":["Warn"]}],["$","td","2",{"children":["5"]}],["$","td","3",{"children":["The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name."]}]]}]
+18:["$","tr","24",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":"/docs/checks#second-person-required","children":[["$","code","0",{"children":"second_person_required"}]]}]]}],["$","td","1",{"children":["Hold (always)"]}],["$","td","2",{"children":["0; 30 (paid by the person who changed the bank details)"]}],["$","td","3",{"children":["The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days."]}]]}]
+19:["$","h2","5",{"id":"points","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#points","className":"docs-module__RdmBMa__anchor","children":["Points and the order of held payments"]}]}]
+1a:["$","p","6",{"children":["Each check has a fixed number of points, in the table above. A payment's ",["$","code","73",{"children":"score"}]," is the sum of the points of its findings, holds and warnings alike, so the reasons shown with a payment always add up to its score. The ",["$","$L3","217",{"href":"/docs/payment-runs#get-v1-payment-items","children":["held payments queue"]}]," lists the highest score first, then the payment that has waited longest, so the payment with the strongest reasons is looked at first."]}]
+1b:["$","ul","7",{"children":[["$","li","0",{"children":["Points never decide whether a payment is held. The checks and your settings do. A payment with a low score can be held, and a payment with a high score from warnings alone is not."]}],["$","li","1",{"children":["Every 10 points means a payment with that reason is judged about twice as likely to be fraud or an error as one without it, so 40 points is about 16 times. These are estimates written by Quarter from published fraud reports and how the checks work. They are not yet measured: no public data gives the precision of these checks, and Quarter has too few recorded outcomes to measure them."]}],["$","li","2",{"children":["Some checks give different points for different evidence. Bank details changed recently score 40 while not confirmed with the vendor, and 10 once confirmed: a change alone is common, since many vendors change bank details each year, while a change nobody confirmed is how vendor impersonation works."]}],["$","li","3",{"children":["Two weaker reasons together add up. A new vendor paid by the person who added it, at an amount just under the two-person threshold, scores more than either alone."]}],["$","li","4",{"children":[["$","code","0",{"children":"second_person_required"}]," scores 0 for an amount at or above the threshold, because it is a control, not a suspicion. It scores 30 when the person paying changed the vendor's bank details."]}],["$","li","5",{"children":["Quarter changes the table only by publishing a new dated version, and never changes your settings. As outcomes are recorded, ",["$","$L3","125",{"href":"/docs/releases#get-v1-check-precision","children":["precision per check"]}]," shows how each check's holds turned out, for you to judge."]}]]}]
+1c:["$","h2","8",{"id":"payroll","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#payroll","className":"docs-module__RdmBMa__anchor","children":["Payroll"]}]}]
+1d:["$","p","9",{"children":["Payroll and other payments to people are checked like any payment, but most findings warn instead of holding, so wages are not held up. A payment is payroll when its NACHA batch has a consumer entry class (",["$","code","206",{"children":"PPD"}],", or ",["$","code","216",{"children":"WEB"}],", ",["$","code","223",{"children":"TEL"}],", ",["$","code","230",{"children":"CIE"}],", ",["$","code","237",{"children":"POP"}],", ",["$","code","244",{"children":"ARC"}],", ",["$","code","251",{"children":"BOC"}],", ",["$","code","258",{"children":"RCK"}],", ",["$","code","265",{"children":"POS"}],", ",["$","code","272",{"children":"MTE"}],", ",["$","code","279",{"children":"SHR"}],"), or when a CSV, check register or list is sent with ",["$","code","338",{"children":"payroll: true"}],". Its item shows ",["$","code","370",{"children":"payroll: true"}]," and, for NACHA, its ",["$","code","406",{"children":"entry_class"}],"."]}]
+1e:["$","ul","10",{"children":[["$","li","0",{"children":["A finding that would hold is a warning instead, whatever your settings say for that check."]}],["$","li","1",{"children":[["$","code","0",{"children":"sanctions_match"}]," and ",["$","code","22",{"children":"second_person_required"}]," still hold: a payroll payment at or above the two-person threshold needs two people, and so does one paid by the person who changed the payee's bank details."]}],["$","li","2",{"children":[["$","$L3","0",{"href":"/docs/checks#employee-account-match","children":[["$","code","0",{"children":"employee_account_match"}]]}]," holds a payroll payment to an employee's account made under another employee's id, and warns when the id cannot be compared."]}],["$","li","3",{"children":[["$","code","0",{"children":"unknown_payee"}]," does not run on payroll: paying people who are not vendors is what payroll does."]}],["$","li","4",{"children":["Anyone who can upload a run, a signed-in person or an API key, can send a payroll file. The audit log records who uploaded it and how many of its payments were payroll."]}],["$","li","5",{"children":["A payroll entry that pays a vendor on file, by its id, account or name, is checked as a vendor payment, so marking a file as payroll never lets a held vendor payment through."]}]]}]
+1f:["$","h2","11",{"id":"paper-checks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#paper-checks","className":"docs-module__RdmBMa__anchor","children":["Checks on paper checks"]}]}]
+20:["$","p","12",{"children":["A ",["$","$L3","2",{"href":"/docs/payment-runs#check-register","children":["check register"]}]," pays names, not accounts. So the checks about the account paid do not apply to a check: ",["$","code","142",{"children":"unverified_account"}],", ",["$","code","164",{"children":"account_changed_recently"}],", ",["$","code","192",{"children":"account_not_on_file"}],", ",["$","code","215",{"children":"shared_account"}],", ",["$","code","233",{"children":"network_flagged"}],", ",["$","code","252",{"children":"routing_invalid"}],", ",["$","code","271",{"children":"iban_invalid"}]," and the three ",["$","code","300",{"children":"request_domain"}]," checks. Three checks apply only to checks: ",["$","code","360",{"children":"check_number_reused"}],", ",["$","code","383",{"children":"payee_name_altered"}]," and ",["$","code","408",{"children":"just_under_threshold"}],". The rest apply to every payment."]}]
+21:["$","aside","13",{"className":"docs-module__RdmBMa__note","data-tone":"info","children":["The checks lower the risk of paying a fraudster. They do not guarantee that every fraud is caught. A held payment is a question for a person, not a verdict."]}]
+22:["$","h2","14",{"id":"settings","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#settings","className":"docs-module__RdmBMa__anchor","children":["Settings"]}]}]
+23:["$","p","15",{"children":["Settings decide how payments are checked for your account. Set any check to ",["$","code","76",{"children":"hold"}],", ",["$","code","84",{"children":"warn"}]," or ",["$","code","94",{"children":"off"}],", or back to ",["$","code","112",{"children":"default"}],", except the three that always hold. The other windows, such as 365 days for a dormant vendor, are fixed. Every change is recorded in the ",["$","$L3","259",{"href":"/docs/compliance#get-v1-audit-log","children":["audit log"]}]," with the settings it produced, and the ",["$","$L3","345",{"href":"/docs/compliance","children":["written procedure"]}]," follows the settings at once, so the document and the controls never disagree."]}]
+24:["$","h3","16",{"id":"fields","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#fields","className":"docs-module__RdmBMa__anchor","children":["Fields"]}]}]
+25:["$","div","17",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Default",{"scope":"col","children":["Default"]}],["$","th","Meaning",{"scope":"col","children":["Meaning"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"checks"}]]}],["$","td","1",{"children":[["$","code","0",{"children":"default"}]," for each"]}],["$","td","2",{"children":["Each check set to ",["$","code","18",{"children":"hold"}],", ",["$","code","26",{"children":"warn"}],", ",["$","code","34",{"children":"off"}]," or ",["$","code","43",{"children":"default"}]," (the default in ",["$","$L3","69",{"href":"/docs/checks#all-checks","children":["Checks"]}],"). ",["$","code","105",{"children":"vendor_blocked"}],", ",["$","code","123",{"children":"sanctions_match"}]," and ",["$","code","145",{"children":"second_person_required"}]," always show ",["$","code","182",{"children":"hold"}]," and cannot be changed."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"mandatory_checks"}]]}],["$","td","1",{"children":[]}],["$","td","2",{"children":["The checks that cannot be changed. Read only."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"defaults"}]]}],["$","td","1",{"children":[]}],["$","td","2",{"children":["What each check does when left at ",["$","code","34",{"children":"default"}],". Read only."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"check_names"}]]}],["$","td","1",{"children":[]}],["$","td","2",{"children":["The plain name of each check, as the console shows it. Read only."]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"check_points"}]]}],["$","td","1",{"children":[]}],["$","td","2",{"children":["The ",["$","$L3","4",{"href":"/docs/checks#points","children":["points"]}]," of each check and of its variants. Read only."]}]]}],["$","tr","5",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"cooling_days"}]]}],["$","td","1",{"children":["10"]}],["$","td","2",{"children":["How long confirmed new bank details still warn, for ",["$","$L3","52",{"href":"/docs/checks#account-changed-recently","children":[["$","code","0",{"children":"account_changed_recently"}]]}],". 0 to 90."]}]]}],["$","tr","6",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"unusual_multiplier"}]]}],["$","td","1",{"children":["3"]}],["$","td","2",{"children":["How many times the usual amount counts as unusual, for ",["$","$L3","55",{"href":"/docs/checks#amount-unusual","children":[["$","code","0",{"children":"amount_unusual"}]]}],". 1.5 to 100."]}]]}],["$","tr","7",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"two_person_threshold"}]]}],["$","td","1",{"children":["50000"]}],["$","td","2",{"children":["In dollars, 0 to 1,000,000,000. Every payment of this amount or more is held as ",["$","$L3","80",{"href":"/docs/checks#second-person-required","children":[["$","code","0",{"children":"second_person_required"}]]}],", and approving it needs ",["$","$L3","168",{"href":"/docs/releases#two-person-approval","children":["two different people"]}],". 0 holds every payment for two people. Also used by ",["$","$L3","279",{"href":"/docs/checks#just-under-threshold","children":[["$","code","0",{"children":"just_under_threshold"}]]}]," and ",["$","$L3","343",{"href":"/docs/checks#split-below-threshold","children":[["$","code","0",{"children":"split_below_threshold"}]]}],"."]}]]}],["$","tr","8",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"last_reviewed_at"}],", ",["$","code","20",{"children":"last_reviewed_by"}]]}],["$","td","1",{"children":[["$","code","0",{"children":"null"}]]}],["$","td","2",{"children":["The last yearly review of the procedure. Set by ",["$","$L3","48",{"href":"/docs/compliance#post-v1-compliance-reviews","children":[["$","code","0",{"children":"POST /v1/compliance/reviews"}]]}],"."]}]]}]]}]]}]}]
+26:["$","h3","18",{"id":"endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
+27:["$","h3","19",{"id":"get-v1-settings","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-settings","className":"docs-module__RdmBMa__anchor","children":["Read the settings"]}]}]
+28:["$","p","20",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/settings"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+29:["$","p","21",{"children":["The settings in force. An account that never changed them gets the defaults."]}]
+2a:["$","$L2","22",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/settings\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+af:T1807,{
   "object": "settings",
   "checks": {
     "unknown_payee": "default",
@@ -66,6 +77,9 @@ f:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
     "second_person_required": "hold"
   },
   "mandatory_checks": [
@@ -95,6 +109,9 @@ f:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
     "second_person_required": "hold"
   },
   "check_names": {
@@ -119,22 +136,152 @@ f:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
     "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        }
+      ]
+    }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
   "last_reviewed_at": null,
   "last_reviewed_by": null
-}20:["$","$L2","17",{"tabs":[{"label":"200","language":"json","code":"$96"}],"title":"Response"}]
-21:["$","h3","18",{"id":"put-v1-settings","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#put-v1-settings","className":"docs-module__RdmBMa__anchor","children":["Change the settings"]}]}]
-22:["$","p","19",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"PUT","children":"PUT"}],["$","code",null,{"children":"/v1/settings"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
-23:["$","p","20",{"children":["A signed-in admin only; an API key answers ",["$","code","43",{"children":"403 session_required"}],". Changes the fields you send and keeps the rest. Inside ",["$","code","122",{"children":"checks"}],", only the checks you name change. A change applies to runs uploaded after it, not to runs already scanned."]}]
-24:["$","p","21",{"children":["Errors: ",["$","code","8",{"children":"checks_invalid"}],", ",["$","code","26",{"children":"check_unknown"}],", ",["$","code","43",{"children":"check_mandatory"}],", ",["$","code","62",{"children":"check_mode_invalid"}],", ",["$","code","84",{"children":"cooling_days_invalid"}],", ",["$","code","108",{"children":"unusual_multiplier_invalid"}],", ",["$","code","138",{"children":"two_person_threshold_invalid"}],", all ",["$","code","174",{"children":"400"}],"."]}]
-25:["$","p","22",{"children":[["$","strong","0",{"children":"Body"}]]}]
-26:["$","div","23",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"checks"}]]}],["$","td","1",{"children":["object"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Check codes mapped to ",["$","code","22",{"children":"hold"}],", ",["$","code","30",{"children":"warn"}],", ",["$","code","38",{"children":"off"}]," or ",["$","code","47",{"children":"default"}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"cooling_days"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["0 to 90."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"unusual_multiplier"}]]}],["$","td","1",{"children":["number"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1.5 to 100."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"two_person_threshold"}]]}],["$","td","1",{"children":["number"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Dollars, 0 to 1,000,000,000."]}]]}]]}]]}]}]
-27:["$","$L2","24",{"tabs":[{"label":"curl","language":"bash","code":"curl -X PUT \"$QUARTER_API_URL/v1/settings\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"checks\":{\"first_payment\":\"hold\"},\"cooling_days\":14,\"two_person_threshold\":25000}'"}],"title":"Request"}]
-97:Tc45,{
+}2b:["$","$L2","23",{"tabs":[{"label":"200","language":"json","code":"$af"}],"title":"Response"}]
+2c:["$","h3","24",{"id":"put-v1-settings","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#put-v1-settings","className":"docs-module__RdmBMa__anchor","children":["Change the settings"]}]}]
+2d:["$","p","25",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"PUT","children":"PUT"}],["$","code",null,{"children":"/v1/settings"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
+2e:["$","p","26",{"children":["A signed-in admin only; an API key answers ",["$","code","43",{"children":"403 session_required"}],". Changes the fields you send and keeps the rest. Inside ",["$","code","122",{"children":"checks"}],", only the checks you name change. A change applies to runs uploaded after it, not to runs already scanned."]}]
+2f:["$","p","27",{"children":["Errors: ",["$","code","8",{"children":"checks_invalid"}],", ",["$","code","26",{"children":"check_unknown"}],", ",["$","code","43",{"children":"check_mandatory"}],", ",["$","code","62",{"children":"check_mode_invalid"}],", ",["$","code","84",{"children":"cooling_days_invalid"}],", ",["$","code","108",{"children":"unusual_multiplier_invalid"}],", ",["$","code","138",{"children":"two_person_threshold_invalid"}],", all ",["$","code","174",{"children":"400"}],"."]}]
+30:["$","p","28",{"children":[["$","strong","0",{"children":"Body"}]]}]
+31:["$","div","29",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"checks"}]]}],["$","td","1",{"children":["object"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Check codes mapped to ",["$","code","22",{"children":"hold"}],", ",["$","code","30",{"children":"warn"}],", ",["$","code","38",{"children":"off"}]," or ",["$","code","47",{"children":"default"}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"cooling_days"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["0 to 90."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"unusual_multiplier"}]]}],["$","td","1",{"children":["number"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1.5 to 100."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"two_person_threshold"}]]}],["$","td","1",{"children":["number"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Dollars, 0 to 1,000,000,000."]}]]}]]}]]}]}]
+32:["$","$L2","30",{"tabs":[{"label":"curl","language":"bash","code":"curl -X PUT \"$QUARTER_API_URL/v1/settings\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"checks\":{\"first_payment\":\"hold\"},\"cooling_days\":14,\"two_person_threshold\":25000}'"}],"title":"Request"}]
+b0:T1804,{
   "object": "settings",
   "checks": {
     "unknown_payee": "default",
@@ -158,6 +305,9 @@ f:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
     "second_person_required": "hold"
   },
   "mandatory_checks": [
@@ -187,6 +337,9 @@ f:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
     "second_person_required": "hold"
   },
   "check_names": {
@@ -211,121 +364,265 @@ f:["$","tr","17",{"children":[["$","td","0",{"children":[["$","$L3","0",{"href":
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
     "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        }
+      ]
+    }
   },
   "cooling_days": 14,
   "unusual_multiplier": 3,
   "two_person_threshold": 25000,
   "last_reviewed_at": null,
   "last_reviewed_by": null
-}28:["$","$L2","25",{"tabs":[{"label":"200","language":"json","code":"$97"}],"title":"Response"}]
-29:["$","h2","26",{"id":"each-check","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#each-check","className":"docs-module__RdmBMa__anchor","children":["Each check"]}]}]
-2a:["$","h3","27",{"id":"unknown-payee","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#unknown-payee","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"unknown_payee"}]]}]}]
-2b:["$","p","28",{"children":[["$","strong","0",{"children":"Default: hold."}]," The payee matches no vendor."]}]
-2c:["$","$L2","29",{"tabs":[{"label":"message","language":"shell","code":"{payee name} is not a vendor on file"}],"title":"Message"}]
-2d:["$","p","30",{"children":["Quarter looks for the vendor by your vendor id, then by the bank account, then by a close name. See ",["$","$L3","100",{"href":"/docs/payment-runs#matching","children":["how a payment finds its vendor"]}],". Add the vendor and confirm its bank details, or reject the payment."]}]
-2e:["$","h3","31",{"id":"vendor-blocked","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#vendor-blocked","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"vendor_blocked"}]]}]}]
-2f:["$","p","32",{"children":[["$","strong","0",{"children":"Default: hold, cannot be turned off."}]," You blocked this vendor from being paid."]}]
-30:["$","$L2","33",{"tabs":[{"label":"message","language":"shell","code":"{vendor name} is blocked from being paid"}],"title":"Message"}]
-31:["$","p","34",{"children":["Set with ",["$","code","9",{"children":"PATCH /v1/vendors/{vendor}"}]," and ",["$","code","42",{"children":"status: blocked"}],". It always holds and cannot be changed in settings."]}]
-32:["$","h3","35",{"id":"unverified-account","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#unverified-account","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"unverified_account"}]]}]}]
-33:["$","p","36",{"children":[["$","strong","0",{"children":"Default: hold."}]," The account is the one on file, but nobody ever confirmed it with the vendor."]}]
-34:["$","$L2","37",{"tabs":[{"label":"message","language":"shell","code":"these bank details were never confirmed with the vendor"}],"title":"Message"}]
-35:["$","p","38",{"children":["Fires for a vendor whose first and only bank details are ",["$","code","57",{"children":"unverified"}],". Confirm them with a ",["$","$L3","91",{"href":"/docs/verification","children":["verification link"]}]," or a ",["$","$L3","136",{"href":"/docs/verification#callbacks","children":["call-back"]}],"."]}]
-36:["$","h3","39",{"id":"account-changed-recently","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#account-changed-recently","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"account_changed_recently"}]]}]}]
-37:["$","p","40",{"children":[["$","strong","0",{"children":"Default: hold."}]," The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period."]}]
-38:["$","$L2","41",{"tabs":[{"label":"message","language":"shell","code":"bank details changed {days} days ago and were not confirmed with the vendor\nbank details changed {days} days ago; they were confirmed"}],"title":"Messages"}]
-39:["$","p","42",{"children":["For a change made today or yesterday, ",["$","code","38",{"children":"{days} days ago"}]," reads ",["$","code","62",{"children":"today"}]," or ",["$","code","73",{"children":"1 day ago"}],". New details that are not confirmed hold every payment to them, however old the change is. Once they are confirmed, payments within the cooling period (",["$","code","237",{"children":"cooling_days"}],", default 10) still carry the second message, as a warning. After the cooling period, the check stays quiet."]}]
-3a:["$","p","43",{"children":["If you set this check to ",["$","code","25",{"children":"hold"}],", the confirmed case holds too. If you set it to ",["$","code","80",{"children":"warn"}],", the unconfirmed case only warns, which is not advised."]}]
-3b:["$","h3","44",{"id":"account-not-on-file","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#account-not-on-file","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"account_not_on_file"}]]}]}]
-3c:["$","p","45",{"children":[["$","strong","0",{"children":"Default: hold."}]," The run pays a known vendor at an account other than the one on file."]}]
-3d:["$","$L2","46",{"tabs":[{"label":"message","language":"shell","code":"this pays {vendor name} at an account that is not the one on file\n{vendor name} has no bank details on file, so this account was never confirmed\n{vendor name} has no IBAN on file, so this account was never confirmed"}],"title":"Messages"}]
-3e:["$","p","47",{"children":["The payee matched a vendor by its id, your ",["$","code","43",{"children":"external_id"}]," or its name, but the account is not that vendor's current bank details. This is what a fraudulent change looks like when it reaches the payment file before it reaches your vendor records. It also fires when a run still pays details that were replaced."]}]
-3f:["$","p","48",{"children":["The third message is for an ",["$","$L3","28",{"href":"/docs/payment-checks#rails","children":["international payment check"]}],". Bank details on file are US routing and account numbers, so an IBAN is never compared with them."]}]
-40:["$","h3","49",{"id":"name-mismatch","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#name-mismatch","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"name_mismatch"}]]}]}]
-41:["$","p","50",{"children":[["$","strong","0",{"children":"Default: warn."}]," The payee name in the file does not match the vendor."]}]
-42:["$","$L2","51",{"tabs":[{"label":"message","language":"shell","code":"the payee name \"{payee name}\" does not match the vendor \"{vendor name}\""}],"title":"Message"}]
-43:["$","p","52",{"children":["Names are compared after ignoring case, accents, punctuation and suffixes such as Inc or LLC, against both the vendor name and the name on its bank account. Below 0.6 alike, the check fires. On a check, a payee line 0.6 alike or more that is still not the same is ",["$","$L3","264",{"href":"/docs/checks#payee-name-altered","children":[["$","code","0",{"children":"payee_name_altered"}]]}]," instead."]}]
-44:["$","h3","53",{"id":"first-payment","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#first-payment","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"first_payment"}]]}]}]
-45:["$","p","54",{"children":[["$","strong","0",{"children":"Default: warn."}]," The first payment to this vendor."]}]
-46:["$","$L2","55",{"tabs":[{"label":"message","language":"shell","code":"first payment to {vendor name}"}],"title":"Message"}]
-47:["$","p","56",{"children":["Counts payments in released runs that were clear or approved."]}]
-48:["$","h3","57",{"id":"amount-unusual","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#amount-unusual","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"amount_unusual"}]]}]}]
-49:["$","p","58",{"children":[["$","strong","0",{"children":"Default: warn."}]," Far above what this vendor is usually paid."]}]
-4a:["$","$L2","59",{"tabs":[{"label":"message","language":"shell","code":"{amount} is more than {multiplier} times the usual {median}"}],"title":"Message"}]
-4b:["$","p","60",{"children":["Compares the amount with the median of the vendor's last 12 released payments. Fires when the amount is more than ",["$","code","114",{"children":"unusual_multiplier"}]," times that median (default 3). It needs at least 3 earlier payments; before that, it stays quiet."]}]
-4c:["$","h3","61",{"id":"duplicate-payment","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#duplicate-payment","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"duplicate_payment"}]]}]}]
-4d:["$","p","62",{"children":[["$","strong","0",{"children":"Default: hold."}]," The same amount to the same account twice."]}]
-4e:["$","$L2","63",{"tabs":[{"label":"message","language":"shell","code":"the same payment appears twice in this run\nthe same amount was paid to the same account in the last 7 days\nthe same amount was paid to the same payee in the last 7 days"}],"title":"Messages"}]
-4f:["$","p","64",{"children":["The first message is for a second payment of the same amount to the same account in one run. The second is for a run created in the last 7 days, not cancelled, that has the same payment and did not reject it. The third is the same for a check, which has no account: the same amount to the same vendor, or to the same payee name."]}]
-50:["$","h3","65",{"id":"shared-account","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#shared-account","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"shared_account"}]]}]}]
-51:["$","p","66",{"children":[["$","strong","0",{"children":"Default: hold."}]," Another of your vendors is paid at this same account."]}]
-52:["$","$L2","67",{"tabs":[{"label":"message","language":"shell","code":"another vendor on file is paid at this same account"}],"title":"Message"}]
-53:["$","p","68",{"children":["Two vendors with one bank account is a sign that one of them is not who it says. It can also be a duplicate vendor record."]}]
-54:["$","h3","69",{"id":"network-flagged","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#network-flagged","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"network_flagged"}]]}]}]
-55:["$","p","70",{"children":[["$","strong","0",{"children":"Default: warn."}]," A business on Quarter reported this account in connection with a payment fraud."]}]
-56:["$","$L2","71",{"tabs":[{"label":"message","language":"shell","code":"this account was reported as used in fraud by a business on Quarter\nthis account was reported as used in fraud by {count} businesses on Quarter"}],"title":"Messages"}]
-57:["$","p","72",{"children":["The finding gives a count, never who reported. See ",["$","$L3","51",{"href":"/docs/network#fraud-reports","children":["fraud reports"]}],". It warns by default until reports can be disputed, so one business cannot hold another's payments by mistake. Set it to ",["$","code","217",{"children":"hold"}]," if you want that."]}]
-58:["$","h3","73",{"id":"sanctions-match","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#sanctions-match","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"sanctions_match"}]]}]}]
-59:["$","p","74",{"children":[["$","strong","0",{"children":"Default: hold, cannot be turned off."}]," The payee name resembles a name on the OFAC SDN list."]}]
-5a:["$","$L2","75",{"tabs":[{"label":"message","language":"shell","code":"the payee name resembles a sanctioned party: {listed names}\nQuarter's sanctions list is missing or out of date, so this payee could not be screened"}],"title":"Messages"}]
-5b:["$","p","76",{"children":["Name screening against the OFAC SDN list, which Quarter loads and keeps current. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off."]}]
-5c:["$","p","77",{"children":["In a live project, while Quarter's copy of the list is missing or more than 48 hours old, every payment is held with the second message. Test projects are not held for it."]}]
-5d:["$","h3","78",{"id":"routing-invalid","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#routing-invalid","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"routing_invalid"}]]}]}]
-5e:["$","p","79",{"children":[["$","strong","0",{"children":"Default: hold."}]," The routing number is not a valid US bank routing number."]}]
-5f:["$","$L2","80",{"tabs":[{"label":"message","language":"shell","code":"the routing number is not a valid US bank routing number"}],"title":"Message"}]
-60:["$","p","81",{"children":["Fires when the ABA checksum fails, or, once Quarter has loaded the Federal Reserve routing directory, when the number is not in it."]}]
-61:["$","h3","82",{"id":"iban-invalid","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#iban-invalid","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"iban_invalid"}]]}]}]
-62:["$","p","83",{"children":[["$","strong","0",{"children":"Default: hold."}]," The IBAN on an international payment fails its checksum."]}]
-63:["$","$L2","84",{"tabs":[{"label":"message","language":"shell","code":"the IBAN fails its check digits"}],"title":"Message"}]
-64:["$","p","85",{"children":["Applies only to international payment checks. The mod-97 check catches a mistyped or altered IBAN before the wire is keyed in."]}]
-65:["$","h3","86",{"id":"check-number-reused","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#check-number-reused","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"check_number_reused"}]]}]}]
-66:["$","p","87",{"children":[["$","strong","0",{"children":"Default: hold."}]," A check number already used on the same account."]}]
-67:["$","$L2","88",{"tabs":[{"label":"message","language":"shell","code":"check number {number} was already used on this account"}],"title":"Message"}]
-68:["$","p","89",{"children":["Checks only. Fires when the same number on the same drawn-on account appears twice in this run, or in any other run that was not cancelled, rejected checks included."]}]
-69:["$","h3","90",{"id":"payee-name-altered","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#payee-name-altered","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"payee_name_altered"}]]}]}]
-6a:["$","p","91",{"children":[["$","strong","0",{"children":"Default: warn."}]," A check's payee line is close to the vendor's name on file, but not the same."]}]
-6b:["$","$L2","92",{"tabs":[{"label":"message","language":"shell","code":"the payee line \"{payee name}\" is not the vendor's name on file, \"{vendor name}\"; a bank's payee match compares them exactly"}],"title":"Message"}]
-6c:["$","p","93",{"children":["Checks only. Fires when the payee line is 0.6 alike or more to the vendor name but not equal to it. Below 0.6, ",["$","$L3","111",{"href":"/docs/checks#name-mismatch","children":[["$","code","0",{"children":"name_mismatch"}]]}]," fires instead. A bank that matches payee names compares the printed line with the file exactly."]}]
-6d:["$","h3","94",{"id":"just-under-threshold","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#just-under-threshold","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"just_under_threshold"}]]}]}]
-6e:["$","p","95",{"children":[["$","strong","0",{"children":"Default: warn."}]," A check for just under the two-person threshold."]}]
-6f:["$","$L2","96",{"tabs":[{"label":"message","language":"shell","code":"{amount} is just under the two-person threshold of {threshold}"}],"title":"Message"}]
-70:["$","p","97",{"children":["Checks only. Fires from 90% of ",["$","code","31",{"children":"two_person_threshold"}]," up to just under it."]}]
-71:["$","h3","98",{"id":"employee-account-match","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#employee-account-match","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"employee_account_match"}]]}]}]
-72:["$","p","99",{"children":[["$","strong","0",{"children":"Default: hold."}]," The account paid, or the vendor's account on file, is on your employee account list."]}]
-73:["$","$L2","100",{"tabs":[{"label":"message","language":"shell","code":"this bank account is on your employee account list"}],"title":"Message"}]
-74:["$","p","101",{"children":["You keep the list with ",["$","$L3","23",{"href":"/docs/compliance#post-v1-employee-accounts-import","children":[["$","code","0",{"children":"POST /v1/employee_accounts/import"}]]}],". A vendor paid at an employee's own account is a common insider fraud. On a check, the vendor's account on file is compared."]}]
-75:["$","h3","102",{"id":"vendor-dormant-reactivated","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#vendor-dormant-reactivated","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"vendor_dormant_reactivated"}]]}]}]
-76:["$","p","103",{"children":[["$","strong","0",{"children":"Default: warn."}]," A vendor not paid for a year has bank details that changed since its last payment."]}]
-77:["$","$L2","104",{"tabs":[{"label":"message","language":"shell","code":"{vendor name} was last paid {when}, and its bank details changed {when}"}],"title":"Message"}]
-78:["$","p","105",{"children":["Fires when the vendor was last paid 365 days ago or more, and its bank details changed after that payment. ",["$","code","107",{"children":"{when}"}]," reads like ",["$","code","127",{"children":"today"}],", ",["$","code","136",{"children":"12 days ago"}]," or ",["$","code","153",{"children":"14 months ago"}],"."]}]
-79:["$","h3","106",{"id":"split-below-threshold","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#split-below-threshold","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"split_below_threshold"}]]}]}]
-7a:["$","p","107",{"children":[["$","strong","0",{"children":"Default: warn."}]," Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more."]}]
-7b:["$","$L2","108",{"tabs":[{"label":"message","language":"shell","code":"with another payment to {vendor name} within 7 days, this comes to {total}, over the two-person threshold of {threshold}\nwith {count} other payments to {vendor name} within 7 days, this comes to {total}, over the two-person threshold of {threshold}"}],"title":"Messages"}]
-7c:["$","p","109",{"children":["Counts payments to the same vendor in this run and in runs created in the last 7 days that were not cancelled, leaving out rejected ones. Each must be under ",["$","code","157",{"children":"two_person_threshold"}],". Splitting one payment into smaller ones is a way around a second approver."]}]
-7d:["$","h3","110",{"id":"vendor-new-paid-fast","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#vendor-new-paid-fast","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"vendor_new_paid_fast"}]]}]}]
-7e:["$","p","111",{"children":[["$","strong","0",{"children":"Default: warn."}]," A vendor added in the last 14 days is paid for the first time by the person who added it."]}]
-7f:["$","$L2","112",{"tabs":[{"label":"message","language":"shell","code":"{vendor name} was added {when} by {person}, who is also the person paying it"}],"title":"Message"}]
-80:["$","p","113",{"children":["Fires when the person uploading the run is the person who added the vendor, signed in to Quarter, and the vendor was never paid before. A vendor added with an API key is not traced to a person, so it does not fire."]}]
-81:["$","h3","114",{"id":"second-person-required","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#second-person-required","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"second_person_required"}]]}]}]
-82:["$","p","115",{"children":[["$","strong","0",{"children":"Default: hold, cannot be turned off."}]," The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days."]}]
-83:["$","$L2","116",{"tabs":[{"label":"message","language":"shell","code":"{amount} is at or above the two-person threshold of {threshold}, so two different people must approve it\n{person} changed {vendor name}'s bank details {when} and is also paying it, so someone else must approve it"}],"title":"Messages"}]
-84:["$","p","117",{"children":["The first message holds every payment of ",["$","code","41",{"children":"two_person_threshold"}]," or more, even when no other check holds it. Its approval needs ",["$","$L3","127",{"href":"/docs/releases#two-person-approval","children":["two different people"]}],"."]}]
-85:["$","p","118",{"children":["The second holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in ",["$","code","195",{"children":"uploaded_by"}]," or ",["$","code","212",{"children":"requested_by"}],". Bank details added with an API key are not traced to a person, so they do not fire it."]}]
-86:["$","p","119",{"children":["This check always holds and cannot be turned off. The threshold itself is a setting."]}]
-87:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L3",null,{"href":"/docs/payment-checks","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Payment checks"]}],["$","$L3",null,{"href":"/docs/network","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Account checks and fraud reports"]}]]}]
-88:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L98",null,{"entries":[{"id":"all-checks","text":"All checks","depth":2},{"id":"paper-checks","text":"Checks on paper checks","depth":2},{"id":"settings","text":"Settings","depth":2},{"id":"fields","text":"Fields","depth":3},{"id":"endpoints","text":"Endpoints","depth":3},{"id":"get-v1-settings","text":"Read the settings","depth":3},{"id":"put-v1-settings","text":"Change the settings","depth":3},{"id":"each-check","text":"Each check","depth":2},{"id":"unknown-payee","text":"unknown_payee","depth":3},{"id":"vendor-blocked","text":"vendor_blocked","depth":3},{"id":"unverified-account","text":"unverified_account","depth":3},{"id":"account-changed-recently","text":"account_changed_recently","depth":3},{"id":"account-not-on-file","text":"account_not_on_file","depth":3},{"id":"name-mismatch","text":"name_mismatch","depth":3},{"id":"first-payment","text":"first_payment","depth":3},{"id":"amount-unusual","text":"amount_unusual","depth":3},{"id":"duplicate-payment","text":"duplicate_payment","depth":3},{"id":"shared-account","text":"shared_account","depth":3},{"id":"network-flagged","text":"network_flagged","depth":3},{"id":"sanctions-match","text":"sanctions_match","depth":3},{"id":"routing-invalid","text":"routing_invalid","depth":3},{"id":"iban-invalid","text":"iban_invalid","depth":3},{"id":"check-number-reused","text":"check_number_reused","depth":3},{"id":"payee-name-altered","text":"payee_name_altered","depth":3},{"id":"just-under-threshold","text":"just_under_threshold","depth":3},{"id":"employee-account-match","text":"employee_account_match","depth":3},{"id":"vendor-dormant-reactivated","text":"vendor_dormant_reactivated","depth":3},{"id":"split-below-threshold","text":"split_below_threshold","depth":3},{"id":"vendor-new-paid-fast","text":"vendor_new_paid_fast","depth":3},{"id":"second-person-required","text":"second_person_required","depth":3}]}]}]
-89:["$","script","script-0",{"src":"/preview/_next/static/chunks/2qz4fsakclogy.js","async":true}]
-8a:["$","$L99",null,{"children":["$","$9a",null,{"name":"Next.MetadataOutlet","children":"$@9b"}]}]
-8d:["$","$1","h",{"children":[null,["$","$L9c",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$L9d",null,{"children":["$","$9a",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Checks and settings | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"The twenty-two checks Quarter runs on payments, the exact message each gives, and the settings that decide whether it holds, warns or is off."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","link","3",{"rel":"canonical","href":"https://quarterso.github.io/preview/docs/checks/"}],["$","link","4",{"rel":"alternate","type":"text/markdown","href":"https://quarterso.github.io/preview/docs/checks.md"}],["$","meta","5",{"property":"og:title","content":"Checks and settings | Docs | Quarter"}],["$","meta","6",{"property":"og:description","content":"The twenty-two checks Quarter runs on payments, the exact message each gives, and the settings that decide whether it holds, warns or is off."}],["$","meta","7",{"property":"og:url","content":"https://quarterso.github.io/preview/docs/checks/"}],["$","meta","8",{"property":"og:site_name","content":"Quarter"}],["$","meta","9",{"property":"og:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","10",{"property":"og:image:type","content":"image/png"}],["$","meta","11",{"property":"og:image:width","content":"1200"}],["$","meta","12",{"property":"og:image:height","content":"630"}],["$","meta","13",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","14",{"property":"og:type","content":"website"}],["$","meta","15",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","16",{"name":"twitter:title","content":"Checks and settings | Docs | Quarter"}],["$","meta","17",{"name":"twitter:description","content":"The twenty-two checks Quarter runs on payments, the exact message each gives, and the settings that decide whether it holds, warns or is off."}],["$","meta","18",{"name":"twitter:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","19",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","20",{"name":"twitter:image:type","content":"image/png"}],["$","meta","21",{"name":"twitter:image:width","content":"1200"}],["$","meta","22",{"name":"twitter:image:height","content":"630"}],["$","link","23",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","24",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","25",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$L9e","26",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
-8f:["$","$1","c",{"children":[null,["$","$L9f",null,{"parallelRouterKey":"children","template":["$","$La0",null,{}]}]]}]
-92:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/1wg-g500q1kp4.js","async":true}]],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$La1",null,{"nav":[{"title":"Get started","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Guides","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Confirming bank details"},{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/releases","label":"Decisions and release"},{"href":"/docs/payment-checks","label":"Payment checks"},{"href":"/docs/checks","label":"Checks and settings"},{"href":"/docs/network","label":"Account checks and fraud reports"},{"href":"/docs/compliance","label":"Compliance and insider controls"},{"href":"/docs/netsuite","label":"NetSuite"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L9f",null,{"parallelRouterKey":"children","template":["$","$La0",null,{}]}]}]]}]]}]
-95:true
-9b:null
-8c:300
-8c:C
-94:0
-8e:"$undefined"
-90:"$undefined"
-93:"$undefined"
-8b:"$undefined"
+}33:["$","$L2","31",{"tabs":[{"label":"200","language":"json","code":"$b0"}],"title":"Response"}]
+34:["$","h2","32",{"id":"each-check","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#each-check","className":"docs-module__RdmBMa__anchor","children":["Each check"]}]}]
+35:["$","h3","33",{"id":"unknown-payee","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#unknown-payee","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"unknown_payee"}]]}]}]
+36:["$","p","34",{"children":[["$","strong","0",{"children":"Default: hold. Points: 20."}]," The payee matches no vendor."]}]
+37:["$","$L2","35",{"tabs":[{"label":"message","language":"shell","code":"{payee name} is not a vendor on file"}],"title":"Message"}]
+38:["$","p","36",{"children":["Quarter looks for the vendor by your vendor id, then by the bank account, then by a close name. See ",["$","$L3","100",{"href":"/docs/payment-runs#matching","children":["how a payment finds its vendor"]}],". Add the vendor and confirm its bank details, or reject the payment."]}]
+39:["$","h3","37",{"id":"vendor-blocked","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#vendor-blocked","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"vendor_blocked"}]]}]}]
+3a:["$","p","38",{"children":[["$","strong","0",{"children":"Default: hold, cannot be turned off. Points: 50."}]," You blocked this vendor from being paid."]}]
+3b:["$","$L2","39",{"tabs":[{"label":"message","language":"shell","code":"{vendor name} is blocked from being paid"}],"title":"Message"}]
+3c:["$","p","40",{"children":["Set with ",["$","code","9",{"children":"PATCH /v1/vendors/{vendor}"}]," and ",["$","code","42",{"children":"status: blocked"}],". It always holds and cannot be changed in settings."]}]
+3d:["$","h3","41",{"id":"unverified-account","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#unverified-account","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"unverified_account"}]]}]}]
+3e:["$","p","42",{"children":[["$","strong","0",{"children":"Default: hold. Points: 30."}]," The account is the one on file, but nobody ever confirmed it with the vendor."]}]
+3f:["$","$L2","43",{"tabs":[{"label":"message","language":"shell","code":"these bank details were never confirmed with the vendor"}],"title":"Message"}]
+40:["$","p","44",{"children":["Fires for a vendor whose first and only bank details are ",["$","code","57",{"children":"unverified"}],". Confirm them with a ",["$","$L3","91",{"href":"/docs/verification","children":["verification link"]}]," or a ",["$","$L3","136",{"href":"/docs/verification#callbacks","children":["call-back"]}],"."]}]
+41:["$","h3","45",{"id":"account-changed-recently","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#account-changed-recently","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"account_changed_recently"}]]}]}]
+42:["$","p","46",{"children":[["$","strong","0",{"children":"Default: hold. Points: 40; 10 (bank details changed recently, and confirmed)."}]," The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period."]}]
+43:["$","$L2","47",{"tabs":[{"label":"message","language":"shell","code":"bank details changed {days} days ago and were not confirmed with the vendor\nbank details changed {days} days ago; they were confirmed"}],"title":"Messages"}]
+44:["$","p","48",{"children":["For a change made today or yesterday, ",["$","code","38",{"children":"{days} days ago"}]," reads ",["$","code","62",{"children":"today"}]," or ",["$","code","73",{"children":"1 day ago"}],". New details that are not confirmed hold every payment to them, however old the change is. Once they are confirmed, payments within the cooling period (",["$","code","237",{"children":"cooling_days"}],", default 10) still carry the second message, as a warning. After the cooling period, the check stays quiet."]}]
+45:["$","p","49",{"children":["If you set this check to ",["$","code","25",{"children":"hold"}],", the confirmed case holds too. If you set it to ",["$","code","80",{"children":"warn"}],", the unconfirmed case only warns, which is not advised."]}]
+46:["$","h3","50",{"id":"account-not-on-file","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#account-not-on-file","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"account_not_on_file"}]]}]}]
+47:["$","p","51",{"children":[["$","strong","0",{"children":"Default: hold. Points: 40."}]," The run pays a known vendor at an account other than the one on file."]}]
+48:["$","$L2","52",{"tabs":[{"label":"message","language":"shell","code":"this pays {vendor name} at an account that is not the one on file\n{vendor name} has no bank details on file, so this account was never confirmed\n{vendor name} has no IBAN on file, so this account was never confirmed"}],"title":"Messages"}]
+49:["$","p","53",{"children":["The payee matched a vendor by its id, your ",["$","code","43",{"children":"external_id"}]," or its name, but the account is not that vendor's current bank details. This is what a fraudulent change looks like when it reaches the payment file before it reaches your vendor records. It also fires when a run still pays details that were replaced."]}]
+4a:["$","p","54",{"children":["The third message is for an ",["$","$L3","28",{"href":"/docs/payment-checks#rails","children":["international payment check"]}],". Bank details on file are US routing and account numbers, so an IBAN is never compared with them."]}]
+4b:["$","h3","55",{"id":"name-mismatch","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#name-mismatch","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"name_mismatch"}]]}]}]
+4c:["$","p","56",{"children":[["$","strong","0",{"children":"Default: warn. Points: 15."}]," The payee name in the file does not match the vendor."]}]
+4d:["$","$L2","57",{"tabs":[{"label":"message","language":"shell","code":"the payee name \"{payee name}\" does not match the vendor \"{vendor name}\""}],"title":"Message"}]
+4e:["$","p","58",{"children":["Names are compared after ignoring case, accents, punctuation and suffixes such as Inc or LLC, against both the vendor name and the name on its bank account. Below 0.6 alike, the check fires. On a check, a payee line 0.6 alike or more that is still not the same is ",["$","$L3","264",{"href":"/docs/checks#payee-name-altered","children":[["$","code","0",{"children":"payee_name_altered"}]]}]," instead."]}]
+4f:["$","h3","59",{"id":"first-payment","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#first-payment","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"first_payment"}]]}]}]
+50:["$","p","60",{"children":[["$","strong","0",{"children":"Default: warn. Points: 5."}]," The first payment to this vendor."]}]
+51:["$","$L2","61",{"tabs":[{"label":"message","language":"shell","code":"first payment to {vendor name}"}],"title":"Message"}]
+52:["$","p","62",{"children":["Counts payments in released runs that were clear or approved."]}]
+53:["$","h3","63",{"id":"amount-unusual","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#amount-unusual","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"amount_unusual"}]]}]}]
+54:["$","p","64",{"children":[["$","strong","0",{"children":"Default: warn. Points: 10."}]," Far above what this vendor is usually paid."]}]
+55:["$","$L2","65",{"tabs":[{"label":"message","language":"shell","code":"{amount} is more than {multiplier} times the usual {median}"}],"title":"Message"}]
+56:["$","p","66",{"children":["Compares the amount with the median of the vendor's last 12 released payments. Fires when the amount is more than ",["$","code","114",{"children":"unusual_multiplier"}]," times that median (default 3). It needs at least 3 earlier payments; before that, it stays quiet."]}]
+57:["$","h3","67",{"id":"duplicate-payment","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#duplicate-payment","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"duplicate_payment"}]]}]}]
+58:["$","p","68",{"children":[["$","strong","0",{"children":"Default: hold. Points: 30."}]," The same amount to the same account twice."]}]
+59:["$","$L2","69",{"tabs":[{"label":"message","language":"shell","code":"the same payment appears twice in this run\nthe same amount was paid to the same account in the last 7 days\nthe same amount was paid to the same payee in the last 7 days"}],"title":"Messages"}]
+5a:["$","p","70",{"children":["The first message is for a second payment of the same amount to the same account in one run. The second is for a run created in the last 7 days, not cancelled, that has the same payment and did not reject it. The third is the same for a check, which has no account: the same amount to the same vendor, or to the same payee name."]}]
+5b:["$","h3","71",{"id":"shared-account","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#shared-account","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"shared_account"}]]}]}]
+5c:["$","p","72",{"children":[["$","strong","0",{"children":"Default: hold. Points: 30."}]," Another of your vendors is paid at this same account."]}]
+5d:["$","$L2","73",{"tabs":[{"label":"message","language":"shell","code":"another vendor on file is paid at this same account"}],"title":"Message"}]
+5e:["$","p","74",{"children":["Two vendors with one bank account is a sign that one of them is not who it says. It can also be a duplicate vendor record."]}]
+5f:["$","h3","75",{"id":"network-flagged","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#network-flagged","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"network_flagged"}]]}]}]
+60:["$","p","76",{"children":[["$","strong","0",{"children":"Default: warn. Points: 30."}]," A business on Quarter reported this account in connection with a payment fraud."]}]
+61:["$","$L2","77",{"tabs":[{"label":"message","language":"shell","code":"this account was reported as used in fraud by a business on Quarter\nthis account was reported as used in fraud by {count} businesses on Quarter"}],"title":"Messages"}]
+62:["$","p","78",{"children":["The finding gives a count, never who reported. See ",["$","$L3","51",{"href":"/docs/network#fraud-reports","children":["fraud reports"]}],". It warns by default until reports can be disputed, so one business cannot hold another's payments by mistake. Set it to ",["$","code","217",{"children":"hold"}]," if you want that."]}]
+63:["$","h3","79",{"id":"sanctions-match","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#sanctions-match","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"sanctions_match"}]]}]}]
+64:["$","p","80",{"children":[["$","strong","0",{"children":"Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened)."}]," The payee name resembles a name on OFAC's SDN or Consolidated lists."]}]
+65:["$","$L2","81",{"tabs":[{"label":"message","language":"shell","code":"the payee name resembles a listed party: {listed name}, on {list}\nQuarter's sanctions list is missing or out of date, so this payee could not be screened"}],"title":"Messages"}]
+66:["$","p","82",{"children":["Name screening against OFAC's SDN list and its Consolidated (non-SDN) list, which Quarter loads twice a day, and the Commerce Department's Consolidated Screening List where the deployment loads it. The message names the list. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off."]}]
+67:["$","p","83",{"children":["In a live project, while Quarter's copy of either OFAC list is missing or more than 48 hours old, every payment is held with the second message. Test projects are not held for it."]}]
+68:["$","p","84",{"children":["Name screening compares names. It cannot find a business blocked only because listed parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, because neither is on a list. Quarter never says a payee is cleared."]}]
+69:["$","h3","85",{"id":"routing-invalid","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#routing-invalid","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"routing_invalid"}]]}]}]
+6a:["$","p","86",{"children":[["$","strong","0",{"children":"Default: hold. Points: 25."}]," The routing number is not a valid US bank routing number."]}]
+6b:["$","$L2","87",{"tabs":[{"label":"message","language":"shell","code":"the routing number is not a valid US bank routing number"}],"title":"Message"}]
+6c:["$","p","88",{"children":["Fires when the ABA checksum fails, or when the first two digits are not a kind of routing number that exists (00 to 12, 21 to 32, 61 to 72, 80). Quarter does not use the Federal Reserve's routing directory, whose terms forbid commercial use without a licence, unless a deployment holds one; then a number missing from it fires too."]}]
+6d:["$","h3","89",{"id":"iban-invalid","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#iban-invalid","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"iban_invalid"}]]}]}]
+6e:["$","p","90",{"children":[["$","strong","0",{"children":"Default: hold. Points: 25."}]," The IBAN on an international payment fails its checksum."]}]
+6f:["$","$L2","91",{"tabs":[{"label":"message","language":"shell","code":"the IBAN fails its check digits"}],"title":"Message"}]
+70:["$","p","92",{"children":["Applies only to international payment checks. The mod-97 check catches a mistyped or altered IBAN before the wire is keyed in."]}]
+71:["$","h3","93",{"id":"check-number-reused","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#check-number-reused","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"check_number_reused"}]]}]}]
+72:["$","p","94",{"children":[["$","strong","0",{"children":"Default: hold. Points: 30."}]," A check number already used on the same account."]}]
+73:["$","$L2","95",{"tabs":[{"label":"message","language":"shell","code":"check number {number} was already used on this account"}],"title":"Message"}]
+74:["$","p","96",{"children":["Checks only. Fires when the same number on the same drawn-on account appears twice in this run, or in any other run that was not cancelled, rejected checks included."]}]
+75:["$","h3","97",{"id":"payee-name-altered","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#payee-name-altered","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"payee_name_altered"}]]}]}]
+76:["$","p","98",{"children":[["$","strong","0",{"children":"Default: warn. Points: 20."}]," A check's payee line is close to the vendor's name on file, but not the same."]}]
+77:["$","$L2","99",{"tabs":[{"label":"message","language":"shell","code":"the payee line \"{payee name}\" is not the vendor's name on file, \"{vendor name}\"; a bank's payee match compares them exactly"}],"title":"Message"}]
+78:["$","p","100",{"children":["Checks only. Fires when the payee line is 0.6 alike or more to the vendor name but not equal to it. Below 0.6, ",["$","$L3","111",{"href":"/docs/checks#name-mismatch","children":[["$","code","0",{"children":"name_mismatch"}]]}]," fires instead. A bank that matches payee names compares the printed line with the file exactly."]}]
+79:["$","h3","101",{"id":"just-under-threshold","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#just-under-threshold","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"just_under_threshold"}]]}]}]
+7a:["$","p","102",{"children":[["$","strong","0",{"children":"Default: warn. Points: 10."}]," A check for just under the two-person threshold."]}]
+7b:["$","$L2","103",{"tabs":[{"label":"message","language":"shell","code":"{amount} is just under the two-person threshold of {threshold}"}],"title":"Message"}]
+7c:["$","p","104",{"children":["Checks only. Fires from 90% of ",["$","code","31",{"children":"two_person_threshold"}]," up to just under it."]}]
+7d:["$","h3","105",{"id":"employee-account-match","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#employee-account-match","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"employee_account_match"}]]}]}]
+7e:["$","p","106",{"children":[["$","strong","0",{"children":"Default: hold. Points: 40; 10 (payroll to an employee account, employee id not compared)."}]," The account paid, or the vendor's account on file, is on your employee account list."]}]
+7f:["$","$L2","107",{"tabs":[{"label":"message","language":"shell","code":"this bank account is on your employee account list\nthis account belongs to {employee ids} on your employee account list, but the payroll entry is for employee id {id}\nthis account belongs to {employee ids} on your employee account list; the payroll entry's employee id could not be compared"}],"title":"Messages"}]
+80:["$","p","108",{"children":["You keep the list with ",["$","$L3","23",{"href":"/docs/compliance#post-v1-employee-accounts-import","children":[["$","code","0",{"children":"POST /v1/employee_accounts/import"}]]}],". A vendor paid at an employee's own account is a common insider fraud. On a check, the vendor's account on file is compared."]}]
+81:["$","p","109",{"children":["On ",["$","$L3","3",{"href":"/docs/checks#payroll","children":["payroll"]}],", paying an employee's own account is expected, so Quarter compares the entry's employee id (a NACHA entry's individual id, or a CSV's reference) with the employee the account belongs to, ignoring case, spaces, dashes and leading zeros. A match says nothing. A different id, or none, holds with the second message, which is how a payroll clerk paying a made-up or another employee's wage into their own account shows. Quarter trusts the comparison only once another entry in the same run matches its owner; until then a mismatch only warns, with the third message, so a list kept under other ids never holds a whole payroll."]}]
+82:["$","h3","110",{"id":"vendor-dormant-reactivated","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#vendor-dormant-reactivated","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"vendor_dormant_reactivated"}]]}]}]
+83:["$","p","111",{"children":[["$","strong","0",{"children":"Default: warn. Points: 20."}]," A vendor not paid for a year has bank details that changed since its last payment."]}]
+84:["$","$L2","112",{"tabs":[{"label":"message","language":"shell","code":"{vendor name} was last paid {when}, and its bank details changed {when}"}],"title":"Message"}]
+85:["$","p","113",{"children":["Fires when the vendor was last paid 365 days ago or more, and its bank details changed after that payment. ",["$","code","107",{"children":"{when}"}]," reads like ",["$","code","127",{"children":"today"}],", ",["$","code","136",{"children":"12 days ago"}]," or ",["$","code","153",{"children":"14 months ago"}],"."]}]
+86:["$","h3","114",{"id":"split-below-threshold","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#split-below-threshold","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"split_below_threshold"}]]}]}]
+87:["$","p","115",{"children":[["$","strong","0",{"children":"Default: warn. Points: 15."}]," Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more."]}]
+88:["$","$L2","116",{"tabs":[{"label":"message","language":"shell","code":"with another payment to {vendor name} within 7 days, this comes to {total}, over the two-person threshold of {threshold}\nwith {count} other payments to {vendor name} within 7 days, this comes to {total}, over the two-person threshold of {threshold}"}],"title":"Messages"}]
+89:["$","p","117",{"children":["Counts payments to the same vendor in this run and in runs created in the last 7 days that were not cancelled, leaving out rejected ones. Each must be under ",["$","code","157",{"children":"two_person_threshold"}],". Splitting one payment into smaller ones is a way around a second approver."]}]
+8a:["$","h3","118",{"id":"vendor-new-paid-fast","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#vendor-new-paid-fast","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"vendor_new_paid_fast"}]]}]}]
+8b:["$","p","119",{"children":[["$","strong","0",{"children":"Default: warn. Points: 15."}]," A vendor added in the last 14 days is paid for the first time by the person who added it."]}]
+8c:["$","$L2","120",{"tabs":[{"label":"message","language":"shell","code":"{vendor name} was added {when} by {person}, who is also the person paying it"}],"title":"Message"}]
+8d:["$","p","121",{"children":["Fires when the person uploading the run is the person who added the vendor, signed in to Quarter, and the vendor was never paid before. A vendor added with an API key is not traced to a person, so it does not fire."]}]
+8e:["$","h3","122",{"id":"request-domain-lookalike","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#request-domain-lookalike","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"request_domain_lookalike"}]]}]}]
+8f:["$","p","123",{"children":[["$","strong","0",{"children":"Default: warn. Points: 40; 15 (change request came from a domain other than the vendor's)."}]," The request for the unconfirmed bank details came by email from a domain that imitates the vendor's, or from a domain other than the vendor's."]}]
+90:["$","$L2","124",{"tabs":[{"label":"message","language":"shell","code":"the request for these bank details came by email from {domain}, which looks like {vendor domain}, the vendor's domain: {how}\nthe request for these bank details came by email from {domain}, not from {vendor domain}, the vendor's domain on file"}],"title":"Messages"}]
+91:["$","p","125",{"children":["Fires only when the details were recorded with ",["$","code","47",{"children":"request_channel: email"}]," and a ",["$","code","78",{"children":"request_sender"}],", the vendor has an ",["$","code","114",{"children":"email_domain"}],", and the details are not yet confirmed. ",["$","code","169",{"children":"{how}"}]," names the imitation, such as ",["$","code","206",{"children":"one letter doubled"}]," or ",["$","code","230",{"children":"letters swapped for ones that look the same"}],"; see ",["$","$L3","281",{"href":"/docs/vendors#sender-domain","children":["the sender's domain"]}],". The second message, for a domain other than the vendor's such as a free mail service, scores 15. A domain that shares only a hosting suffix with the vendor's, such as another tenant of the same Microsoft 365 or Shopify suffix, is a domain other than the vendor's."]}]
+92:["$","h3","126",{"id":"request-domain-new","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#request-domain-new","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"request_domain_new"}]]}]}]
+93:["$","p","127",{"children":[["$","strong","0",{"children":"Default: warn. Points: 30."}]," The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added."]}]
+94:["$","$L2","128",{"tabs":[{"label":"message","language":"shell","code":"the request came from {domain}, registered {days} days before the request\nthe request came from {domain}, registered on {date}, after {vendor name} was added"}],"title":"Messages"}]
+95:["$","p","129",{"children":["The registration date comes from the domain's registry by RDAP when the details are recorded. For a domain registered the same day, ",["$","code","132",{"children":"{days} days before the request"}]," reads ",["$","code","171",{"children":"the same day as the request"}],". When the registry did not answer, or gives no date, nothing fires. It does not fire for the vendor's own domain."]}]
+96:["$","h3","130",{"id":"request-domain-no-dmarc","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#request-domain-no-dmarc","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"request_domain_no_dmarc"}]]}]}]
+97:["$","p","131",{"children":[["$","strong","0",{"children":"Default: warn. Points: 5."}]," The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name."]}]
+98:["$","$L2","132",{"tabs":[{"label":"message","language":"shell","code":"the request came from {domain}, which publishes no DMARC policy, so mail forged in its name is not refused\nthe request came from {domain}, which has a DMARC policy of none, so mail forged in its name is not refused"}],"title":"Messages"}]
+99:["$","p","133",{"children":["Fires when the sender's domain is the vendor's, or the vendor has no email domain on file, and the domain's DMARC policy is missing or ",["$","code","135",{"children":"none"}],". Anyone can then send mail that appears to come from it. A weak reason alone, so it scores 5."]}]
+9a:["$","h3","134",{"id":"second-person-required","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#second-person-required","className":"docs-module__RdmBMa__anchor","children":[["$","code","0",{"children":"second_person_required"}]]}]}]
+9b:["$","p","135",{"children":[["$","strong","0",{"children":"Default: hold, cannot be turned off. Points: 0; 30 (paid by the person who changed the bank details)."}]," The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days."]}]
+9c:["$","$L2","136",{"tabs":[{"label":"message","language":"shell","code":"{amount} is at or above the two-person threshold of {threshold}, so two different people must approve it\n{person} changed {vendor name}'s bank details {when} and is also paying it, so someone else must approve it"}],"title":"Messages"}]
+9d:["$","p","137",{"children":["The first message holds every payment of ",["$","code","41",{"children":"two_person_threshold"}]," or more, even when no other check holds it. Its approval needs ",["$","$L3","127",{"href":"/docs/releases#two-person-approval","children":["two different people"]}],"."]}]
+9e:["$","p","138",{"children":["The second holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in ",["$","code","195",{"children":"uploaded_by"}]," or ",["$","code","212",{"children":"requested_by"}],". Bank details added with an API key are not traced to a person, so they do not fire it."]}]
+9f:["$","p","139",{"children":["This check always holds and cannot be turned off. The threshold itself is a setting."]}]
+a0:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L3",null,{"href":"/docs/payment-checks","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Payment checks"]}],["$","$L3",null,{"href":"/docs/network","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Account checks and fraud reports"]}]]}]
+a1:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$Lb1",null,{"entries":[{"id":"all-checks","text":"All checks","depth":2},{"id":"points","text":"Points and the order of held payments","depth":2},{"id":"payroll","text":"Payroll","depth":2},{"id":"paper-checks","text":"Checks on paper checks","depth":2},{"id":"settings","text":"Settings","depth":2},{"id":"fields","text":"Fields","depth":3},{"id":"endpoints","text":"Endpoints","depth":3},{"id":"get-v1-settings","text":"Read the settings","depth":3},{"id":"put-v1-settings","text":"Change the settings","depth":3},{"id":"each-check","text":"Each check","depth":2},{"id":"unknown-payee","text":"unknown_payee","depth":3},{"id":"vendor-blocked","text":"vendor_blocked","depth":3},{"id":"unverified-account","text":"unverified_account","depth":3},{"id":"account-changed-recently","text":"account_changed_recently","depth":3},{"id":"account-not-on-file","text":"account_not_on_file","depth":3},{"id":"name-mismatch","text":"name_mismatch","depth":3},{"id":"first-payment","text":"first_payment","depth":3},{"id":"amount-unusual","text":"amount_unusual","depth":3},{"id":"duplicate-payment","text":"duplicate_payment","depth":3},{"id":"shared-account","text":"shared_account","depth":3},{"id":"network-flagged","text":"network_flagged","depth":3},{"id":"sanctions-match","text":"sanctions_match","depth":3},{"id":"routing-invalid","text":"routing_invalid","depth":3},{"id":"iban-invalid","text":"iban_invalid","depth":3},{"id":"check-number-reused","text":"check_number_reused","depth":3},{"id":"payee-name-altered","text":"payee_name_altered","depth":3},{"id":"just-under-threshold","text":"just_under_threshold","depth":3},{"id":"employee-account-match","text":"employee_account_match","depth":3},{"id":"vendor-dormant-reactivated","text":"vendor_dormant_reactivated","depth":3},{"id":"split-below-threshold","text":"split_below_threshold","depth":3},{"id":"vendor-new-paid-fast","text":"vendor_new_paid_fast","depth":3},{"id":"request-domain-lookalike","text":"request_domain_lookalike","depth":3},{"id":"request-domain-new","text":"request_domain_new","depth":3},{"id":"request-domain-no-dmarc","text":"request_domain_no_dmarc","depth":3},{"id":"second-person-required","text":"second_person_required","depth":3}]}]}]
+a2:["$","script","script-0",{"src":"/preview/_next/static/chunks/2qz4fsakclogy.js","async":true}]
+a3:["$","$Lb2",null,{"children":["$","$b3",null,{"name":"Next.MetadataOutlet","children":"$@b4"}]}]
+a6:["$","$1","h",{"children":[null,["$","$Lb5",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#1F3BFF"}]]}],["$","div",null,{"hidden":true,"children":["$","$Lb6",null,{"children":["$","$b3",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Checks and settings | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"The twenty-five checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","link","3",{"rel":"canonical","href":"https://quarterso.github.io/preview/docs/checks/"}],["$","link","4",{"rel":"alternate","type":"text/markdown","href":"https://quarterso.github.io/preview/docs/checks.md"}],["$","meta","5",{"property":"og:title","content":"Checks and settings | Docs | Quarter"}],["$","meta","6",{"property":"og:description","content":"The twenty-five checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off."}],["$","meta","7",{"property":"og:url","content":"https://quarterso.github.io/preview/docs/checks/"}],["$","meta","8",{"property":"og:site_name","content":"Quarter"}],["$","meta","9",{"property":"og:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","10",{"property":"og:image:type","content":"image/png"}],["$","meta","11",{"property":"og:image:width","content":"1200"}],["$","meta","12",{"property":"og:image:height","content":"630"}],["$","meta","13",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","14",{"property":"og:type","content":"website"}],["$","meta","15",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","16",{"name":"twitter:title","content":"Checks and settings | Docs | Quarter"}],["$","meta","17",{"name":"twitter:description","content":"The twenty-five checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off."}],["$","meta","18",{"name":"twitter:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","19",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","20",{"name":"twitter:image:type","content":"image/png"}],["$","meta","21",{"name":"twitter:image:width","content":"1200"}],["$","meta","22",{"name":"twitter:image:height","content":"630"}],["$","link","23",{"rel":"icon","href":"/preview/favicon.ico?favicon.14tks_fj5pm6-.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","24",{"rel":"icon","href":"/preview/icon.svg?icon.2_bq05btpdejj.svg","sizes":"any","type":"image/svg+xml"}],["$","link","25",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.0zf5s0gfjekwn.png","sizes":"180x180","type":"image/png"}],["$","$Lb7","26",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+a8:["$","$1","c",{"children":[null,["$","$Lb8",null,{"parallelRouterKey":"children","template":["$","$Lb9",null,{}]}]]}]
+ab:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/1wg-g500q1kp4.js","async":true}]],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$Lba",null,{"nav":[{"title":"Get started","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Guides","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Confirming bank details"},{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/releases","label":"Decisions and release"},{"href":"/docs/payment-checks","label":"Payment checks"},{"href":"/docs/checks","label":"Checks and settings"},{"href":"/docs/network","label":"Account checks and fraud reports"},{"href":"/docs/compliance","label":"Compliance and insider controls"},{"href":"/docs/netsuite","label":"NetSuite"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$Lb8",null,{"parallelRouterKey":"children","template":["$","$Lb9",null,{}]}]}]]}]]}]
+ae:true
+b4:null
+a5:300
+a5:C
+ad:0
+a7:"$undefined"
+a9:"$undefined"
+ac:"$undefined"
+a4:"$undefined"

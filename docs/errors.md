@@ -26,7 +26,7 @@ Response:
 | `permission` | 403 | The caller may not do this: a role too low, an API key on a route only a signed-in person may use, or an action the rules forbid. |
 | `not_found` | 404 | The object or route does not exist, or belongs to another account. |
 | `conflict` | 409 | The request is valid, but the object is not in a state that allows it, such as releasing a run with held payments. |
-| `rate_limited` | 429 | Too many requests. Every key or session may make 600 a minute, and the public routes 30 a minute per address. Some actions have their own limits, named below. The `retry-after` header says when to try again. |
+| `rate_limited` | 429 | Too many requests. Every key or session may make 600 a minute, and the public routes 30 a minute per address. An address that sends 20 unknown, revoked or expired keys, sessions or links in a minute is refused for the rest of that minute, whatever it sends. Some actions have their own limits, named below. The `retry-after` header says when to try again. |
 | `api_error` | 500 | Something went wrong on our side. Safe to retry later. |
 | `unavailable` | 503 | A service Quarter depends on did not answer, such as NetSuite, or is not set up on this deployment, such as Plaid. Nothing is wrong with the request. |
 
@@ -36,9 +36,9 @@ Response:
 | --- | --- | --- |
 | Any request | 400 | `request_invalid`, `limit_invalid`, `json_too_deep`. `request_invalid` covers a body that is not valid JSON; `json_too_deep` one nested more than 32 levels. |
 | Any request | 413, 415 | `payload_too_large`, `unsupported_media_type`. Send `application/json`, up to 256 KB, or 10 MB to the payment run and import routes. |
-| Any request | 401 | `api_key_missing`, `api_key_invalid`, `session_invalid`, `session_expired` |
-| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions when the last check is more than 5 minutes old. |
-| Any request | 429 | `rate_limited` |
+| Any request | 401 | `api_key_missing`, `api_key_invalid`, `api_key_expired`, `session_invalid`, `session_expired` |
+| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`, as it does for a released payment file or Positive Pay file. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions, and on downloading those files, when the last check is more than 5 minutes old. |
+| Any request | 429 | `rate_limited`, `too_many_failed_authentications` |
 | Any request | 500 | `internal` |
 | Any request | 404 | `route_not_found`, `vendor_not_found`, `bank_account_not_found`, `payment_run_not_found`, `payment_item_not_found`, `payment_check_not_found`, `verification_request_not_found`, `webhook_delivery_not_found` |
 | Who is acting | 400 | `reviewer_not_you`, `uploaded_by_not_you`, `requested_by_not_you`, `reporter_not_you`. Signed in, you may only name yourself. With an API key, `uploaded_by` and `requested_by` name the person by email. |
@@ -55,8 +55,8 @@ Response:
 | [Payment runs](/docs/payment-runs.md) | 409 | `duplicate_file`, `test_mode_limit`, `trial_ended`, `test_mode_only`, `no_vendors_with_bank_details` |
 | [Payment checks](/docs/payment-checks.md) | 400 | `rail_invalid`, `payee_name_required`, `currency_invalid`, `iban_format_invalid`, `bic_invalid` |
 | [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `template_invalid`, `template_does_not_fit` |
-| [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `releaser_changed_details` |
-| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted` |
+| [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `approver_recently_added`, `releaser_changed_details` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 400 | `description_required`, `report_not_open` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 429 | `fraud_report_limit` |
 | [Settings](/docs/checks.md#settings) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |

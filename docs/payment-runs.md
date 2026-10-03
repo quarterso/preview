@@ -118,7 +118,10 @@ One item of a check run:
   "currency": "USD",
   "effective_date": "2026-10-06",
   "reference": "INV-7718",
+  "entry_class": null,
+  "payroll": false,
   "status": "clear",
+  "score": 0,
   "findings": [],
   "decision": null,
   "outcome": null
@@ -137,7 +140,7 @@ A payment that finds no vendor is held as [`unknown_payee`](/docs/checks.md#unkn
 
 | Item `status` | Meaning |
 | --- | --- |
-| `clear` | No finding holds it. It may still carry `warn` findings. |
+| `clear` | No finding holds it. It may still carry `warn` findings. A [payroll](/docs/checks.md#payroll) payment is `clear` unless a check that always holds fires. |
 | `held` | At least one finding holds it. It needs a decision before the run can be released. |
 | `approved` | A person approved it, with a reason. It goes in the released file. |
 | `rejected` | A person rejected it, with a reason. It is left out of the released file. |
@@ -175,6 +178,7 @@ In this example, Harbor Point and Cedar Ridge are known vendors with confirmed b
 | `items` | object[] | No | The payments. Required for `json`. See [JSON items](/docs/payment-runs.md#json). |
 | `name` | string | No | A name for the run, up to 200 characters. Default `Payment run YYYY-MM-DD`. |
 | `uploaded_by` | string | No | Email of the person uploading. Defaults to the person signed in, or the API key. |
+| `payroll` | boolean | No | `true` for a payroll CSV, check register or list: its payments [warn and never hold](/docs/checks.md#payroll), except the checks that always hold. A NACHA file says this in each batch's entry class, so sending `payroll` with one answers `400 payroll_invalid`. |
 
 Request:
 
@@ -226,7 +230,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20977",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -247,7 +254,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-7718",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -268,12 +278,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 40,
       "findings": [
         {
           "code": "account_not_on_file",
           "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
         }
       ],
       "decision": null,
@@ -353,7 +367,7 @@ Response:
 
 `GET /v1/payment_items` (auth: API key)
 
-Every held payment in a run not yet released or cancelled, across runs, the longest waiting first, each with the run it is in. This is the one queue to decide from. A payment with a first approval that still needs a second is in it, with its `decision`.
+Every held payment in a run not yet released or cancelled, across runs, the highest `score` first, then the longest waiting, each with the run it is in. This is the one queue to decide from. A payment with a first approval that still needs a second is in it, with its `decision`. See [points](/docs/checks.md#points) for how the score is made.
 
 `summary` counts the whole queue, not the page. Pass the `id` of the last payment you have as `after` while `has_more` is `true`. Errors: `status_invalid` and `limit_invalid`, `400`.
 
@@ -400,12 +414,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 40,
       "findings": [
         {
           "code": "account_not_on_file",
           "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
         }
       ],
       "decision": null,
@@ -501,7 +519,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20977",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -522,7 +543,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-7718",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -543,12 +567,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 40,
       "findings": [
         {
           "code": "account_not_on_file",
           "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
         }
       ],
       "decision": null,
@@ -579,12 +607,16 @@ One item, decided:
   "currency": "USD",
   "effective_date": "2026-10-06",
   "reference": "INV-20981",
+  "entry_class": null,
+  "payroll": false,
   "status": "rejected",
+  "score": 40,
   "findings": [
     {
       "code": "account_not_on_file",
       "severity": "hold",
-      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+      "points": 40
     }
   ],
   "decision": {

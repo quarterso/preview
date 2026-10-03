@@ -77,11 +77,13 @@ Response:
   "currency": "USD",
   "reference": "INV-20931",
   "status": "held",
+  "score": 40,
   "findings": [
     {
       "code": "account_changed_recently",
       "severity": "hold",
-      "message": "bank details changed 2 days ago and were not confirmed with the vendor"
+      "message": "bank details changed 2 days ago and were not confirmed with the vendor",
+      "points": 40
     }
   ],
   "decision": null,
@@ -109,6 +111,7 @@ A clear payment:
   "currency": "USD",
   "reference": "INV-20931",
   "status": "clear",
+  "score": 0,
   "findings": [],
   "decision": null,
   "release_code": "7KQ4MXRP",
@@ -154,6 +157,7 @@ Response:
   "currency": "USD",
   "reference": "INV-20931",
   "status": "clear",
+  "score": 0,
   "findings": [],
   "decision": null,
   "release_code": "7KQ4MXRP",

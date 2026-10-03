@@ -23,10 +23,19 @@ The most common payment fraud is a message that looks like it comes from a vendo
 
 Confirm the change with a [verification link](/docs/verification.md) or a [call-back](/docs/verification.md#callbacks) to a number you already had. Never confirm it with the phone number or email in the change request itself.
 
+## How a change arrived, and the sender's domain
+
+Each set of bank details records how the request reached you, in `request.channel`: `email`, `phone`, `portal`, `letter`, `in_person`, `netsuite` for details the [NetSuite sync](/docs/netsuite.md#who-changed) brought in, or `unknown`. The console asks this one question whenever someone records new details. Details recorded before Quarter asked say `unknown`, or `netsuite` when the sync recorded them.
+
+For a request that came by email, send the sender's address as `request_sender`. Quarter keeps it as given, and compares its domain with the vendor's `email_domain`: the vendor's own (that domain or a subdomain of it), a lookalike, or a domain other than the vendor's. Lookalikes are found the way dnstwist finds them: letters swapped for ones that look alike, a letter left out, doubled or swapped, a key next to it, a hyphen, a different ending, or the vendor's name with a word added. Quarter also reads two free public records about the domain: when it was registered, from the RDAP service IANA lists for its ending, and its DMARC policy, from DNS. Only the domain leaves Quarter. The answer is kept in `request.signals`.
+
+A lookup waits at most 4 seconds and is kept for a day. When a registry does not answer, the details are still recorded and the record says `unavailable`. These records add [points](/docs/checks.md#points) and warnings only while the new details are unconfirmed, and never hold a payment by themselves: the change is already held until someone confirms it. They cannot catch a request sent from the vendor's own mailbox after someone took it over, so a call-back is still what confirms a change.
+
 ## What Quarter keeps
 
 - The routing number, in full. It names a bank, not an account.
 - The account number, sealed. Quarter matches accounts by a keyed fingerprint and shows only `last4`.
+- For an emailed request, the sender's address as given, kept as evidence of how the change arrived. A personal data search lists it as kept.
 - Recording the same details twice changes nothing. Leading zeros do not make a different account.
 
 ## Endpoints
@@ -46,9 +55,12 @@ An `external_id` already used by another of your vendors answers `409 external_i
 | `name` | string | Yes | The vendor name, up to 200 characters. Legal suffixes, case and punctuation are ignored when matching. |
 | `email_domain` | string | No | The domain the vendor emails from, such as `harborpoint.example`. A verification code sent anywhere else is recorded as a failed check. |
 | `external_id` | string | No | Your own id for the vendor, unique among your vendors. A CSV run can match payments by it. |
+| `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `routing_number` | string | No | The 9-digit ABA routing number. Spaces are ignored. |
 | `account_number` | string | No | 4 to 17 letters or digits. Spaces and dashes are ignored. Sealed at rest; never returned. |
 | `holder_name` | string | No | The name on the bank account, if you have it. Used when matching payee names. |
+| `request_channel` | string | No | How the request for these details reached you: `email`, `phone`, `portal`, `letter`, `in_person` or `unknown`. Default `unknown`. |
+| `request_sender` | string | No | With `email` only: the address the request came from, as you have it (`Accounts <ar@harborpoint.example>` is fine). Its domain is checked; see [the sender's domain](/docs/vendors.md#sender-domain). |
 
 Request:
 
@@ -69,6 +81,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "unverified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -82,7 +95,15 @@ Response:
       "verified_at": null,
       "verified_method": null,
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": []
@@ -128,6 +149,7 @@ Response:
       "email_domain": "cedarridgesupply.example",
       "external_id": "V-0388",
       "status": "verified",
+      "individual": false,
       "bank_account": {
         "last4": "1904",
         "status": "verified",
@@ -142,6 +164,7 @@ Response:
       "email_domain": "harborpoint.example",
       "external_id": "V-1042",
       "status": "verified",
+      "individual": false,
       "bank_account": {
         "last4": "7365",
         "status": "verified",
@@ -182,6 +205,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -195,7 +219,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -222,7 +254,7 @@ Response:
 
 `PATCH /v1/vendors/{vendor}` (auth: API key)
 
-Changes the name, the email domain or the status. Fields you leave out are kept. Bank details change only through the bank details route below.
+Changes the name, the email domain, whether the vendor is a person, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
 
 **Path parameters**
 
@@ -236,6 +268,7 @@ Changes the name, the email domain or the status. Fields you leave out are kept.
 | --- | --- | --- | --- |
 | `name` | string | No | The new name. |
 | `email_domain` | string | No | The new email domain. |
+| `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `status` | string | No | `blocked`, or `unverified` to lift a block. Only a signed-in admin can lift a block; anyone else, and any API key, answers `403 unblock_needs_admin`. |
 
 Request:
@@ -257,6 +290,7 @@ Response:
   "email_domain": "harborpointlogistics.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -270,7 +304,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -305,7 +347,7 @@ A row whose `external_id` matches an existing vendor counts as `updated`: its na
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `routing_number`, `account_number`, `holder_name`. |
+| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
 
 Request:
 
@@ -332,7 +374,7 @@ Response:
 
 Records new bank details for a vendor, with `source: "manual"`. The previous details become `replaced`, the vendor becomes `unverified`, and the `vendor.bank_account_changed` [event](/docs/webhooks.md#event-types) fires. Payments to the new details are held until someone confirms them. A blocked vendor stays blocked.
 
-Sending the details already on file changes nothing.
+Sending the details already on file changes nothing. A `request_channel` not in the list answers `400 request_channel_invalid`; a `request_sender` that is not an email address, or comes without `email`, answers `400 request_sender_invalid`.
 
 **Path parameters**
 
@@ -347,6 +389,8 @@ Sending the details already on file changes nothing.
 | `routing_number` | string | Yes | The 9-digit ABA routing number. |
 | `account_number` | string | Yes | 4 to 17 letters or digits. |
 | `holder_name` | string | No | The name on the bank account. |
+| `request_channel` | string | No | How the request for these details reached you: `email`, `phone`, `portal`, `letter`, `in_person` or `unknown`. Default `unknown`. |
+| `request_sender` | string | No | With `email` only: the address the request came from, as you have it (`Accounts <ar@harborpoint.example>` is fine). Its domain is checked; see [the sender's domain](/docs/vendors.md#sender-domain). |
 
 Request:
 
@@ -354,7 +398,7 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/bank_accounts" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"routing_number":"263391271","account_number":"99300418226","holder_name":"Harbor Point Logistics"}'
+  -d '{"routing_number":"263391271","account_number":"99300418226","holder_name":"Harbor Point Logistics","request_channel":"email","request_sender":"ar@harborpoint-logistics.example"}'
 ```
 
 Response:
@@ -367,6 +411,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "unverified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -380,7 +425,24 @@ Response:
       "verified_at": null,
       "verified_method": null,
       "created_at": "2026-10-07T10:21:44.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "email",
+        "sender": "ar@harborpoint-logistics.example",
+        "domain": "harborpoint-logistics.example",
+        "signals": {
+          "domain": "harborpoint-logistics.example",
+          "vendor_domain": "harborpoint.example",
+          "relation": "lookalike",
+          "lookalike": "added_word",
+          "registration": "found",
+          "registered_on": "2026-09-28",
+          "dmarc": "missing",
+          "checked_at": "2026-10-07T10:21:44.000Z"
+        }
+      },
+      "changed_by": null,
+      "changed_by_note": null
     },
     {
       "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
@@ -393,7 +455,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": "2026-10-07T10:21:44.000Z"
+      "replaced_at": "2026-10-07T10:21:44.000Z",
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [

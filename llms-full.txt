@@ -27,13 +27,83 @@ Otherwise, you give Quarter a payment run, as a NACHA file, a CSV, a list of pay
 
 Send your API key as a Bearer token on every `/v1` request. Test keys start with `qk_test_` and live keys with `qk_live_`. A test key never sees live data, and a live key never sees test data. Keep keys on your server.
 
-An API key acts for your integration. It adds vendors and bank details, uploads runs, checks payments and reads the results. It never approves, rejects or releases a payment, records a call-back, reports fraud or changes settings. Those need a person signed in to the console, and an API key answers `403 session_required`.
+An API key acts for your integration. It adds vendors and bank details, uploads runs, checks payments and reads the results. It never approves, rejects or releases a payment, records a call-back, reports fraud or changes settings. It never downloads a released payment file or Positive Pay file, because those carry full account numbers. Those need a person signed in to the console, and an API key answers `403 session_required`.
 
-An admin creates API keys in the console, under Settings, and each key is shown once. Before launch, Quarter sets up your organization and gives you the API URL. The examples use `$QUARTER_API_URL` and `$QUARTER_API_KEY`.
+An admin creates API keys in the console, under Settings, and each key is shown once. The console offers expiries of 30, 90, 180 or 365 days; the API takes `expires_in_days` from 1 to 730, and a key created without it does not expire. An expired key answers `401 api_key_expired`. Each key shows `last_used_at`, to the minute, and `expires_at`, so a key nobody uses can be revoked. Before launch, Quarter sets up your organization and gives you the API URL. The examples use `$QUARTER_API_URL` and `$QUARTER_API_KEY`.
 
 ```bash
 export QUARTER_API_URL="<your API URL>"
 export QUARTER_API_KEY="qk_test_..."
+```
+
+### List your project's API keys
+
+`GET /v1/api_keys` (auth: Signed-in admin)
+
+Every key of the project the session is on, revoked ones included, with when each was last used and when it expires. The key itself is never shown again.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/api_keys" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "key_8RmT2vLq5WnK9pXc3HbZ",
+      "object": "api_key",
+      "prefix": "qk_test_H17l",
+      "environment": "test",
+      "created_at": "2026-10-05T14:02:11.000Z",
+      "revoked_at": null,
+      "last_used_at": "2026-10-06T09:15:00.000Z",
+      "expires_at": "2027-01-03T14:02:11.000Z"
+    }
+  ]
+}
+```
+
+### Create an API key
+
+`POST /v1/api_keys` (auth: Signed-in admin)
+
+A key for the project the session is on. `key` is in this answer only; Quarter keeps its hash. An API key answers `403 session_required`, so a leaked key cannot make more.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `expires_in_days` | integer | No | 1 to 730. Left out, the key does not expire. Anything else answers `400 expires_in_days_invalid`. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/api_keys" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"expires_in_days":90}'
+```
+
+Response:
+
+```json
+{
+  "id": "key_8RmT2vLq5WnK9pXc3HbZ",
+  "object": "api_key",
+  "prefix": "qk_test_H17l",
+  "environment": "test",
+  "created_at": "2026-10-05T14:02:11.000Z",
+  "revoked_at": null,
+  "last_used_at": null,
+  "expires_at": "2027-01-03T14:02:11.000Z",
+  "key": "qk_test_H17lq3VbXo9N2rT5kWm8Yc4Ae6Ud1Pz0"
+}
 ```
 
 The routes under `/verify` are for your vendor, not for you. They take no key: the token in the verification link is the only credential. See [Verification links](/docs/verification.md).
@@ -87,6 +157,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "unverified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -100,7 +171,15 @@ Response:
       "verified_at": null,
       "verified_method": null,
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": []
@@ -135,6 +214,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -148,7 +228,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -235,12 +323,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20931",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 5,
       "findings": [
         {
           "code": "first_payment",
           "severity": "warn",
-          "message": "first payment to Harbor Point Logistics LLC"
+          "message": "first payment to Harbor Point Logistics LLC",
+          "points": 5
         }
       ],
       "decision": null,
@@ -262,12 +354,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-0412",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 20,
       "findings": [
         {
           "code": "unknown_payee",
           "severity": "hold",
-          "message": "J. Reyes Consulting is not a vendor on file"
+          "message": "J. Reyes Consulting is not a vendor on file",
+          "points": 20
         }
       ],
       "decision": null,
@@ -330,12 +426,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20931",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 5,
       "findings": [
         {
           "code": "first_payment",
           "severity": "warn",
-          "message": "first payment to Harbor Point Logistics LLC"
+          "message": "first payment to Harbor Point Logistics LLC",
+          "points": 5
         }
       ],
       "decision": null,
@@ -357,12 +457,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-0412",
+      "entry_class": null,
+      "payroll": false,
       "status": "rejected",
+      "score": 20,
       "findings": [
         {
           "code": "unknown_payee",
           "severity": "hold",
-          "message": "J. Reyes Consulting is not a vendor on file"
+          "message": "J. Reyes Consulting is not a vendor on file",
+          "points": 20
         }
       ],
       "decision": {
@@ -437,12 +541,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20931",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 5,
       "findings": [
         {
           "code": "first_payment",
           "severity": "warn",
-          "message": "first payment to Harbor Point Logistics LLC"
+          "message": "first payment to Harbor Point Logistics LLC",
+          "points": 5
         }
       ],
       "decision": null,
@@ -464,12 +572,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-0412",
+      "entry_class": null,
+      "payroll": false,
       "status": "rejected",
+      "score": 20,
       "findings": [
         {
           "code": "unknown_payee",
           "severity": "hold",
-          "message": "J. Reyes Consulting is not a vendor on file"
+          "message": "J. Reyes Consulting is not a vendor on file",
+          "points": 20
         }
       ],
       "decision": {
@@ -487,7 +599,7 @@ Response:
 ## Next
 
 - [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
-- [Checks](/docs/checks.md): all twenty-two checks and how to set each one.
+- [Checks](/docs/checks.md): all twenty-five checks and how to set each one.
 - [Decisions and release](/docs/releases.md): two-person approval, cancel, and what release guarantees.
 - [Payment checks](/docs/payment-checks.md): one wire or instant payment, checked before it is keyed in.
 - [Webhooks](/docs/webhooks.md): hear about held payments as they happen.
@@ -519,10 +631,19 @@ The most common payment fraud is a message that looks like it comes from a vendo
 
 Confirm the change with a [verification link](/docs/verification.md) or a [call-back](/docs/verification.md#callbacks) to a number you already had. Never confirm it with the phone number or email in the change request itself.
 
+## How a change arrived, and the sender's domain
+
+Each set of bank details records how the request reached you, in `request.channel`: `email`, `phone`, `portal`, `letter`, `in_person`, `netsuite` for details the [NetSuite sync](/docs/netsuite.md#who-changed) brought in, or `unknown`. The console asks this one question whenever someone records new details. Details recorded before Quarter asked say `unknown`, or `netsuite` when the sync recorded them.
+
+For a request that came by email, send the sender's address as `request_sender`. Quarter keeps it as given, and compares its domain with the vendor's `email_domain`: the vendor's own (that domain or a subdomain of it), a lookalike, or a domain other than the vendor's. Lookalikes are found the way dnstwist finds them: letters swapped for ones that look alike, a letter left out, doubled or swapped, a key next to it, a hyphen, a different ending, or the vendor's name with a word added. Quarter also reads two free public records about the domain: when it was registered, from the RDAP service IANA lists for its ending, and its DMARC policy, from DNS. Only the domain leaves Quarter. The answer is kept in `request.signals`.
+
+A lookup waits at most 4 seconds and is kept for a day. When a registry does not answer, the details are still recorded and the record says `unavailable`. These records add [points](/docs/checks.md#points) and warnings only while the new details are unconfirmed, and never hold a payment by themselves: the change is already held until someone confirms it. They cannot catch a request sent from the vendor's own mailbox after someone took it over, so a call-back is still what confirms a change.
+
 ## What Quarter keeps
 
 - The routing number, in full. It names a bank, not an account.
 - The account number, sealed. Quarter matches accounts by a keyed fingerprint and shows only `last4`.
+- For an emailed request, the sender's address as given, kept as evidence of how the change arrived. A personal data search lists it as kept.
 - Recording the same details twice changes nothing. Leading zeros do not make a different account.
 
 ## Endpoints
@@ -542,9 +663,12 @@ An `external_id` already used by another of your vendors answers `409 external_i
 | `name` | string | Yes | The vendor name, up to 200 characters. Legal suffixes, case and punctuation are ignored when matching. |
 | `email_domain` | string | No | The domain the vendor emails from, such as `harborpoint.example`. A verification code sent anywhere else is recorded as a failed check. |
 | `external_id` | string | No | Your own id for the vendor, unique among your vendors. A CSV run can match payments by it. |
+| `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `routing_number` | string | No | The 9-digit ABA routing number. Spaces are ignored. |
 | `account_number` | string | No | 4 to 17 letters or digits. Spaces and dashes are ignored. Sealed at rest; never returned. |
 | `holder_name` | string | No | The name on the bank account, if you have it. Used when matching payee names. |
+| `request_channel` | string | No | How the request for these details reached you: `email`, `phone`, `portal`, `letter`, `in_person` or `unknown`. Default `unknown`. |
+| `request_sender` | string | No | With `email` only: the address the request came from, as you have it (`Accounts <ar@harborpoint.example>` is fine). Its domain is checked; see [the sender's domain](/docs/vendors.md#sender-domain). |
 
 Request:
 
@@ -565,6 +689,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "unverified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -578,7 +703,15 @@ Response:
       "verified_at": null,
       "verified_method": null,
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": []
@@ -624,6 +757,7 @@ Response:
       "email_domain": "cedarridgesupply.example",
       "external_id": "V-0388",
       "status": "verified",
+      "individual": false,
       "bank_account": {
         "last4": "1904",
         "status": "verified",
@@ -638,6 +772,7 @@ Response:
       "email_domain": "harborpoint.example",
       "external_id": "V-1042",
       "status": "verified",
+      "individual": false,
       "bank_account": {
         "last4": "7365",
         "status": "verified",
@@ -678,6 +813,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -691,7 +827,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -718,7 +862,7 @@ Response:
 
 `PATCH /v1/vendors/{vendor}` (auth: API key)
 
-Changes the name, the email domain or the status. Fields you leave out are kept. Bank details change only through the bank details route below.
+Changes the name, the email domain, whether the vendor is a person, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
 
 **Path parameters**
 
@@ -732,6 +876,7 @@ Changes the name, the email domain or the status. Fields you leave out are kept.
 | --- | --- | --- | --- |
 | `name` | string | No | The new name. |
 | `email_domain` | string | No | The new email domain. |
+| `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `status` | string | No | `blocked`, or `unverified` to lift a block. Only a signed-in admin can lift a block; anyone else, and any API key, answers `403 unblock_needs_admin`. |
 
 Request:
@@ -753,6 +898,7 @@ Response:
   "email_domain": "harborpointlogistics.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -766,7 +912,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -801,7 +955,7 @@ A row whose `external_id` matches an existing vendor counts as `updated`: its na
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `routing_number`, `account_number`, `holder_name`. |
+| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
 
 Request:
 
@@ -828,7 +982,7 @@ Response:
 
 Records new bank details for a vendor, with `source: "manual"`. The previous details become `replaced`, the vendor becomes `unverified`, and the `vendor.bank_account_changed` [event](/docs/webhooks.md#event-types) fires. Payments to the new details are held until someone confirms them. A blocked vendor stays blocked.
 
-Sending the details already on file changes nothing.
+Sending the details already on file changes nothing. A `request_channel` not in the list answers `400 request_channel_invalid`; a `request_sender` that is not an email address, or comes without `email`, answers `400 request_sender_invalid`.
 
 **Path parameters**
 
@@ -843,6 +997,8 @@ Sending the details already on file changes nothing.
 | `routing_number` | string | Yes | The 9-digit ABA routing number. |
 | `account_number` | string | Yes | 4 to 17 letters or digits. |
 | `holder_name` | string | No | The name on the bank account. |
+| `request_channel` | string | No | How the request for these details reached you: `email`, `phone`, `portal`, `letter`, `in_person` or `unknown`. Default `unknown`. |
+| `request_sender` | string | No | With `email` only: the address the request came from, as you have it (`Accounts <ar@harborpoint.example>` is fine). Its domain is checked; see [the sender's domain](/docs/vendors.md#sender-domain). |
 
 Request:
 
@@ -850,7 +1006,7 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/bank_accounts" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"routing_number":"263391271","account_number":"99300418226","holder_name":"Harbor Point Logistics"}'
+  -d '{"routing_number":"263391271","account_number":"99300418226","holder_name":"Harbor Point Logistics","request_channel":"email","request_sender":"ar@harborpoint-logistics.example"}'
 ```
 
 Response:
@@ -863,6 +1019,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "unverified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -876,7 +1033,24 @@ Response:
       "verified_at": null,
       "verified_method": null,
       "created_at": "2026-10-07T10:21:44.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "email",
+        "sender": "ar@harborpoint-logistics.example",
+        "domain": "harborpoint-logistics.example",
+        "signals": {
+          "domain": "harborpoint-logistics.example",
+          "vendor_domain": "harborpoint.example",
+          "relation": "lookalike",
+          "lookalike": "added_word",
+          "registration": "found",
+          "registered_on": "2026-09-28",
+          "dmarc": "missing",
+          "checked_at": "2026-10-07T10:21:44.000Z"
+        }
+      },
+      "changed_by": null,
+      "changed_by_note": null
     },
     {
       "id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
@@ -889,7 +1063,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": "2026-10-07T10:21:44.000Z"
+      "replaced_at": "2026-10-07T10:21:44.000Z",
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -936,6 +1118,12 @@ The email code goes only to the `contact_email` you gave when you created the li
 
 Email alone never verifies anything. Most of this fraud starts in an email inbox, so the code step only shows the person controls the contact address. The bank login is what verifies.
 
+## A link after a bank change goes to a contact you already had
+
+Whoever sent a fake change request may also supply a new contact, then log in to their own bank under a name close to the vendor's. So when the vendor's current details replaced earlier ones, a link counts only if its contact was on file before the change: an address on the vendor's `email_domain` that a link went to before the details changed. Any other contact is a `new_contact`, and the answer says why in `new_contact_reason`.
+
+Quarter still creates the link, and the vendor can still log in. A bank login through it is recorded as evidence, but it does not confirm the change: the details stay unconfirmed, the payment stays held, and the vendor page tells the vendor that you still need to confirm the details with them by phone. Confirm the change with a [call-back](#callbacks) to a number you already had. A vendor's first bank details are not a change, so any contact can confirm them.
+
 ## What the vendor sees
 
 1. A page that names your company and the vendor, and asks them to confirm their bank details. The link works for 14 days.
@@ -954,6 +1142,8 @@ Quarter hosts this page. Its routes are public and listed below, in the order th
 Creates a link for the vendor. Any open link for the same vendor is cancelled. The token in the `url` is shown only here; Quarter keeps only its hash.
 
 With `send: true`, Quarter emails the link to the contact. Otherwise, send the `url` yourself.
+
+`new_contact` is `true` when the vendor's details changed and the contact was not on file before the change; see [above](#new-contact).
 
 **Path parameters**
 
@@ -986,7 +1176,9 @@ Response:
   "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
   "contact_email": "ap@harborpoint.example",
   "url": "<Quarter console URL>/verify/Hk7Qx2mPv9RtL4wNc8ZbJ3yFs6TdG1Va",
-  "expires_in_days": 14
+  "expires_in_days": 14,
+  "new_contact": false,
+  "new_contact_reason": null
 }
 ```
 
@@ -1024,7 +1216,8 @@ Response:
   "steps": {
     "email": false,
     "bank": false
-  }
+  },
+  "callback_required": false
 }
 ```
 
@@ -1099,7 +1292,7 @@ Response:
 
 Returns a Plaid Link token. Open Plaid Link with it; when the vendor finishes, Plaid gives the page a `public_token`.
 
-In a test project without Plaid, `test_bank` is `true`: confirm with the `public_token` `test-bank-match`, or `test-bank-mismatch` to see a refusal. When the plan has used its bank logins for the month, the answer is `409 bank_login_unavailable`.
+In a test project without Plaid, `test_bank` is `true`: confirm with the `public_token` `test-bank-match`, or `test-bank-mismatch` to see a refusal. When the plan has used its bank logins for the month, the answer is `409 bank_login_unavailable`. One link starts at most 5 bank logins; the sixth answers `429 too_many_bank_logins`.
 
 **Path parameters**
 
@@ -1129,7 +1322,7 @@ Response:
 
 Sends the Plaid `public_token`. The email step must be done first, or the answer is `409 email_first`. Quarter compares the accounts the bank returned with the current details on file and the owner name with the vendor name.
 
-On a match, the details become `verified` with `verified_method: "bank_link"`, the vendor becomes `verified`, the link is completed, and the `vendor.verified` and `verification_request.completed` [events](/docs/webhooks.md#event-types) fire. Otherwise the answer says why: `account_not_on_file` (the vendor logged in to a bank that does not hold the account on file) or `owner_name_mismatch`.
+On a match, the details become `verified` with `verified_method: "bank_link"`, the vendor becomes `verified`, the link is completed, and the `vendor.verified` and `verification_request.completed` (with `verified: true`) [events](/docs/webhooks.md#event-types) fire. A match through a new contact completes the link and fires only `verification_request.completed`, with `verified: false` and `reason: "callback_required"`. Otherwise the answer says why: `account_not_on_file` (the vendor logged in to a bank that does not hold the account on file), `owner_name_mismatch`, or `callback_required` (it matched, but the link went to a [new contact](#new-contact), so a call-back still has to confirm the change).
 
 **Path parameters**
 
@@ -1285,6 +1478,7 @@ Response:
   "email_domain": "harborpoint.example",
   "external_id": "V-1042",
   "status": "verified",
+  "individual": false,
   "created_at": "2026-10-05T13:40:12.000Z",
   "bank_accounts": [
     {
@@ -1298,7 +1492,15 @@ Response:
       "verified_at": "2026-10-05T13:52:40.000Z",
       "verified_method": "callback",
       "created_at": "2026-10-05T13:40:12.000Z",
-      "replaced_at": null
+      "replaced_at": null,
+      "request": {
+        "channel": "unknown",
+        "sender": null,
+        "domain": null,
+        "signals": null
+      },
+      "changed_by": null,
+      "changed_by_note": null
     }
   ],
   "evidence": [
@@ -1443,7 +1645,10 @@ One item of a check run:
   "currency": "USD",
   "effective_date": "2026-10-06",
   "reference": "INV-7718",
+  "entry_class": null,
+  "payroll": false,
   "status": "clear",
+  "score": 0,
   "findings": [],
   "decision": null,
   "outcome": null
@@ -1462,7 +1667,7 @@ A payment that finds no vendor is held as [`unknown_payee`](/docs/checks.md#unkn
 
 | Item `status` | Meaning |
 | --- | --- |
-| `clear` | No finding holds it. It may still carry `warn` findings. |
+| `clear` | No finding holds it. It may still carry `warn` findings. A [payroll](/docs/checks.md#payroll) payment is `clear` unless a check that always holds fires. |
 | `held` | At least one finding holds it. It needs a decision before the run can be released. |
 | `approved` | A person approved it, with a reason. It goes in the released file. |
 | `rejected` | A person rejected it, with a reason. It is left out of the released file. |
@@ -1500,6 +1705,7 @@ In this example, Harbor Point and Cedar Ridge are known vendors with confirmed b
 | `items` | object[] | No | The payments. Required for `json`. See [JSON items](/docs/payment-runs.md#json). |
 | `name` | string | No | A name for the run, up to 200 characters. Default `Payment run YYYY-MM-DD`. |
 | `uploaded_by` | string | No | Email of the person uploading. Defaults to the person signed in, or the API key. |
+| `payroll` | boolean | No | `true` for a payroll CSV, check register or list: its payments [warn and never hold](/docs/checks.md#payroll), except the checks that always hold. A NACHA file says this in each batch's entry class, so sending `payroll` with one answers `400 payroll_invalid`. |
 
 Request:
 
@@ -1551,7 +1757,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20977",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -1572,7 +1781,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-7718",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -1593,12 +1805,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 40,
       "findings": [
         {
           "code": "account_not_on_file",
           "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
         }
       ],
       "decision": null,
@@ -1678,7 +1894,7 @@ Response:
 
 `GET /v1/payment_items` (auth: API key)
 
-Every held payment in a run not yet released or cancelled, across runs, the longest waiting first, each with the run it is in. This is the one queue to decide from. A payment with a first approval that still needs a second is in it, with its `decision`.
+Every held payment in a run not yet released or cancelled, across runs, the highest `score` first, then the longest waiting, each with the run it is in. This is the one queue to decide from. A payment with a first approval that still needs a second is in it, with its `decision`. See [points](/docs/checks.md#points) for how the score is made.
 
 `summary` counts the whole queue, not the page. Pass the `id` of the last payment you have as `after` while `has_more` is `true`. Errors: `status_invalid` and `limit_invalid`, `400`.
 
@@ -1725,12 +1941,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 40,
       "findings": [
         {
           "code": "account_not_on_file",
           "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
         }
       ],
       "decision": null,
@@ -1826,7 +2046,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20977",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -1847,7 +2070,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-7718",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -1868,12 +2094,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 40,
       "findings": [
         {
           "code": "account_not_on_file",
           "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
         }
       ],
       "decision": null,
@@ -1904,12 +2134,16 @@ One item, decided:
   "currency": "USD",
   "effective_date": "2026-10-06",
   "reference": "INV-20981",
+  "entry_class": null,
+  "payroll": false,
   "status": "rejected",
+  "score": 40,
   "findings": [
     {
       "code": "account_not_on_file",
       "severity": "hold",
-      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+      "points": 40
     }
   ],
   "decision": {
@@ -1943,12 +2177,34 @@ Decisions and releases are made by people signed in to the Quarter console, with
 
 ## What a hold turned out to be
 
-Once a held payment has a decision, a person records what it was: `fraud_attempt`, `error` (wrong amount, duplicate or wrong details), `legitimate` or `unknown`, with an optional note. The console asks for it when someone rejects a payment; an approval may leave it for later. It moves no money and changes no decision.
+Once a held payment has a decision, a person records what it was: `fraud_attempt`, `error` (wrong amount, duplicate or wrong details), `legitimate` or `unknown`, with a required `reason` and an optional note. The console asks for it when someone rejects a payment; an approval may leave it for later. It moves no money and changes no decision.
 
-- Only a payment Quarter held takes an outcome, once it is decided or its run was cancelled: otherwise `409 item_not_held` or `409 item_not_decided`.
+| Outcome | Reasons |
+| --- | --- |
+| `fraud_attempt` | `vendor_impersonation`, `executive_impersonation`, `account_takeover`, `insider`, `other_fraud` |
+| `error` | `wrong_amount`, `duplicate`, `wrong_details`, `other_error` |
+| `legitimate` | `confirmed_by_callback`, `confirmed_by_bank_login`, `vendor_confirmed_receipt`, `known_to_approver` |
+| `unknown` | `not_verified`, `still_checking` |
+
+The fraud reasons follow the Federal Reserve's FraudClassifier and ScamClassifier models: first who started the payment (your team, tricked by an impersonator; someone who got into your or the vendor's systems; or one of your own people), then how.
+
+- A payment Quarter held takes an outcome once it is decided or its run was cancelled: otherwise `409 item_not_decided`. A payment Quarter cleared takes one only once its run is released, as a miss (below): otherwise `409 item_not_held`.
+- A `reason` that is not one of the outcome's answers `400 reason_invalid`.
 - Recording again replaces it. Each recording goes into the [audit log](/docs/compliance.md#get-v1-audit-log) with the one it replaced. It shows on the item as `outcome`.
 - A **catch** is a hold recorded as `fraud_attempt` or `error` whose payment never left: rejected, or in a run cancelled before release. A NetSuite bill changed after its check counts as rejected.
 - Like decisions, outcomes are recorded by a signed-in person; with an API key the route answers `403 session_required`.
+
+## Misses: problems found after a payment left
+
+Outcomes on held payments say how often a hold was worth it. They say nothing about what Quarter let through. So a person can also report that a payment which left, cleared by Quarter or approved after a hold, turned out to be a fraud attempt or an error, with `found_on` (the day it was found) and `found_how`. That is a **miss**. It is counted in the [monthly summary](/docs/releases.md#get-v1-monthly-summary) by the day it was found, and in [precision per check](/docs/releases.md#get-v1-check-precision).
+
+- `found_how` is `vendor_not_paid` (the real vendor asked why it was not paid), `bank_notice`, `reconciliation`, `audit` or `other`.
+- A payment Quarter did not hold can only be a `fraud_attempt` or an `error`: `400 outcome_invalid`. Without `found_on` and `found_how` a miss answers `400 found_invalid`. A `found_on` in the future, or before the payment was checked, answers `400 found_on_invalid`.
+- If it was fraud, call your bank at once. The sooner the receiving bank hears of it, the more likely the money can be frozen.
+
+## Asking again about approved holds
+
+Fraud often comes to light when the real vendor asks why it was not paid. So Quarter asks again about an approved hold 30 days and 90 days after its run was released, in [`GET /v1/follow_ups`](/docs/releases.md#get-v1-follow-ups), on the console home page and in no email. Any answer recorded after the 30th day clears the question until the 90th. A payment held only because it needs a second person is not asked about, and after 180 days an unanswered question is dropped.
 
 ## Two-person approval
 
@@ -2000,12 +2256,31 @@ Releasing a check run returns the issued-check file for your bank's Positive Pay
 | `template` | Layout |
 | --- | --- |
 | `generic_csv` | The default. A CSV with a header row that most bank portals can map. `I` for issued, `V` for void. |
+| `banno_csv` | Jack Henry's Banno Business Positive Pay upload: no header row, then check number, amount as `x.xx`, issue date as `mm/dd/yyyy`, payee, and `V` for a void, as Banno's own help describes it (Jack Henry, Banno Business Positive Pay). The file has no account column: you pick the account when you upload, so a run drawn on two accounts is refused with `400 template_does_not_fit`. |
 | `citizens_fixed_180` | Citizens Bank, fixed width, 180 characters a line. `40` for issued, `50` for void. |
 | `fm_fixed_84` | F&M Bank, fixed length, 84 characters a line. The layout has no void marker, so voids are left out and counted in `voids_left_out`. Enter them in the bank's Positive Pay screen. |
+| `custom` | Your organization's own layout, once an admin has saved one. See [Your bank's own layout](/docs/releases.md#custom-layout). |
 
-- More bank layouts are added as pilots need them.
 - A value too long for its field is refused, never cut, because a cut number would match the wrong check: `400 template_does_not_fit`. Fixed-width payees are written in plain ASCII.
 - While the register is kept, 90 days, the file can be downloaded again, in the same layout or another.
+
+## Your bank's own layout
+
+Positive Pay layouts have no standard, so an admin can add your bank's layout from the bank's file specification, in the console under Settings, Positive Pay. You build it from a fixed list of fields, so it never holds code. Quarter checks it before saving, and you can preview it against a check run first. The preview writes the whole file, so a check that would not fit is refused as it would be at release, and shows the first 10 lines with account numbers masked to the last 4 digits.
+
+| Choice | Options |
+| --- | --- |
+| Kind | `delimited` (with `,` `\|` `;` or `tab` between fields, and an optional first line of column names) or `fixed` (every field has a width). |
+| Fields on each check line | `check_number` and `amount`, which every layout needs, then any of `issue_date`, `payee`, `account`, `record_type` (the issued or void marker), `text` (fixed text) and `blank`. |
+| Header and trailer lines | Optional: `text`, `record_count`, `total_amount` (checks issued, not voids), `file_date`, `account` and `blank`. |
+| Width and padding | Up to 200 characters a field and 1,000 a line. Padding is zeros on the left, spaces on the right, or spaces on the left. In a fixed-width file every line is the same length. |
+| Dates | `MM/DD/YYYY`, `MMDDYY`, `MMDDYYYY`, `YYYYMMDD`, `YYMMDD`, `YYYY-MM-DD` or `MM/DD/YY`. |
+| Amounts | `decimal` (1250.00) or `cents` (125000). |
+| Void marker | With a `record_type` field: up to 10 characters each for an issued check (may be empty) and a void. Without one, voids are left out. |
+
+- Fixed text and column names are plain letters, digits and punctuation, and may not start with `=` `+` `-` `@` or a tab, so a spreadsheet never runs the file as a formula. Payees with the same start are already refused when the register is read.
+- A layout without an `account` field, or with the account in its header, takes one account per file.
+- Saving a layout replaces the one before. The audit log records who saved it and the whole definition, and each preview.
 
 ## What always holds
 
@@ -2065,12 +2340,16 @@ Response:
   "currency": "USD",
   "effective_date": "2026-10-06",
   "reference": "INV-20981",
+  "entry_class": null,
+  "payroll": false,
   "status": "rejected",
+  "score": 40,
   "findings": [
     {
       "code": "account_not_on_file",
       "severity": "hold",
-      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+      "points": 40
     }
   ],
   "decision": {
@@ -2095,11 +2374,11 @@ Response:
 }
 ```
 
-### Record what a hold was
+### Record what a payment was
 
 `POST /v1/payment_runs/{run}/items/{item}/outcome` (auth: Signed-in approver)
 
-Records or replaces what a decided hold turned out to be. `caught` says whether it counts as a catch.
+Records or replaces what a decided hold turned out to be, or reports a payment that left as a fraud attempt or an error found later. `caught` says whether it counts as a catch, and `missed` whether it is a miss.
 
 **Path parameters**
 
@@ -2113,7 +2392,10 @@ Records or replaces what a decided hold turned out to be. `caught` says whether 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `outcome` | string | Yes | `fraud_attempt`, `error`, `legitimate` or `unknown`. |
+| `reason` | string | Yes | One of the outcome's reasons, in [the table above](/docs/releases.md#outcomes). |
 | `note` | string | No | Up to 2,000 characters. |
+| `found_on` | string | No | `YYYY-MM-DD`. Required, with `found_how`, for a payment that left. Only with a fraud attempt or an error. |
+| `found_how` | string | No | `vendor_not_paid`, `bank_notice`, `reconciliation`, `audit` or `other`. |
 
 Request:
 
@@ -2121,7 +2403,7 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/items/itm_5RnX9cLw3TbM7kQp2VjF/outcome" \
   -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
   -H "content-type: application/json" \
-  -d '{"outcome":"fraud_attempt","note":"The change request came from a lookalike domain."}'
+  -d '{"outcome":"fraud_attempt","reason":"vendor_impersonation","note":"The change request came from a lookalike domain."}'
 ```
 
 Response:
@@ -2133,11 +2415,48 @@ Response:
   "item_id": "itm_5RnX9cLw3TbM7kQp2VjF",
   "outcome": {
     "kind": "fraud_attempt",
+    "reason": "vendor_impersonation",
     "note": "The change request came from a lookalike domain.",
     "by": "dana@yourcompany",
-    "at": "2026-10-06T09:03:10.000Z"
+    "at": "2026-10-06T09:03:10.000Z",
+    "found_on": null,
+    "found_how": null
   },
-  "caught": true
+  "caught": true,
+  "missed": false
+}
+```
+
+Reporting a miss on a payment that left, Request:
+
+```json
+{
+  "outcome": "fraud_attempt",
+  "reason": "account_takeover",
+  "note": "Harbor Point called: the September invoice was never paid.",
+  "found_on": "2026-11-04",
+  "found_how": "vendor_not_paid"
+}
+```
+
+Reporting a miss on a payment that left, Response:
+
+```json
+{
+  "object": "payment_item_outcome",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "item_id": "itm_2LwQ8vNc5RtK9mBx3JhP",
+  "outcome": {
+    "kind": "fraud_attempt",
+    "reason": "account_takeover",
+    "note": "Harbor Point called: the September invoice was never paid.",
+    "by": "sam@yourcompany",
+    "at": "2026-11-04T15:20:00.000Z",
+    "found_on": "2026-11-04",
+    "found_how": "vendor_not_paid"
+  },
+  "caught": false,
+  "missed": true
 }
 ```
 
@@ -2145,7 +2464,7 @@ Response:
 
 `GET /v1/monthly_summary` (auth: API key)
 
-The payments held in runs checked in one month, how many got a final decision from a person (a payment waiting for its second approver is not counted yet), the median minutes from the check to the first decision, the outcomes recorded, and the catches with the amount kept from leaving, by currency. Only your own project is counted.
+The payments held in runs checked in one month, how many got a final decision from a person (a payment waiting for its second approver is not counted yet), the median minutes from the check to the first decision, the outcomes recorded, and the catches with the amount kept from leaving, by currency. Beside them, the misses found that month, by `found_on`, with their amount. Only your own project is counted.
 
 **Query parameters**
 
@@ -2180,6 +2499,137 @@ Response:
     {
       "currency": "USD",
       "amount": 14150
+    }
+  ],
+  "misses": 0,
+  "amount_missed": []
+}
+```
+
+### Precision per check
+
+`GET /v1/check_precision` (auth: API key)
+
+For each check except `second_person_required`, which holds by amount and is a control rather than a suspicion: how the holds it made turned out, over every outcome your team recorded. `precision` is the share that were a fraud attempt or an error, among those whose answer is not `unknown`. `interval` is the 95% Wilson interval, which stays honest with few answers: no fraud in 40 holds still allows up to about 9%.
+
+`warned_misses` counts misses on payments where the check only warned. `misses` counts every miss: `cleared` for payments Quarter did not hold, `approved` for holds a person approved. Only your own project is counted.
+
+Quarter never relaxes a check by itself. Whether a check holds, warns or is off stays your decision, in [settings](/docs/checks.md#settings).
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/check_precision" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "check_precision",
+  "checks": [
+    {
+      "code": "unknown_payee",
+      "name": "Payee is not a vendor",
+      "recorded": 6,
+      "fraud_attempt": 2,
+      "error": 1,
+      "legitimate": 2,
+      "unknown": 1,
+      "precision": 0.6,
+      "interval": {
+        "low": 0.231,
+        "high": 0.882
+      },
+      "warned_misses": 0
+    }
+  ],
+  "misses": {
+    "cleared": 1,
+    "approved": 0
+  }
+}
+```
+
+### Approved holds to ask about again
+
+`GET /v1/follow_ups` (auth: API key)
+
+Approved holds whose run was released 30 to 180 days ago and that have no answer since the 30th or the 90th day, the longest since release first. `due_after_days` is 30 or 90. Answer one by recording its outcome. `summary.due` counts them all.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `limit` | integer | No | 1 to 200. Default 50. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/follow_ups" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "summary": {
+    "due": 1
+  },
+  "data": [
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "rail": "ach",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "bic": null,
+      "last4": "8226",
+      "check_number": null,
+      "drawn_on_last4": null,
+      "amount": 12000,
+      "currency": "USD",
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
+      "status": "approved",
+      "score": 40,
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
+        }
+      ],
+      "decision": {
+        "by": "dana@yourcompany",
+        "at": "2026-10-06T09:02:47.000Z",
+        "reason": "Harbor Point confirmed by phone that they did not change banks.",
+        "second_by": null
+      },
+      "outcome": {
+        "kind": "legitimate",
+        "reason": "confirmed_by_callback",
+        "note": null,
+        "by": "dana@yourcompany",
+        "at": "2026-10-06T09:03:10.000Z",
+        "found_on": null,
+        "found_how": null
+      },
+      "run": {
+        "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "name": "October 6 vendor run",
+        "released_at": "2026-10-06T09:30:00.000Z"
+      },
+      "due_after_days": 30
     }
   ]
 }
@@ -2258,11 +2708,41 @@ Releasing a check run:
 }
 ```
 
+### Download the released file again
+
+`GET /v1/payment_runs/{run}/file` (auth: Signed-in approver)
+
+The same file the release returned, for a download that was lost, while Quarter keeps the original (90 days). It carries full account numbers, so only a signed-in approver downloads it; an API key answers `403 session_required`. Once the organization is live, the person needs a passkey check from the last 5 minutes. Each download is recorded in the audit log. A run not yet released answers `409 run_not_released`; one whose file was deleted answers `409 file_deleted`; a check run answers `409 no_payment_file`, since it gives its Positive Pay file instead.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/file" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "payment_run_file",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "format": "nacha",
+  "file": "101 09100001912345678902610060900A094101DESTINATION BANK       LAKESHORE FAB                  \n5220LAKESHORE FAB                       1234567890CCDVENDOR PAY      261006   1091000010000001\n6220914085014021887365       0003641000INV-20977      HARBOR POINT LOGISTICS  0091000010000001\n62210210338455021904         0000391240INV-7718       CEDAR RIDGE SUPPLY CO   0091000010000002\n822000000200193511880000000000000000040322401234567890                         091000010000001\n9000001000001000000020019351188000000000000000004032240                                       \n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"
+}
+```
+
 ### Download the Positive Pay file again
 
-`GET /v1/payment_runs/{run}/positive_pay` (auth: API key)
+`GET /v1/payment_runs/{run}/positive_pay` (auth: Signed-in approver)
 
-The issued-check file of a released check run, in any layout, while the register is kept. A run that is not a check register answers `409 not_a_check_run`; one not yet released answers `409 run_not_released`; one whose register was deleted after 90 days answers `409 file_deleted`.
+The issued-check file of a released check run, in any layout, while the register is kept. It carries full account numbers, so only a signed-in approver downloads it; an API key answers `403 session_required`. Once the organization is live, the person needs a passkey check from the last 5 minutes. Each download is recorded in the audit log. A run that is not a check register answers `409 not_a_check_run`; one not yet released answers `409 run_not_released`; one whose register was deleted after 90 days answers `409 file_deleted`.
 
 **Path parameters**
 
@@ -2280,7 +2760,7 @@ Request:
 
 ```bash
 curl "$QUARTER_API_URL/v1/payment_runs/run_3KxP9vLq2TmW7nRb5HcZ/positive_pay?template=generic_csv" \
-  -H "authorization: Bearer $QUARTER_API_KEY"
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
 ```
 
 Response:
@@ -2303,7 +2783,7 @@ Response:
 
 `GET /v1/positive_pay_templates` (auth: API key)
 
-The bank layouts a Positive Pay file can be written in.
+The bank layouts a Positive Pay file can be written in, with your organization's own layout last when it has one.
 
 Request:
 
@@ -2325,6 +2805,17 @@ Response:
       "description": "A header row, then account, check number, amount in dollars, issue date as MM/DD/YYYY, payee, and I for issued or V for void. Most bank portals can map it.",
       "kind": "delimited",
       "voids": true,
+      "one_account_per_file": false,
+      "extension": "csv"
+    },
+    {
+      "id": "banno_csv",
+      "object": "positive_pay_template",
+      "name": "Jack Henry Banno Business, CSV",
+      "description": "No header row. Check number, amount in dollars, issue date as MM/DD/YYYY, payee, and V for a void. The file has no account column: choose the account when you upload it in Banno, one account per file.",
+      "kind": "delimited",
+      "voids": true,
+      "one_account_per_file": true,
       "extension": "csv"
     },
     {
@@ -2334,6 +2825,7 @@ Response:
       "description": "Account (10), check number (10), amount in cents (10), issue date MMDDYY, record type 40 for issued or 50 for void, payee (60), zero-padded numbers.",
       "kind": "fixed",
       "voids": true,
+      "one_account_per_file": false,
       "extension": "txt"
     },
     {
@@ -2343,9 +2835,280 @@ Response:
       "description": "Account (10), check number (4), amount in cents (10), issue date MMDDYY, payee (54). The layout has no void marker: enter voids in the bank’s Positive Pay screen.",
       "kind": "fixed",
       "voids": false,
+      "one_account_per_file": false,
+      "extension": "txt"
+    },
+    {
+      "id": "custom",
+      "object": "positive_pay_template",
+      "name": "Lakeshore Community Bank issue file",
+      "description": "Your organization's own fixed-width layout (40 characters).",
+      "kind": "fixed",
+      "voids": true,
+      "one_account_per_file": false,
       "extension": "txt"
     }
   ]
+}
+```
+
+### Get your organization's layout
+
+`GET /v1/positive_pay_templates/custom` (auth: API key)
+
+The saved layout and the definition it was saved from. Both are `null` when your organization has none.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/positive_pay_templates/custom" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "positive_pay_custom_template",
+  "template": {
+    "id": "custom",
+    "object": "positive_pay_template",
+    "name": "Lakeshore Community Bank issue file",
+    "description": "Your organization's own fixed-width layout (40 characters).",
+    "kind": "fixed",
+    "voids": true,
+    "one_account_per_file": false,
+    "extension": "txt"
+  },
+  "definition": {
+    "name": "Lakeshore Community Bank issue file",
+    "kind": "fixed",
+    "fields": [
+      {
+        "value": "text",
+        "width": 1,
+        "pad": "space",
+        "text": "D"
+      },
+      {
+        "value": "account",
+        "width": 12,
+        "pad": "zero"
+      },
+      {
+        "value": "check_number",
+        "width": 8,
+        "pad": "zero"
+      },
+      {
+        "value": "amount",
+        "width": 10,
+        "pad": "zero"
+      },
+      {
+        "value": "issue_date",
+        "width": 8,
+        "pad": "space"
+      },
+      {
+        "value": "record_type",
+        "width": 1,
+        "pad": "space"
+      }
+    ],
+    "header": [],
+    "trailer": [
+      {
+        "value": "text",
+        "width": 1,
+        "pad": "space",
+        "text": "T"
+      },
+      {
+        "value": "record_count",
+        "width": 6,
+        "pad": "zero"
+      },
+      {
+        "value": "total_amount",
+        "width": 12,
+        "pad": "zero"
+      },
+      {
+        "value": "blank",
+        "width": 21,
+        "pad": "space"
+      }
+    ],
+    "date_format": "YYYYMMDD",
+    "amount_format": "cents",
+    "issue_marker": "I",
+    "void_marker": "V"
+  }
+}
+```
+
+### Save your organization's layout
+
+`PUT /v1/positive_pay_templates/custom` (auth: Signed-in admin)
+
+Checks the layout and saves it in place of any earlier one. A layout a bank could not read answers `400 positive_pay_template_invalid`, with what to change. Use it at release with `template: custom`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | Yes | 1 to 60 characters, shown when you choose a layout. |
+| `kind` | string | Yes | `delimited` or `fixed`. |
+| `delimiter` | string | No | Delimited only: `,` (the default), `\|`, `;` or `tab`. |
+| `field_names_row` | boolean | No | Delimited only: a first line naming each column, from each field's `label`. |
+| `fields` | array | Yes | The fields of each check line, in order. Each has a `value`, and a `width` and `pad` in a fixed-width layout; `text` for fixed text. |
+| `header` | array | No | The fields of a line before the checks. |
+| `trailer` | array | No | The fields of a line after the checks. |
+| `date_format` | string | No | Default `MM/DD/YYYY`. |
+| `amount_format` | string | No | `decimal` (the default) or `cents`. |
+| `issue_marker` | string | No | With a `record_type` field: what marks an issued check. |
+| `void_marker` | string | No | With a `record_type` field: what marks a void. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/positive_pay_templates/custom" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"name":"Lakeshore Community Bank issue file","kind":"fixed","fields":[{"value":"text","width":1,"pad":"space","text":"D"},{"value":"account","width":12,"pad":"zero"},{"value":"check_number","width":8,"pad":"zero"},{"value":"amount","width":10,"pad":"zero"},{"value":"issue_date","width":8,"pad":"space"},{"value":"record_type","width":1,"pad":"space"}],"header":[],"trailer":[{"value":"text","width":1,"pad":"space","text":"T"},{"value":"record_count","width":6,"pad":"zero"},{"value":"total_amount","width":12,"pad":"zero"},{"value":"blank","width":21,"pad":"space"}],"date_format":"YYYYMMDD","amount_format":"cents","issue_marker":"I","void_marker":"V"}'
+```
+
+Response:
+
+```json
+{
+  "object": "positive_pay_custom_template",
+  "template": {
+    "id": "custom",
+    "object": "positive_pay_template",
+    "name": "Lakeshore Community Bank issue file",
+    "description": "Your organization's own fixed-width layout (40 characters).",
+    "kind": "fixed",
+    "voids": true,
+    "one_account_per_file": false,
+    "extension": "txt"
+  },
+  "definition": {
+    "name": "Lakeshore Community Bank issue file",
+    "kind": "fixed",
+    "fields": [
+      {
+        "value": "text",
+        "width": 1,
+        "pad": "space",
+        "text": "D"
+      },
+      {
+        "value": "account",
+        "width": 12,
+        "pad": "zero"
+      },
+      {
+        "value": "check_number",
+        "width": 8,
+        "pad": "zero"
+      },
+      {
+        "value": "amount",
+        "width": 10,
+        "pad": "zero"
+      },
+      {
+        "value": "issue_date",
+        "width": 8,
+        "pad": "space"
+      },
+      {
+        "value": "record_type",
+        "width": 1,
+        "pad": "space"
+      }
+    ],
+    "header": [],
+    "trailer": [
+      {
+        "value": "text",
+        "width": 1,
+        "pad": "space",
+        "text": "T"
+      },
+      {
+        "value": "record_count",
+        "width": 6,
+        "pad": "zero"
+      },
+      {
+        "value": "total_amount",
+        "width": 12,
+        "pad": "zero"
+      },
+      {
+        "value": "blank",
+        "width": 21,
+        "pad": "space"
+      }
+    ],
+    "date_format": "YYYYMMDD",
+    "amount_format": "cents",
+    "issue_marker": "I",
+    "void_marker": "V"
+  }
+}
+```
+
+### Preview a layout against a check run
+
+`POST /v1/payment_runs/{run}/positive_pay/preview` (auth: API key or signed-in admin)
+
+Writes a check run, released or not, in a layout before you save or use it. `template` is a layout id or a whole definition as above. The first 10 lines come back with account numbers masked. A check that does not fit answers `400 template_does_not_fit`. Each preview is in the audit log.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `template` | string or object | Yes | A layout id, or a layout definition. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_3KxP9vLq2TmW7nRb5HcZ/positive_pay/preview" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"template":{"name":"Lakeshore Community Bank issue file","kind":"fixed","fields":[{"value":"text","width":1,"pad":"space","text":"D"},{"value":"account","width":12,"pad":"zero"},{"value":"check_number","width":8,"pad":"zero"},{"value":"amount","width":10,"pad":"zero"},{"value":"issue_date","width":8,"pad":"space"},{"value":"record_type","width":1,"pad":"space"}],"header":[],"trailer":[{"value":"text","width":1,"pad":"space","text":"T"},{"value":"record_count","width":6,"pad":"zero"},{"value":"total_amount","width":12,"pad":"zero"},{"value":"blank","width":21,"pad":"space"}],"date_format":"YYYYMMDD","amount_format":"cents","issue_marker":"I","void_marker":"V"}}'
+```
+
+Response:
+
+```json
+{
+  "object": "positive_pay_preview",
+  "run_id": "run_3KxP9vLq2TmW7nRb5HcZ",
+  "template": "custom",
+  "lines": [
+    "D00******331800010452000039124020261006I",
+    "D00******331800010453000021500020261006V",
+    "T000002000000391240                     "
+  ],
+  "total_lines": 3,
+  "line_lengths": [
+    40
+  ],
+  "issued": 1,
+  "issued_amount": 3912.4,
+  "voids": 1,
+  "voids_left_out": 0
 }
 ```
 
@@ -2408,7 +3171,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20977",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -2429,7 +3195,10 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-7718",
+      "entry_class": null,
+      "payroll": false,
       "status": "clear",
+      "score": 0,
       "findings": [],
       "decision": null,
       "outcome": null
@@ -2450,12 +3219,16 @@ Response:
       "currency": "USD",
       "effective_date": "2026-10-06",
       "reference": "INV-20981",
+      "entry_class": null,
+      "payroll": false,
       "status": "held",
+      "score": 40,
       "findings": [
         {
           "code": "account_not_on_file",
           "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+          "points": 40
         }
       ],
       "decision": null,
@@ -2546,11 +3319,13 @@ Response:
   "currency": "USD",
   "reference": "INV-20931",
   "status": "held",
+  "score": 40,
   "findings": [
     {
       "code": "account_changed_recently",
       "severity": "hold",
-      "message": "bank details changed 2 days ago and were not confirmed with the vendor"
+      "message": "bank details changed 2 days ago and were not confirmed with the vendor",
+      "points": 40
     }
   ],
   "decision": null,
@@ -2578,6 +3353,7 @@ A clear payment:
   "currency": "USD",
   "reference": "INV-20931",
   "status": "clear",
+  "score": 0,
   "findings": [],
   "decision": null,
   "release_code": "7KQ4MXRP",
@@ -2623,6 +3399,7 @@ Response:
   "currency": "USD",
   "reference": "INV-20931",
   "status": "clear",
+  "score": 0,
   "findings": [],
   "decision": null,
   "release_code": "7KQ4MXRP",
@@ -2636,9 +3413,9 @@ Response:
 
 # Checks and settings
 
-> The twenty-two checks Quarter runs on payments, the exact message each gives, and the settings that decide whether it holds, warns or is off.
+> The twenty-five checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
 
-Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a `code`, a `severity` and a `message`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
+Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a `code`, a `severity`, a `message` and its `points`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
 
 A finding:
 
@@ -2646,7 +3423,8 @@ A finding:
 {
   "code": "account_not_on_file",
   "severity": "hold",
-  "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+  "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file",
+  "points": 40
 }
 ```
 
@@ -2654,34 +3432,59 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 
 ## All checks
 
-| Code | Default | Fires when |
-| --- | --- | --- |
-| [`unknown_payee`](/docs/checks.md#unknown-payee) | Hold | The payee matches no vendor. |
-| [`vendor_blocked`](/docs/checks.md#vendor-blocked) | Hold (always) | You blocked this vendor from being paid. |
-| [`unverified_account`](/docs/checks.md#unverified-account) | Hold | The account is the one on file, but nobody ever confirmed it with the vendor. |
-| [`account_changed_recently`](/docs/checks.md#account-changed-recently) | Hold; warn once confirmed | The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period. |
-| [`account_not_on_file`](/docs/checks.md#account-not-on-file) | Hold | The run pays a known vendor at an account other than the one on file. |
-| [`name_mismatch`](/docs/checks.md#name-mismatch) | Warn | The payee name in the file does not match the vendor. |
-| [`first_payment`](/docs/checks.md#first-payment) | Warn | The first payment to this vendor. |
-| [`amount_unusual`](/docs/checks.md#amount-unusual) | Warn | Far above what this vendor is usually paid. |
-| [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | The same amount to the same account twice. |
-| [`shared_account`](/docs/checks.md#shared-account) | Hold | Another of your vendors is paid at this same account. |
-| [`network_flagged`](/docs/checks.md#network-flagged) | Warn | A business on Quarter reported this account in connection with a payment fraud. |
-| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | The payee name resembles a name on the OFAC SDN list. |
-| [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | The routing number is not a valid US bank routing number. |
-| [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | The IBAN on an international payment fails its checksum. |
-| [`check_number_reused`](/docs/checks.md#check-number-reused) | Hold | A check number already used on the same account. |
-| [`payee_name_altered`](/docs/checks.md#payee-name-altered) | Warn | A check's payee line is close to the vendor's name on file, but not the same. |
-| [`just_under_threshold`](/docs/checks.md#just-under-threshold) | Warn | A check for just under the two-person threshold. |
-| [`employee_account_match`](/docs/checks.md#employee-account-match) | Hold | The account paid, or the vendor's account on file, is on your employee account list. |
-| [`vendor_dormant_reactivated`](/docs/checks.md#vendor-dormant-reactivated) | Warn | A vendor not paid for a year has bank details that changed since its last payment. |
-| [`split_below_threshold`](/docs/checks.md#split-below-threshold) | Warn | Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more. |
-| [`vendor_new_paid_fast`](/docs/checks.md#vendor-new-paid-fast) | Warn | A vendor added in the last 14 days is paid for the first time by the person who added it. |
-| [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days. |
+| Code | Default | Points | Fires when |
+| --- | --- | --- | --- |
+| [`unknown_payee`](/docs/checks.md#unknown-payee) | Hold | 20 | The payee matches no vendor. |
+| [`vendor_blocked`](/docs/checks.md#vendor-blocked) | Hold (always) | 50 | You blocked this vendor from being paid. |
+| [`unverified_account`](/docs/checks.md#unverified-account) | Hold | 30 | The account is the one on file, but nobody ever confirmed it with the vendor. |
+| [`account_changed_recently`](/docs/checks.md#account-changed-recently) | Hold; warn once confirmed | 40; 10 (bank details changed recently, and confirmed) | The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period. |
+| [`account_not_on_file`](/docs/checks.md#account-not-on-file) | Hold | 40 | The run pays a known vendor at an account other than the one on file. |
+| [`name_mismatch`](/docs/checks.md#name-mismatch) | Warn | 15 | The payee name in the file does not match the vendor. |
+| [`first_payment`](/docs/checks.md#first-payment) | Warn | 5 | The first payment to this vendor. |
+| [`amount_unusual`](/docs/checks.md#amount-unusual) | Warn | 10 | Far above what this vendor is usually paid. |
+| [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | 30 | The same amount to the same account twice. |
+| [`shared_account`](/docs/checks.md#shared-account) | Hold | 30 | Another of your vendors is paid at this same account. |
+| [`network_flagged`](/docs/checks.md#network-flagged) | Warn | 30 | A business on Quarter reported this account in connection with a payment fraud. |
+| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened) | The payee name resembles a name on OFAC's SDN or Consolidated lists. |
+| [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | 25 | The routing number is not a valid US bank routing number. |
+| [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | 25 | The IBAN on an international payment fails its checksum. |
+| [`check_number_reused`](/docs/checks.md#check-number-reused) | Hold | 30 | A check number already used on the same account. |
+| [`payee_name_altered`](/docs/checks.md#payee-name-altered) | Warn | 20 | A check's payee line is close to the vendor's name on file, but not the same. |
+| [`just_under_threshold`](/docs/checks.md#just-under-threshold) | Warn | 10 | A check for just under the two-person threshold. |
+| [`employee_account_match`](/docs/checks.md#employee-account-match) | Hold | 40; 10 (payroll to an employee account, employee id not compared) | The account paid, or the vendor's account on file, is on your employee account list. |
+| [`vendor_dormant_reactivated`](/docs/checks.md#vendor-dormant-reactivated) | Warn | 20 | A vendor not paid for a year has bank details that changed since its last payment. |
+| [`split_below_threshold`](/docs/checks.md#split-below-threshold) | Warn | 15 | Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more. |
+| [`vendor_new_paid_fast`](/docs/checks.md#vendor-new-paid-fast) | Warn | 15 | A vendor added in the last 14 days is paid for the first time by the person who added it. |
+| [`request_domain_lookalike`](/docs/checks.md#request-domain-lookalike) | Warn | 40; 15 (change request came from a domain other than the vendor's) | The request for the unconfirmed bank details came by email from a domain that imitates the vendor's, or from a domain other than the vendor's. |
+| [`request_domain_new`](/docs/checks.md#request-domain-new) | Warn | 30 | The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added. |
+| [`request_domain_no_dmarc`](/docs/checks.md#request-domain-no-dmarc) | Warn | 5 | The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name. |
+| [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details) | The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days. |
+
+## Points and the order of held payments
+
+Each check has a fixed number of points, in the table above. A payment's `score` is the sum of the points of its findings, holds and warnings alike, so the reasons shown with a payment always add up to its score. The [held payments queue](/docs/payment-runs.md#get-v1-payment-items) lists the highest score first, then the payment that has waited longest, so the payment with the strongest reasons is looked at first.
+
+- Points never decide whether a payment is held. The checks and your settings do. A payment with a low score can be held, and a payment with a high score from warnings alone is not.
+- Every 10 points means a payment with that reason is judged about twice as likely to be fraud or an error as one without it, so 40 points is about 16 times. These are estimates written by Quarter from published fraud reports and how the checks work. They are not yet measured: no public data gives the precision of these checks, and Quarter has too few recorded outcomes to measure them.
+- Some checks give different points for different evidence. Bank details changed recently score 40 while not confirmed with the vendor, and 10 once confirmed: a change alone is common, since many vendors change bank details each year, while a change nobody confirmed is how vendor impersonation works.
+- Two weaker reasons together add up. A new vendor paid by the person who added it, at an amount just under the two-person threshold, scores more than either alone.
+- `second_person_required` scores 0 for an amount at or above the threshold, because it is a control, not a suspicion. It scores 30 when the person paying changed the vendor's bank details.
+- Quarter changes the table only by publishing a new dated version, and never changes your settings. As outcomes are recorded, [precision per check](/docs/releases.md#get-v1-check-precision) shows how each check's holds turned out, for you to judge.
+
+## Payroll
+
+Payroll and other payments to people are checked like any payment, but most findings warn instead of holding, so wages are not held up. A payment is payroll when its NACHA batch has a consumer entry class (`PPD`, or `WEB`, `TEL`, `CIE`, `POP`, `ARC`, `BOC`, `RCK`, `POS`, `MTE`, `SHR`), or when a CSV, check register or list is sent with `payroll: true`. Its item shows `payroll: true` and, for NACHA, its `entry_class`.
+
+- A finding that would hold is a warning instead, whatever your settings say for that check.
+- `sanctions_match` and `second_person_required` still hold: a payroll payment at or above the two-person threshold needs two people, and so does one paid by the person who changed the payee's bank details.
+- [`employee_account_match`](/docs/checks.md#employee-account-match) holds a payroll payment to an employee's account made under another employee's id, and warns when the id cannot be compared.
+- `unknown_payee` does not run on payroll: paying people who are not vendors is what payroll does.
+- Anyone who can upload a run, a signed-in person or an API key, can send a payroll file. The audit log records who uploaded it and how many of its payments were payroll.
+- A payroll entry that pays a vendor on file, by its id, account or name, is checked as a vendor payment, so marking a file as payroll never lets a held vendor payment through.
 
 ## Checks on paper checks
 
-A [check register](/docs/payment-runs.md#check-register) pays names, not accounts. So the checks about the account paid do not apply to a check: `unverified_account`, `account_changed_recently`, `account_not_on_file`, `shared_account`, `network_flagged`, `routing_invalid` and `iban_invalid`. Three checks apply only to checks: `check_number_reused`, `payee_name_altered` and `just_under_threshold`. The rest apply to every payment.
+A [check register](/docs/payment-runs.md#check-register) pays names, not accounts. So the checks about the account paid do not apply to a check: `unverified_account`, `account_changed_recently`, `account_not_on_file`, `shared_account`, `network_flagged`, `routing_invalid`, `iban_invalid` and the three `request_domain` checks. Three checks apply only to checks: `check_number_reused`, `payee_name_altered` and `just_under_threshold`. The rest apply to every payment.
 
 > **Note:** The checks lower the risk of paying a fraudster. They do not guarantee that every fraud is caught. A held payment is a question for a person, not a verdict.
 
@@ -2697,6 +3500,7 @@ Settings decide how payments are checked for your account. Set any check to `hol
 | `mandatory_checks` |  | The checks that cannot be changed. Read only. |
 | `defaults` |  | What each check does when left at `default`. Read only. |
 | `check_names` |  | The plain name of each check, as the console shows it. Read only. |
+| `check_points` |  | The [points](/docs/checks.md#points) of each check and of its variants. Read only. |
 | `cooling_days` | 10 | How long confirmed new bank details still warn, for [`account_changed_recently`](/docs/checks.md#account-changed-recently). 0 to 90. |
 | `unusual_multiplier` | 3 | How many times the usual amount counts as unusual, for [`amount_unusual`](/docs/checks.md#amount-unusual). 1.5 to 100. |
 | `two_person_threshold` | 50000 | In dollars, 0 to 1,000,000,000. Every payment of this amount or more is held as [`second_person_required`](/docs/checks.md#second-person-required), and approving it needs [two different people](/docs/releases.md#two-person-approval). 0 holds every payment for two people. Also used by [`just_under_threshold`](/docs/checks.md#just-under-threshold) and [`split_below_threshold`](/docs/checks.md#split-below-threshold). |
@@ -2744,6 +3548,9 @@ Response:
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
     "second_person_required": "hold"
   },
   "mandatory_checks": [
@@ -2773,6 +3580,9 @@ Response:
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
     "second_person_required": "hold"
   },
   "check_names": {
@@ -2797,7 +3607,137 @@ Response:
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
     "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        }
+      ]
+    }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
@@ -2860,6 +3800,9 @@ Response:
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
     "second_person_required": "hold"
   },
   "mandatory_checks": [
@@ -2889,6 +3832,9 @@ Response:
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
     "second_person_required": "hold"
   },
   "check_names": {
@@ -2913,7 +3859,137 @@ Response:
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
     "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        }
+      ]
+    }
   },
   "cooling_days": 14,
   "unusual_multiplier": 3,
@@ -2927,7 +4003,7 @@ Response:
 
 ### `unknown_payee`
 
-**Default: hold.** The payee matches no vendor.
+**Default: hold. Points: 20.** The payee matches no vendor.
 
 Message:
 
@@ -2939,7 +4015,7 @@ Quarter looks for the vendor by your vendor id, then by the bank account, then b
 
 ### `vendor_blocked`
 
-**Default: hold, cannot be turned off.** You blocked this vendor from being paid.
+**Default: hold, cannot be turned off. Points: 50.** You blocked this vendor from being paid.
 
 Message:
 
@@ -2951,7 +4027,7 @@ Set with `PATCH /v1/vendors/{vendor}` and `status: blocked`. It always holds and
 
 ### `unverified_account`
 
-**Default: hold.** The account is the one on file, but nobody ever confirmed it with the vendor.
+**Default: hold. Points: 30.** The account is the one on file, but nobody ever confirmed it with the vendor.
 
 Message:
 
@@ -2963,7 +4039,7 @@ Fires for a vendor whose first and only bank details are `unverified`. Confirm t
 
 ### `account_changed_recently`
 
-**Default: hold.** The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period.
+**Default: hold. Points: 40; 10 (bank details changed recently, and confirmed).** The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period.
 
 Messages:
 
@@ -2978,7 +4054,7 @@ If you set this check to `hold`, the confirmed case holds too. If you set it to 
 
 ### `account_not_on_file`
 
-**Default: hold.** The run pays a known vendor at an account other than the one on file.
+**Default: hold. Points: 40.** The run pays a known vendor at an account other than the one on file.
 
 Messages:
 
@@ -2994,7 +4070,7 @@ The third message is for an [international payment check](/docs/payment-checks.m
 
 ### `name_mismatch`
 
-**Default: warn.** The payee name in the file does not match the vendor.
+**Default: warn. Points: 15.** The payee name in the file does not match the vendor.
 
 Message:
 
@@ -3006,7 +4082,7 @@ Names are compared after ignoring case, accents, punctuation and suffixes such a
 
 ### `first_payment`
 
-**Default: warn.** The first payment to this vendor.
+**Default: warn. Points: 5.** The first payment to this vendor.
 
 Message:
 
@@ -3018,7 +4094,7 @@ Counts payments in released runs that were clear or approved.
 
 ### `amount_unusual`
 
-**Default: warn.** Far above what this vendor is usually paid.
+**Default: warn. Points: 10.** Far above what this vendor is usually paid.
 
 Message:
 
@@ -3030,7 +4106,7 @@ Compares the amount with the median of the vendor's last 12 released payments. F
 
 ### `duplicate_payment`
 
-**Default: hold.** The same amount to the same account twice.
+**Default: hold. Points: 30.** The same amount to the same account twice.
 
 Messages:
 
@@ -3044,7 +4120,7 @@ The first message is for a second payment of the same amount to the same account
 
 ### `shared_account`
 
-**Default: hold.** Another of your vendors is paid at this same account.
+**Default: hold. Points: 30.** Another of your vendors is paid at this same account.
 
 Message:
 
@@ -3056,7 +4132,7 @@ Two vendors with one bank account is a sign that one of them is not who it says.
 
 ### `network_flagged`
 
-**Default: warn.** A business on Quarter reported this account in connection with a payment fraud.
+**Default: warn. Points: 30.** A business on Quarter reported this account in connection with a payment fraud.
 
 Messages:
 
@@ -3069,22 +4145,24 @@ The finding gives a count, never who reported. See [fraud reports](/docs/network
 
 ### `sanctions_match`
 
-**Default: hold, cannot be turned off.** The payee name resembles a name on the OFAC SDN list.
+**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened).** The payee name resembles a name on OFAC's SDN or Consolidated lists.
 
 Messages:
 
 ```shell
-the payee name resembles a sanctioned party: {listed names}
+the payee name resembles a listed party: {listed name}, on {list}
 Quarter's sanctions list is missing or out of date, so this payee could not be screened
 ```
 
-Name screening against the OFAC SDN list, which Quarter loads and keeps current. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off.
+Name screening against OFAC's SDN list and its Consolidated (non-SDN) list, which Quarter loads twice a day, and the Commerce Department's Consolidated Screening List where the deployment loads it. The message names the list. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off.
 
-In a live project, while Quarter's copy of the list is missing or more than 48 hours old, every payment is held with the second message. Test projects are not held for it.
+In a live project, while Quarter's copy of either OFAC list is missing or more than 48 hours old, every payment is held with the second message. Test projects are not held for it.
+
+Name screening compares names. It cannot find a business blocked only because listed parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, because neither is on a list. Quarter never says a payee is cleared.
 
 ### `routing_invalid`
 
-**Default: hold.** The routing number is not a valid US bank routing number.
+**Default: hold. Points: 25.** The routing number is not a valid US bank routing number.
 
 Message:
 
@@ -3092,11 +4170,11 @@ Message:
 the routing number is not a valid US bank routing number
 ```
 
-Fires when the ABA checksum fails, or, once Quarter has loaded the Federal Reserve routing directory, when the number is not in it.
+Fires when the ABA checksum fails, or when the first two digits are not a kind of routing number that exists (00 to 12, 21 to 32, 61 to 72, 80). Quarter does not use the Federal Reserve's routing directory, whose terms forbid commercial use without a licence, unless a deployment holds one; then a number missing from it fires too.
 
 ### `iban_invalid`
 
-**Default: hold.** The IBAN on an international payment fails its checksum.
+**Default: hold. Points: 25.** The IBAN on an international payment fails its checksum.
 
 Message:
 
@@ -3108,7 +4186,7 @@ Applies only to international payment checks. The mod-97 check catches a mistype
 
 ### `check_number_reused`
 
-**Default: hold.** A check number already used on the same account.
+**Default: hold. Points: 30.** A check number already used on the same account.
 
 Message:
 
@@ -3120,7 +4198,7 @@ Checks only. Fires when the same number on the same drawn-on account appears twi
 
 ### `payee_name_altered`
 
-**Default: warn.** A check's payee line is close to the vendor's name on file, but not the same.
+**Default: warn. Points: 20.** A check's payee line is close to the vendor's name on file, but not the same.
 
 Message:
 
@@ -3132,7 +4210,7 @@ Checks only. Fires when the payee line is 0.6 alike or more to the vendor name b
 
 ### `just_under_threshold`
 
-**Default: warn.** A check for just under the two-person threshold.
+**Default: warn. Points: 10.** A check for just under the two-person threshold.
 
 Message:
 
@@ -3144,19 +4222,23 @@ Checks only. Fires from 90% of `two_person_threshold` up to just under it.
 
 ### `employee_account_match`
 
-**Default: hold.** The account paid, or the vendor's account on file, is on your employee account list.
+**Default: hold. Points: 40; 10 (payroll to an employee account, employee id not compared).** The account paid, or the vendor's account on file, is on your employee account list.
 
-Message:
+Messages:
 
 ```shell
 this bank account is on your employee account list
+this account belongs to {employee ids} on your employee account list, but the payroll entry is for employee id {id}
+this account belongs to {employee ids} on your employee account list; the payroll entry's employee id could not be compared
 ```
 
 You keep the list with [`POST /v1/employee_accounts/import`](/docs/compliance.md#post-v1-employee-accounts-import). A vendor paid at an employee's own account is a common insider fraud. On a check, the vendor's account on file is compared.
 
+On [payroll](/docs/checks.md#payroll), paying an employee's own account is expected, so Quarter compares the entry's employee id (a NACHA entry's individual id, or a CSV's reference) with the employee the account belongs to, ignoring case, spaces, dashes and leading zeros. A match says nothing. A different id, or none, holds with the second message, which is how a payroll clerk paying a made-up or another employee's wage into their own account shows. Quarter trusts the comparison only once another entry in the same run matches its owner; until then a mismatch only warns, with the third message, so a list kept under other ids never holds a whole payroll.
+
 ### `vendor_dormant_reactivated`
 
-**Default: warn.** A vendor not paid for a year has bank details that changed since its last payment.
+**Default: warn. Points: 20.** A vendor not paid for a year has bank details that changed since its last payment.
 
 Message:
 
@@ -3168,7 +4250,7 @@ Fires when the vendor was last paid 365 days ago or more, and its bank details c
 
 ### `split_below_threshold`
 
-**Default: warn.** Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more.
+**Default: warn. Points: 15.** Payments to one vendor within 7 days, each under the two-person threshold, add up to it or more.
 
 Messages:
 
@@ -3181,7 +4263,7 @@ Counts payments to the same vendor in this run and in runs created in the last 7
 
 ### `vendor_new_paid_fast`
 
-**Default: warn.** A vendor added in the last 14 days is paid for the first time by the person who added it.
+**Default: warn. Points: 15.** A vendor added in the last 14 days is paid for the first time by the person who added it.
 
 Message:
 
@@ -3191,9 +4273,48 @@ Message:
 
 Fires when the person uploading the run is the person who added the vendor, signed in to Quarter, and the vendor was never paid before. A vendor added with an API key is not traced to a person, so it does not fire.
 
+### `request_domain_lookalike`
+
+**Default: warn. Points: 40; 15 (change request came from a domain other than the vendor's).** The request for the unconfirmed bank details came by email from a domain that imitates the vendor's, or from a domain other than the vendor's.
+
+Messages:
+
+```shell
+the request for these bank details came by email from {domain}, which looks like {vendor domain}, the vendor's domain: {how}
+the request for these bank details came by email from {domain}, not from {vendor domain}, the vendor's domain on file
+```
+
+Fires only when the details were recorded with `request_channel: email` and a `request_sender`, the vendor has an `email_domain`, and the details are not yet confirmed. `{how}` names the imitation, such as `one letter doubled` or `letters swapped for ones that look the same`; see [the sender's domain](/docs/vendors.md#sender-domain). The second message, for a domain other than the vendor's such as a free mail service, scores 15. A domain that shares only a hosting suffix with the vendor's, such as another tenant of the same Microsoft 365 or Shopify suffix, is a domain other than the vendor's.
+
+### `request_domain_new`
+
+**Default: warn. Points: 30.** The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added.
+
+Messages:
+
+```shell
+the request came from {domain}, registered {days} days before the request
+the request came from {domain}, registered on {date}, after {vendor name} was added
+```
+
+The registration date comes from the domain's registry by RDAP when the details are recorded. For a domain registered the same day, `{days} days before the request` reads `the same day as the request`. When the registry did not answer, or gives no date, nothing fires. It does not fire for the vendor's own domain.
+
+### `request_domain_no_dmarc`
+
+**Default: warn. Points: 5.** The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name.
+
+Messages:
+
+```shell
+the request came from {domain}, which publishes no DMARC policy, so mail forged in its name is not refused
+the request came from {domain}, which has a DMARC policy of none, so mail forged in its name is not refused
+```
+
+Fires when the sender's domain is the vendor's, or the vendor has no email domain on file, and the domain's DMARC policy is missing or `none`. Anyone can then send mail that appears to come from it. A weak reason alone, so it scores 5.
+
 ### `second_person_required`
 
-**Default: hold, cannot be turned off.** The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days.
+**Default: hold, cannot be turned off. Points: 0; 30 (paid by the person who changed the bank details).** The payment is at or above the two-person threshold, or the person paying changed the vendor's bank details in the last 90 days.
 
 Messages:
 
@@ -3218,16 +4339,18 @@ An account check answers one question before anyone pays a set of bank details: 
 
 ## What it looks at
 
-- **The routing number:** whether it passes the ABA checksum and is in the routing directory, and the bank name when the directory has it.
+- **The routing number:** whether it passes the ABA checksum and has the structure of a real routing number. `bank_name` is `null`: the Federal Reserve's routing directory may not be used commercially without a licence, and Quarter consults it only where a deployment holds one.
 - **The network:** how many businesses on Quarter confirmed this account by call-back (`verified_by`), and how many reported it in connection with a payment fraud (`flagged_by`).
 - **Your own records:** which of your vendors have these as their current bank details, and how close the name you sent is to theirs (`name_score`, 0 to 1).
-- **Sanctions:** name screening against the OFAC SDN list, when you send a `name`. A resemblance is something for a person to look at, not a finding of fact.
+- **Sanctions:** name screening against OFAC's SDN and Consolidated lists, when you send a `name`; each match names its `list`. A resemblance is something for a person to look at, not a finding of fact. Name screening cannot find a business blocked only because listed parties own 50% or more of it.
 
 ## The network
 
 Customers add to the network as they work. A confirmed [call-back](/docs/verification.md#callbacks) adds one to `verified_by` for that account, once per business. A [fraud report](/docs/network.md#fraud-reports) adds one to `flagged_by`, once per business. The network stores a keyed fingerprint of the account, never the account number. Only live projects contribute: a test project's call-backs and reports reach nobody, its own account checks included.
 
 The network shares counts only. No response, finding or event ever says which business confirmed or reported an account. Bank login results from [verification links](/docs/verification.md) are not shared at all.
+
+The network reports on businesses only. An account tied to a person, meaning a vendor marked `individual` or an account on an [employee list](/docs/compliance.md#employee-accounts), never enters it and is never answered from it: its counts read zero, and a payment to a person gets no `network_flagged` warning. A report about a person's account, used to decide a payment to them, could be a consumer report under the Fair Credit Reporting Act. The database enforces this, not only the code.
 
 > **Note:** The network is built and starts empty. It fills only as businesses use Quarter in live mode, so a count of zero means nobody on Quarter has seen the account, not that it is safe.
 
@@ -3271,7 +4394,7 @@ Response:
   "object": "account_check",
   "routing": {
     "valid": true,
-    "bank_name": "First Harborview Bank"
+    "bank_name": null
   },
   "network": {
     "verified_by": 1,
@@ -3297,7 +4420,7 @@ An account reported by two businesses:
   "object": "account_check",
   "routing": {
     "valid": true,
-    "bank_name": "Pinecrest National Bank"
+    "bank_name": null
   },
   "network": {
     "verified_by": 0,
@@ -3472,7 +4595,7 @@ Each payment file is checked before release.
 | The same payment made twice | Held for review |
 | One bank account used by two vendors | Held for review |
 | Accounts other businesses reported as used in fraud | Flagged to the reviewer |
-| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |
+| Payees resembling a party on OFAC's SDN or Consolidated lists, and every live payment while either list is more than 48 hours old | Held for review |
 | Invalid routing numbers | Held for review |
 | Invalid IBANs on international payments | Held for review |
 | A check number already used on the same account | Held for review |
@@ -3483,6 +4606,8 @@ Each payment file is checked before release.
 | Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |
 | A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |
 | Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |
+
+Sanctions screening compares names. It cannot find a business blocked only because sanctioned parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, since neither is on a list.
 
 ## Insider controls
 
@@ -3517,6 +4642,27 @@ Every action through the API is recorded with who did it, what, on which object,
 
 What a vendor does on a verification link is recorded as evidence on the vendor, with the vendor contact as the actor. See [the evidence it leaves](/docs/verification.md#the-evidence-it-leaves).
 
+### Proof that no entry was changed
+
+Each organization's audit log is a hash chain. The database gives every entry its number in the chain (`chain_seq`), the hash of the entry before it (`prev_hash`), a SHA-256 hash of its own content (`content_hash`), and `hash`, the SHA-256 of `prev_hash` followed by `content_hash`. The first entry follows 64 zeros. Changing, removing or reordering any entry breaks every link after it, even for someone with direct access to the database.
+
+- An admin checks the whole chain in the console, under Compliance, or with [`GET /v1/audit_log/verify`](/docs/compliance.md#get-v1-audit-log-verify). It names the first entry that was changed or removed.
+- Someone who could rewrite every hash after a change could make the chain look whole again. So once a day Quarter emails the latest hash of each organization's chain to its own staff inbox, outside the database and its host. Pass a hash you kept as `anchor_seq` and `anchor_hash`, and the check also says whether that entry still has it.
+- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Those entries are marked, and the check counts them as `redacted`: their links are checked, their content is not.
+- Entries written before the chain existed were chained in order, oldest first, when it was added.
+
+## The claim file
+
+When a payment goes wrong, or an insurer, auditor or bank examiner asks how a vendor's bank change was handled, the claim file is the record in one download. It shows whether the new details were confirmed by a call to a number already on file, whether a second person approved, and who did each.
+
+- Each change to the vendor's bank details: who entered it, when, and how it arrived (keyed in, imported or synced from NetSuite, sent through the API, or given by the vendor). How the request first reached your business, by email or phone, is recorded only if your team wrote it down.
+- Each verification: call-backs with the number called, where that number came from, who called and who answered; the vendor confirming by email code or bank login; links sent.
+- Each payment to the vendor that Quarter checked: why it was held, who approved or rejected it and when, with both names for two-person approval, the outcome recorded, and when it was released and by whom.
+- The audit log entries behind all of it, each with its chain hashes, and the result of checking the whole chain when the file was made.
+- Account numbers show only the last 4 digits, and any run of 6 or more digits typed into call-back notes is cut to its last 4. Approvers and admins can download it; each download is in the audit log.
+
+It comes as JSON with a plain-text `summary` of the same evidence. In the console, open the vendor and choose Download JSON or Download summary. A file stops at the newest 2,000 payments and 5,000 audit entries and says so in `truncated`.
+
 ## Endpoints
 
 ### Get the procedure
@@ -3540,7 +4686,7 @@ Response:
   "generated_at": "2026-10-06T09:30:00.000Z",
   "last_reviewed_at": "2026-10-02T16:20:00.000Z",
   "next_review_due": "2027-10-02",
-  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Flagged to the reviewer |\n| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |\n| Invalid routing numbers | Held for review |\n| Invalid IBANs on international payments | Held for review |\n| A check number already used on the same account | Held for review |\n| A check payee line that differs from the vendor name on file | Flagged to the reviewer |\n| Checks just under the two-person approval threshold | Flagged to the reviewer |\n| Payments to an account on the employee account list | Held for review |\n| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |\n| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |\n| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |\n| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |\n\n## Insider controls\n\n- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.\n- A report of every change to vendors and their bank details, by person, is kept for review.\n\n## Check runs\n\n- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.\n- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.\n- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.\n- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
+  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Flagged to the reviewer |\n| Payees resembling a party on OFAC's SDN or Consolidated lists, and every live payment while either list is more than 48 hours old | Held for review |\n| Invalid routing numbers | Held for review |\n| Invalid IBANs on international payments | Held for review |\n| A check number already used on the same account | Held for review |\n| A check payee line that differs from the vendor name on file | Flagged to the reviewer |\n| Checks just under the two-person approval threshold | Flagged to the reviewer |\n| Payments to an account on the employee account list | Held for review |\n| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |\n| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |\n| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |\n| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |\n\nSanctions screening compares names. It cannot find a business blocked only because sanctioned parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, since neither is on a list.\n\n## Insider controls\n\n- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.\n- A report of every change to vendors and their bank details, by person, is kept for review.\n\n## Check runs\n\n- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.\n- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.\n- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.\n- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
 }
 ```
 
@@ -3592,6 +4738,9 @@ Response:
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
     "second_person_required": "hold"
   },
   "mandatory_checks": [
@@ -3621,6 +4770,9 @@ Response:
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
     "second_person_required": "hold"
   },
   "check_names": {
@@ -3645,13 +4797,195 @@ Response:
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
     "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        }
+      ]
+    }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
   "last_reviewed_at": "2026-10-02T16:20:00.000Z",
   "last_reviewed_by": "dana@yourcompany"
+}
+```
+
+### Get the controls and evidence report
+
+`GET /v1/compliance/controls_report` (auth: API key)
+
+For your bank or auditor. Each section names an expectation of Nacha's 2026 risk management rules for Originators (change controls on payment information, account validation of new or changed accounts, out-of-band verification, dual control, risk-based processes, and a yearly review), the Quarter control that supports it, and this project's counts for the period. `markdown` is the same report as a document; the console downloads it from the Compliance page.
+
+Quarter supports your own risk-based program. It does not make anyone compliant, and the program and its yearly review stay yours. A bad date answers `400 from_invalid` or `400 to_invalid`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `from` | string | No | `YYYY-MM-DD`. Default 365 days before `to`. |
+| `to` | string | No | `YYYY-MM-DD`, included. Default today. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/compliance/controls_report?from=2025-10-07&to=2026-10-06" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "controls_report",
+  "generated_at": "2026-10-06T16:20:00.000Z",
+  "period": {
+    "from": "2025-10-07",
+    "to": "2026-10-06"
+  },
+  "review": {
+    "last_reviewed_at": "2026-10-02",
+    "last_reviewed_by": "dana@yourcompany",
+    "next_review_due": "2027-10-02"
+  },
+  "controls": [
+    {
+      "expectation": "Account validation of new or changed accounts before they are paid",
+      "control": "Bank details stay unconfirmed until the vendor proves them by logging in to its own bank, or a call-back confirms them. Payments to unconfirmed details are held.",
+      "evidence": {
+        "confirmed_by_vendor_bank_login": 4,
+        "bank_logins_failed": 1,
+        "payments_flagged_unconfirmed_details": 6
+      }
+    }
+  ],
+  "markdown": "# Payment fraud controls and evidence: Lakeshore Fabrication Inc.\n\n..."
 }
 ```
 
@@ -3692,7 +5026,11 @@ Response:
         "format": "nacha",
         "payments": 3
       },
-      "created_at": "2026-10-06T08:15:03.000Z"
+      "created_at": "2026-10-06T08:15:03.000Z",
+      "chain_seq": 41,
+      "prev_hash": "63419f9c1c003c02cf7b66c0bc53e0f1c8e642ab538081016caaaa6e47665b87",
+      "content_hash": "2553922bc2c904474153daae11161d12d43c9d81fafa39a450ed8f53974d3244",
+      "hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e"
     },
     {
       "id": "aud_8KcW2pRt5NvQ1mXb7LzF",
@@ -3704,7 +5042,11 @@ Response:
         "run": "run_8TpQ3xWm6KvB1nRz4LcH",
         "reason": "Harbor Point confirmed by phone that they did not change banks."
       },
-      "created_at": "2026-10-06T09:02:47.000Z"
+      "created_at": "2026-10-06T09:02:47.000Z",
+      "chain_seq": 42,
+      "prev_hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e",
+      "content_hash": "ac61c96d349cb60a92b99c03387a187abe82abf502a09098165a3bd9b5434d13",
+      "hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b"
     },
     {
       "id": "aud_3TnJ9vLq6WbR2kPm8CxD",
@@ -3715,7 +5057,388 @@ Response:
       "details": {
         "rejected": 1
       },
-      "created_at": "2026-10-06T09:05:12.000Z"
+      "created_at": "2026-10-06T09:05:12.000Z",
+      "chain_seq": 43,
+      "prev_hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b",
+      "content_hash": "840a5e844113338dc88fd8356576fbf0f34f791605494eb7f10492664debcf61",
+      "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532"
+    }
+  ]
+}
+```
+
+### Check the audit log was not altered
+
+`GET /v1/audit_log/verify` (auth: API key or signed-in admin)
+
+Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed` or `hash_changed`. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `anchor_seq` | integer | No | The number of an entry whose hash you kept. |
+| `anchor_hash` | string | No | That hash: 64 characters, `0` to `9` and `a` to `f`. Anything else answers `400 anchor_invalid`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/audit_log/verify?anchor_seq=43&anchor_hash=33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "audit_chain_verification",
+  "organization_id": "org_5RkT8wPq3NmV7xLc2BzH",
+  "intact": true,
+  "entries": 43,
+  "redacted": 0,
+  "complete": true,
+  "head": {
+    "chain_seq": 43,
+    "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532",
+    "created_at": "2026-10-06T09:05:12.000Z"
+  },
+  "first_break": null,
+  "anchor": {
+    "chain_seq": 43,
+    "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532",
+    "matches": true
+  },
+  "checked_at": "2026-10-07T08:00:00.000Z"
+}
+```
+
+### Download a vendor's claim file
+
+`GET /v1/vendors/{vendor}/claim_file` (auth: API key or signed-in approver)
+
+The evidence behind a vendor's bank details and the payments to it, described [above](/docs/compliance.md#claim-file). Viewers answer `403 role_required`. The response below is shortened: `vendor`, `verifications`, `payments` and `audit_entries` hold every field described above.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor` | string | Yes | The vendor id, starting with `ven_`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/claim_file" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "claim_file",
+  "generated_at": "2026-10-07T08:00:00.000Z",
+  "generated_by": "dana@yourcompany",
+  "organization": {
+    "id": "org_5RkT8wPq3NmV7xLc2BzH",
+    "name": "Lakeshore Fabrication"
+  },
+  "environment": "live",
+  "vendor": {
+    "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+    "name": "Harbor Point Logistics LLC"
+  },
+  "bank_changes": [
+    {
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "previous_last4": "0418",
+      "added_at": "2026-10-05T14:21:09.000Z",
+      "added_by": "sam@yourcompany",
+      "arrived_through": "manual",
+      "arrived_through_description": "entered in Quarter by a person",
+      "audit_entry": 38,
+      "status": "rejected",
+      "verified_at": null,
+      "verified_method": null,
+      "replaced_at": null
+    }
+  ],
+  "verifications": {
+    "evidence": [],
+    "requests": []
+  },
+  "payments": [],
+  "fraud_reports": [],
+  "audit_entries": [
+    {
+      "id": "aud_4MbT7xKq2WnR9pLv5HcZ",
+      "actor": "api_key:qk_test_Xy7P",
+      "action": "payment_run.scanned",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "format": "nacha",
+        "payments": 3
+      },
+      "created_at": "2026-10-06T08:15:03.000Z",
+      "chain_seq": 41,
+      "prev_hash": "63419f9c1c003c02cf7b66c0bc53e0f1c8e642ab538081016caaaa6e47665b87",
+      "content_hash": "2553922bc2c904474153daae11161d12d43c9d81fafa39a450ed8f53974d3244",
+      "hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e"
+    },
+    {
+      "id": "aud_8KcW2pRt5NvQ1mXb7LzF",
+      "actor": "dana@yourcompany",
+      "action": "payment_item.reject",
+      "object_type": "payment_item",
+      "object_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "details": {
+        "run": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "reason": "Harbor Point confirmed by phone that they did not change banks."
+      },
+      "created_at": "2026-10-06T09:02:47.000Z",
+      "chain_seq": 42,
+      "prev_hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e",
+      "content_hash": "ac61c96d349cb60a92b99c03387a187abe82abf502a09098165a3bd9b5434d13",
+      "hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b"
+    },
+    {
+      "id": "aud_3TnJ9vLq6WbR2kPm8CxD",
+      "actor": "sam@yourcompany",
+      "action": "payment_run.released",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "rejected": 1
+      },
+      "created_at": "2026-10-06T09:05:12.000Z",
+      "chain_seq": 43,
+      "prev_hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b",
+      "content_hash": "840a5e844113338dc88fd8356576fbf0f34f791605494eb7f10492664debcf61",
+      "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532"
+    }
+  ],
+  "chain": {
+    "how_to_verify": "Each audit entry carries its place in the chain...",
+    "verification": {
+      "object": "audit_chain_verification",
+      "intact": true
+    }
+  },
+  "truncated": [],
+  "summary": "Claim file: Harbor Point Logistics LLC ..."
+}
+```
+
+## Records and privacy requests
+
+Payment evidence (runs, payments, decisions, call-backs, verifications and the audit log) is kept while the account is open, and for 7 years after it closes unless you choose longer. When an account that sent live payments is erased, Quarter first keeps a sealed copy of its records for that period, which only Quarter staff can open to hand back to you. Uploaded payment files are deleted 90 days after they are scanned or released.
+
+### Read retention and security contacts
+
+`GET /v1/organization` (auth: Signed-in admin)
+
+How long each kind of record is kept, and who Quarter tells first about a security incident, besides your admins.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/organization" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "organization",
+  "id": "org_7TqW2nLp9VkR4mXb8HcZ",
+  "name": "Lakeshore Fabrication Inc.",
+  "retention": {
+    "evidence_years": 7,
+    "payment_files_days": 90,
+    "erase_after_closing_days": 30
+  },
+  "security_contacts": [
+    {
+      "name": "Sam Rivera",
+      "email": "sam@yourcompany",
+      "phone": "+1 312 555 0110"
+    }
+  ]
+}
+```
+
+### Change retention or security contacts
+
+`PATCH /v1/organization` (auth: Signed-in admin)
+
+Fields you leave out are kept. The audit log records which fields changed, never the contacts themselves. An API key answers `403 session_required`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `evidence_retention_years` | integer | No | 7 to 30. How long payment evidence is kept, including after the account closes. |
+| `security_contacts` | object[] | No | Up to 5 people, each with `email` and optionally `name` and `phone`. An empty list leaves only your admins. |
+
+Request:
+
+```bash
+curl -X PATCH "$QUARTER_API_URL/v1/organization" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"evidence_retention_years":10,"security_contacts":[{"name":"Sam Rivera","email":"sam@yourcompany","phone":"+1 312 555 0110"}]}'
+```
+
+Response:
+
+```json
+{
+  "object": "organization",
+  "id": "org_7TqW2nLp9VkR4mXb8HcZ",
+  "name": "Lakeshore Fabrication Inc.",
+  "retention": {
+    "evidence_years": 10,
+    "payment_files_days": 90,
+    "erase_after_closing_days": 30
+  },
+  "security_contacts": [
+    {
+      "name": "Sam Rivera",
+      "email": "sam@yourcompany",
+      "phone": "+1 312 555 0110"
+    }
+  ]
+}
+```
+
+A vendor contact may ask what your business holds about them, or ask for it to be deleted or corrected. These routes find a contact's email, phone number or name in vendor links, verification evidence, call-back notes and the audit log. Erasing replaces it with a pseudonym and keeps every record, so the evidence of each check survives; an email keeps the vendor's domain. A correction never rewrites that evidence. Payments, vendor names and bank details are payment records you keep for your retention period: they are listed as `retained` and never changed. A vendor's own name is corrected on the vendor. Each request is in the audit log by kind and count, never by value. Send exactly one of `email`, `phone` or `name`.
+
+### Find a contact's personal data
+
+`POST /v1/personal_data/search` (auth: Signed-in admin)
+
+A POST, so the email or phone number never sits in a URL. The answer is the copy to give the person who asked.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | No | The contact email. |
+| `phone` | string | No | 7 to 15 digits. Spaces, punctuation and a leading US 1 are ignored. |
+| `name` | string | No | The whole name, matched without regard to case. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/personal_data/search" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"email":"maria@harborpoint.example"}'
+```
+
+Response:
+
+```json
+{
+  "object": "personal_data",
+  "kind": "email",
+  "records": [
+    {
+      "object": "verification_request",
+      "id": "vrq_2KpT9wLn4RvQ7mXc1HbZ",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "field": "contact_email",
+      "value": "maria@harborpoint.example",
+      "created_at": "2026-10-05T13:41:02.000Z",
+      "retained": false
+    }
+  ],
+  "truncated": false
+}
+```
+
+### Erase a contact's personal data
+
+`POST /v1/personal_data/erase` (auth: Signed-in admin)
+
+Open vendor links to an erased email are cancelled. `changed` counts the records changed; `retained` lists the payment records kept.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | No | The contact email. |
+| `phone` | string | No | 7 to 15 digits. Spaces, punctuation and a leading US 1 are ignored. |
+| `name` | string | No | The whole name, matched without regard to case. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/personal_data/erase" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"email":"maria@harborpoint.example"}'
+```
+
+Response:
+
+```json
+{
+  "object": "personal_data_request",
+  "action": "erased",
+  "kind": "email",
+  "changed": 2,
+  "retained": []
+}
+```
+
+### Answer a request to correct a contact's personal data
+
+`POST /v1/personal_data/correct` (auth: Signed-in admin)
+
+A correction never rewrites evidence of a past contact: the number a call-back dialled, the address a code was sent to and the name the caller recorded are accurate records of what happened. Every record is listed in `retained` with the reason, for your answer to the person. Open vendor links to the email are cancelled (`links_cancelled`), so you can send a new link to an address you confirmed. Change a vendor's own name on the vendor.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | No | The contact email. |
+| `phone` | string | No | 7 to 15 digits. Spaces, punctuation and a leading US 1 are ignored. |
+| `name` | string | No | The whole name, matched without regard to case. |
+| `corrected` | string | No | The value the person says is right. Not stored. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/personal_data/correct" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"phone":"+1 312 555 0148","corrected":"+1 312 555 0184"}'
+```
+
+Response:
+
+```json
+{
+  "object": "personal_data_request",
+  "action": "corrected",
+  "kind": "phone",
+  "changed": 0,
+  "links_cancelled": 0,
+  "retained": [
+    {
+      "object": "evidence",
+      "id": "evd_7RmQ2xLc5TnW1pZk8HdY",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "field": "details.phone_number",
+      "value": "+1 312 555 0148",
+      "created_at": "2026-10-05T13:41:02.000Z",
+      "retained": true,
+      "reason": "a record of a past contact (the number called, the address a code was sent to, the name recorded), accurate as a record of what happened; Quarter never rewrites it"
     }
   ]
 }
@@ -3733,11 +5456,13 @@ Some payment fraud starts inside the business: an employee changes a vendor to t
 - Nobody releases a run with a clear payment to that vendor: `403 releaser_changed_details`. Someone else releases it. A payment to that vendor that someone else approved does not stop the release.
 - The person who added bank details may not confirm them by call-back: `403 attester_changed_details`.
 - Only a signed-in admin can unblock a blocked vendor: `403 unblock_needs_admin`.
+- A person added to the organization after it went live is not one of the two approvers of a payment at or above the two-person threshold for their first 7 days: `403 approver_recently_added`. So an admin cannot add a second account of their own and approve a large payment twice. Rejecting is always allowed.
+- Every admin and [security contact](#records-and-privacy) is emailed when a member is added or removed, a role changes, or the check settings change: who made the change, what changed and when.
 - People are compared by email with the person who added the details, as the audit trail records them. Details added with an API key are recorded against the key, not a person, so these rules cover changes made by people signed in to Quarter.
 
 ### Employee accounts
 
-Keep a list of your employees' own bank accounts, from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is held as [`employee_account_match`](/docs/checks.md#employee-account-match).
+Keep a list of your employees' own bank accounts, from payroll. A vendor payment to one of those accounts, or to a vendor whose account on file is one of them, is held as [`employee_account_match`](/docs/checks.md#employee-account-match). A [payroll](/docs/checks.md#payroll) payment to one of them is held when its employee id is another employee's, so keep the list under the same employee ids as your payroll file.
 
 - Quarter keeps only a fingerprint of each account and your own id for the employee. The account numbers are dropped as soon as they are fingerprinted, and they are never returned.
 - Employee accounts are kept out of the network. Once an account is on the list, your business adds nothing about it to the network. A confirmation made before the account was listed still counts.
@@ -3905,6 +5630,12 @@ With the [payment flow](#payment-flow) on, Quarter also checks every open vendor
 - Each sync fires `integration.synced` with the counts, or `integration.failed` with the reason. See [event types](/docs/webhooks.md#event-types).
 - A project stays with the NetSuite account its vendors came from. Connect another account to another project.
 
+### Who changed bank details in NetSuite
+
+When a vendor's bank details changed, the sync reads the system notes of its Entity Bank Details record and takes the employee who made the latest change to the account or routing number, from a day before the previous sync on. A note on any other field never names who changed the details. Quarter keeps the employee's NetSuite id with the change. Quarter matches that employee to a member of your organization by email and records them as the person who changed the details. That person then cannot confirm the details, approve a payment to them, or release one alone for 90 days, the same rules as for a change made in Quarter.
+
+When NetSuite names no employee (a script, an import or the system), names one without an email, or shows no note, the person is recorded as unknown with the reason, and those rules cannot apply to anyone. A NetSuite role sees only the system notes NetSuite lets it see: give Quarter's role permission to read system notes and employees, or every change made in NetSuite stays unknown. Tested against a simulated NetSuite account; not yet run against a real one.
+
 ## Connecting
 
 Connect NetSuite from the console's Integrations settings, as an admin. Quarter uses OAuth 2.0 client credentials with a certificate: an RSA key of 3072 bits or more, or EC P-256. The credentials are tested against NetSuite before they are saved, then sealed. They are never returned, logged or put in the audit log, and they are wiped on disconnect.
@@ -3928,6 +5659,10 @@ A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Pay
 - A bank change made on the vendor in NetSuite after a bill was cleared is seen at the next sync, at most 15 minutes later. Sync now before a payment run to close that gap.
 - Without the workflow, a new bill can be paid before Quarter first sees it. Quarter counts bills that arrive without a hold and shows the count in the console.
 - A payment file Electronic Bank Payments already generated. Quarter acts on the bill, before the file.
+
+### Checks and Positive Pay
+
+NetSuite's own Positive Pay payment format has templates for three banks only: Bank of America Merrill Lynch, Royal Bank of Canada and Silicon Valley Bank controlled disbursement accounts (Oracle NetSuite Help, Positive Pay Payment Format). Quarter writes the issued-check file for any bank whose layout is a delimited or fixed-width file of the fields it knows: check number, amount, issue date, payee, account and a void marker. Export the checks you are about to print from NetSuite as a CSV and upload it as a [check run](/docs/payment-runs.md). Quarter checks each check, and at release writes the file in a preset layout, Jack Henry Banno's among them, or in [your bank's own layout](/docs/releases.md#custom-layout). You upload the file to your bank; Quarter never sends it.
 
 ### When something fails
 
@@ -4370,9 +6105,9 @@ Quarter records each change as an event and sends it to your webhook endpoints. 
 | `vendor.created` | A vendor was added. | `name` |
 | `vendor.bank_account_changed` | A vendor got new bank details. Its payments are held until they are confirmed. | `vendor_id`, `bank_account_id`, `last4`, `previous_last4` |
 | `vendor.verified` | Bank details were confirmed, by bank login or call-back. | `vendor_id`, `bank_account_id`, `last4`, `method` |
-| `verification_request.completed` | A vendor finished a verification link. | `vendor_id`, `request_id` |
+| `verification_request.completed` | A vendor finished a verification link with a bank login that matched the details on file. | `vendor_id`, `request_id`, `verified`, and `reason: "callback_required"` when `verified` is `false` because the link went to a [new contact](/docs/verification.md#new-contact) |
 | `payment_run.scanned` | A run was uploaded and checked. | `run_id` |
-| `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes) |
+| `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes), `score` ([points](/docs/checks.md#points)) |
 | `payment_run.released` | A run was released. | `run_id`, `released_by`, `rejected` (how many payments were left out), and `release_code` for a [payment check](/docs/payment-checks.md) |
 | `fraud_report.created` | You reported an account. | `id`, `routing_number`, `last4` |
 | `integration.synced` | A [NetSuite](/docs/netsuite.md) sync finished. | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed`; with the [payment flow](/docs/netsuite.md#payment-flow) on, `bills` with its own counts |
@@ -4403,7 +6138,8 @@ Body:
     "amount": 12000,
     "findings": [
       "account_not_on_file"
-    ]
+    ],
+    "score": 40
   }
 }
 ```
@@ -4568,7 +6304,8 @@ Response:
         "amount": 12000,
         "findings": [
           "account_not_on_file"
-        ]
+        ],
+        "score": 40
       }
     }
   ]
@@ -4672,7 +6409,7 @@ Response:
 | `permission` | 403 | The caller may not do this: a role too low, an API key on a route only a signed-in person may use, or an action the rules forbid. |
 | `not_found` | 404 | The object or route does not exist, or belongs to another account. |
 | `conflict` | 409 | The request is valid, but the object is not in a state that allows it, such as releasing a run with held payments. |
-| `rate_limited` | 429 | Too many requests. Every key or session may make 600 a minute, and the public routes 30 a minute per address. Some actions have their own limits, named below. The `retry-after` header says when to try again. |
+| `rate_limited` | 429 | Too many requests. Every key or session may make 600 a minute, and the public routes 30 a minute per address. An address that sends 20 unknown, revoked or expired keys, sessions or links in a minute is refused for the rest of that minute, whatever it sends. Some actions have their own limits, named below. The `retry-after` header says when to try again. |
 | `api_error` | 500 | Something went wrong on our side. Safe to retry later. |
 | `unavailable` | 503 | A service Quarter depends on did not answer, such as NetSuite, or is not set up on this deployment, such as Plaid. Nothing is wrong with the request. |
 
@@ -4682,9 +6419,9 @@ Response:
 | --- | --- | --- |
 | Any request | 400 | `request_invalid`, `limit_invalid`, `json_too_deep`. `request_invalid` covers a body that is not valid JSON; `json_too_deep` one nested more than 32 levels. |
 | Any request | 413, 415 | `payload_too_large`, `unsupported_media_type`. Send `application/json`, up to 256 KB, or 10 MB to the payment run and import routes. |
-| Any request | 401 | `api_key_missing`, `api_key_invalid`, `session_invalid`, `session_expired` |
-| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions when the last check is more than 5 minutes old. |
-| Any request | 429 | `rate_limited` |
+| Any request | 401 | `api_key_missing`, `api_key_invalid`, `api_key_expired`, `session_invalid`, `session_expired` |
+| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`, as it does for a released payment file or Positive Pay file. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions, and on downloading those files, when the last check is more than 5 minutes old. |
+| Any request | 429 | `rate_limited`, `too_many_failed_authentications` |
 | Any request | 500 | `internal` |
 | Any request | 404 | `route_not_found`, `vendor_not_found`, `bank_account_not_found`, `payment_run_not_found`, `payment_item_not_found`, `payment_check_not_found`, `verification_request_not_found`, `webhook_delivery_not_found` |
 | Who is acting | 400 | `reviewer_not_you`, `uploaded_by_not_you`, `requested_by_not_you`, `reporter_not_you`. Signed in, you may only name yourself. With an API key, `uploaded_by` and `requested_by` name the person by email. |
@@ -4701,8 +6438,8 @@ Response:
 | [Payment runs](/docs/payment-runs.md) | 409 | `duplicate_file`, `test_mode_limit`, `trial_ended`, `test_mode_only`, `no_vendors_with_bank_details` |
 | [Payment checks](/docs/payment-checks.md) | 400 | `rail_invalid`, `payee_name_required`, `currency_invalid`, `iban_format_invalid`, `bic_invalid` |
 | [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `template_invalid`, `template_does_not_fit` |
-| [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `releaser_changed_details` |
-| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted` |
+| [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `approver_recently_added`, `releaser_changed_details` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 400 | `description_required`, `report_not_open` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 429 | `fraud_report_limit` |
 | [Settings](/docs/checks.md#settings) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |

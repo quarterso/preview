@@ -40,7 +40,7 @@ Each payment file is checked before release.
 | The same payment made twice | Held for review |
 | One bank account used by two vendors | Held for review |
 | Accounts other businesses reported as used in fraud | Flagged to the reviewer |
-| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |
+| Payees resembling a party on OFAC's SDN or Consolidated lists, and every live payment while either list is more than 48 hours old | Held for review |
 | Invalid routing numbers | Held for review |
 | Invalid IBANs on international payments | Held for review |
 | A check number already used on the same account | Held for review |
@@ -51,6 +51,8 @@ Each payment file is checked before release.
 | Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |
 | A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |
 | Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |
+
+Sanctions screening compares names. It cannot find a business blocked only because sanctioned parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, since neither is on a list.
 
 ## Insider controls
 
@@ -85,6 +87,27 @@ Every action through the API is recorded with who did it, what, on which object,
 
 What a vendor does on a verification link is recorded as evidence on the vendor, with the vendor contact as the actor. See [the evidence it leaves](/docs/verification.md#the-evidence-it-leaves).
 
+### Proof that no entry was changed
+
+Each organization's audit log is a hash chain. The database gives every entry its number in the chain (`chain_seq`), the hash of the entry before it (`prev_hash`), a SHA-256 hash of its own content (`content_hash`), and `hash`, the SHA-256 of `prev_hash` followed by `content_hash`. The first entry follows 64 zeros. Changing, removing or reordering any entry breaks every link after it, even for someone with direct access to the database.
+
+- An admin checks the whole chain in the console, under Compliance, or with [`GET /v1/audit_log/verify`](/docs/compliance.md#get-v1-audit-log-verify). It names the first entry that was changed or removed.
+- Someone who could rewrite every hash after a change could make the chain look whole again. So once a day Quarter emails the latest hash of each organization's chain to its own staff inbox, outside the database and its host. Pass a hash you kept as `anchor_seq` and `anchor_hash`, and the check also says whether that entry still has it.
+- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Those entries are marked, and the check counts them as `redacted`: their links are checked, their content is not.
+- Entries written before the chain existed were chained in order, oldest first, when it was added.
+
+## The claim file
+
+When a payment goes wrong, or an insurer, auditor or bank examiner asks how a vendor's bank change was handled, the claim file is the record in one download. It shows whether the new details were confirmed by a call to a number already on file, whether a second person approved, and who did each.
+
+- Each change to the vendor's bank details: who entered it, when, and how it arrived (keyed in, imported or synced from NetSuite, sent through the API, or given by the vendor). How the request first reached your business, by email or phone, is recorded only if your team wrote it down.
+- Each verification: call-backs with the number called, where that number came from, who called and who answered; the vendor confirming by email code or bank login; links sent.
+- Each payment to the vendor that Quarter checked: why it was held, who approved or rejected it and when, with both names for two-person approval, the outcome recorded, and when it was released and by whom.
+- The audit log entries behind all of it, each with its chain hashes, and the result of checking the whole chain when the file was made.
+- Account numbers show only the last 4 digits, and any run of 6 or more digits typed into call-back notes is cut to its last 4. Approvers and admins can download it; each download is in the audit log.
+
+It comes as JSON with a plain-text `summary` of the same evidence. In the console, open the vendor and choose Download JSON or Download summary. A file stops at the newest 2,000 payments and 5,000 audit entries and says so in `truncated`.
+
 ## Endpoints
 
 ### Get the procedure
@@ -108,7 +131,7 @@ Response:
   "generated_at": "2026-10-06T09:30:00.000Z",
   "last_reviewed_at": "2026-10-02T16:20:00.000Z",
   "next_review_due": "2027-10-02",
-  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Flagged to the reviewer |\n| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |\n| Invalid routing numbers | Held for review |\n| Invalid IBANs on international payments | Held for review |\n| A check number already used on the same account | Held for review |\n| A check payee line that differs from the vendor name on file | Flagged to the reviewer |\n| Checks just under the two-person approval threshold | Flagged to the reviewer |\n| Payments to an account on the employee account list | Held for review |\n| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |\n| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |\n| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |\n| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |\n\n## Insider controls\n\n- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.\n- A report of every change to vendors and their bank details, by person, is kept for review.\n\n## Check runs\n\n- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.\n- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.\n- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.\n- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
+  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Flagged to the reviewer |\n| Payees resembling a party on OFAC's SDN or Consolidated lists, and every live payment while either list is more than 48 hours old | Held for review |\n| Invalid routing numbers | Held for review |\n| Invalid IBANs on international payments | Held for review |\n| A check number already used on the same account | Held for review |\n| A check payee line that differs from the vendor name on file | Flagged to the reviewer |\n| Checks just under the two-person approval threshold | Flagged to the reviewer |\n| Payments to an account on the employee account list | Held for review |\n| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |\n| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |\n| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |\n| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |\n\nSanctions screening compares names. It cannot find a business blocked only because sanctioned parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, since neither is on a list.\n\n## Insider controls\n\n- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.\n- A report of every change to vendors and their bank details, by person, is kept for review.\n\n## Check runs\n\n- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.\n- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.\n- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.\n- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
 }
 ```
 
@@ -160,6 +183,9 @@ Response:
     "vendor_dormant_reactivated": "default",
     "split_below_threshold": "default",
     "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
     "second_person_required": "hold"
   },
   "mandatory_checks": [
@@ -189,6 +215,9 @@ Response:
     "vendor_dormant_reactivated": "warn",
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
     "second_person_required": "hold"
   },
   "check_names": {
@@ -213,13 +242,195 @@ Response:
     "vendor_dormant_reactivated": "Dormant vendor with new bank details",
     "split_below_threshold": "Split to stay under the two-person threshold",
     "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
     "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        }
+      ]
+    }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
   "last_reviewed_at": "2026-10-02T16:20:00.000Z",
   "last_reviewed_by": "dana@yourcompany"
+}
+```
+
+### Get the controls and evidence report
+
+`GET /v1/compliance/controls_report` (auth: API key)
+
+For your bank or auditor. Each section names an expectation of Nacha's 2026 risk management rules for Originators (change controls on payment information, account validation of new or changed accounts, out-of-band verification, dual control, risk-based processes, and a yearly review), the Quarter control that supports it, and this project's counts for the period. `markdown` is the same report as a document; the console downloads it from the Compliance page.
+
+Quarter supports your own risk-based program. It does not make anyone compliant, and the program and its yearly review stay yours. A bad date answers `400 from_invalid` or `400 to_invalid`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `from` | string | No | `YYYY-MM-DD`. Default 365 days before `to`. |
+| `to` | string | No | `YYYY-MM-DD`, included. Default today. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/compliance/controls_report?from=2025-10-07&to=2026-10-06" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "controls_report",
+  "generated_at": "2026-10-06T16:20:00.000Z",
+  "period": {
+    "from": "2025-10-07",
+    "to": "2026-10-06"
+  },
+  "review": {
+    "last_reviewed_at": "2026-10-02",
+    "last_reviewed_by": "dana@yourcompany",
+    "next_review_due": "2027-10-02"
+  },
+  "controls": [
+    {
+      "expectation": "Account validation of new or changed accounts before they are paid",
+      "control": "Bank details stay unconfirmed until the vendor proves them by logging in to its own bank, or a call-back confirms them. Payments to unconfirmed details are held.",
+      "evidence": {
+        "confirmed_by_vendor_bank_login": 4,
+        "bank_logins_failed": 1,
+        "payments_flagged_unconfirmed_details": 6
+      }
+    }
+  ],
+  "markdown": "# Payment fraud controls and evidence: Lakeshore Fabrication Inc.\n\n..."
 }
 ```
 
@@ -260,7 +471,11 @@ Response:
         "format": "nacha",
         "payments": 3
       },
-      "created_at": "2026-10-06T08:15:03.000Z"
+      "created_at": "2026-10-06T08:15:03.000Z",
+      "chain_seq": 41,
+      "prev_hash": "63419f9c1c003c02cf7b66c0bc53e0f1c8e642ab538081016caaaa6e47665b87",
+      "content_hash": "2553922bc2c904474153daae11161d12d43c9d81fafa39a450ed8f53974d3244",
+      "hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e"
     },
     {
       "id": "aud_8KcW2pRt5NvQ1mXb7LzF",
@@ -272,7 +487,11 @@ Response:
         "run": "run_8TpQ3xWm6KvB1nRz4LcH",
         "reason": "Harbor Point confirmed by phone that they did not change banks."
       },
-      "created_at": "2026-10-06T09:02:47.000Z"
+      "created_at": "2026-10-06T09:02:47.000Z",
+      "chain_seq": 42,
+      "prev_hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e",
+      "content_hash": "ac61c96d349cb60a92b99c03387a187abe82abf502a09098165a3bd9b5434d13",
+      "hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b"
     },
     {
       "id": "aud_3TnJ9vLq6WbR2kPm8CxD",
@@ -283,7 +502,388 @@ Response:
       "details": {
         "rejected": 1
       },
-      "created_at": "2026-10-06T09:05:12.000Z"
+      "created_at": "2026-10-06T09:05:12.000Z",
+      "chain_seq": 43,
+      "prev_hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b",
+      "content_hash": "840a5e844113338dc88fd8356576fbf0f34f791605494eb7f10492664debcf61",
+      "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532"
+    }
+  ]
+}
+```
+
+### Check the audit log was not altered
+
+`GET /v1/audit_log/verify` (auth: API key or signed-in admin)
+
+Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed` or `hash_changed`. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `anchor_seq` | integer | No | The number of an entry whose hash you kept. |
+| `anchor_hash` | string | No | That hash: 64 characters, `0` to `9` and `a` to `f`. Anything else answers `400 anchor_invalid`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/audit_log/verify?anchor_seq=43&anchor_hash=33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "audit_chain_verification",
+  "organization_id": "org_5RkT8wPq3NmV7xLc2BzH",
+  "intact": true,
+  "entries": 43,
+  "redacted": 0,
+  "complete": true,
+  "head": {
+    "chain_seq": 43,
+    "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532",
+    "created_at": "2026-10-06T09:05:12.000Z"
+  },
+  "first_break": null,
+  "anchor": {
+    "chain_seq": 43,
+    "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532",
+    "matches": true
+  },
+  "checked_at": "2026-10-07T08:00:00.000Z"
+}
+```
+
+### Download a vendor's claim file
+
+`GET /v1/vendors/{vendor}/claim_file` (auth: API key or signed-in approver)
+
+The evidence behind a vendor's bank details and the payments to it, described [above](/docs/compliance.md#claim-file). Viewers answer `403 role_required`. The response below is shortened: `vendor`, `verifications`, `payments` and `audit_entries` hold every field described above.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor` | string | Yes | The vendor id, starting with `ven_`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/vendors/ven_7Qm2KxR9pLwT4nVb8YcD/claim_file" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "claim_file",
+  "generated_at": "2026-10-07T08:00:00.000Z",
+  "generated_by": "dana@yourcompany",
+  "organization": {
+    "id": "org_5RkT8wPq3NmV7xLc2BzH",
+    "name": "Lakeshore Fabrication"
+  },
+  "environment": "live",
+  "vendor": {
+    "id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+    "name": "Harbor Point Logistics LLC"
+  },
+  "bank_changes": [
+    {
+      "bank_account_id": "ba_3HfJ6tWq1ZsN8kPm2RxA",
+      "routing_number": "091408501",
+      "last4": "7365",
+      "holder_name": "Harbor Point Logistics LLC",
+      "previous_last4": "0418",
+      "added_at": "2026-10-05T14:21:09.000Z",
+      "added_by": "sam@yourcompany",
+      "arrived_through": "manual",
+      "arrived_through_description": "entered in Quarter by a person",
+      "audit_entry": 38,
+      "status": "rejected",
+      "verified_at": null,
+      "verified_method": null,
+      "replaced_at": null
+    }
+  ],
+  "verifications": {
+    "evidence": [],
+    "requests": []
+  },
+  "payments": [],
+  "fraud_reports": [],
+  "audit_entries": [
+    {
+      "id": "aud_4MbT7xKq2WnR9pLv5HcZ",
+      "actor": "api_key:qk_test_Xy7P",
+      "action": "payment_run.scanned",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "format": "nacha",
+        "payments": 3
+      },
+      "created_at": "2026-10-06T08:15:03.000Z",
+      "chain_seq": 41,
+      "prev_hash": "63419f9c1c003c02cf7b66c0bc53e0f1c8e642ab538081016caaaa6e47665b87",
+      "content_hash": "2553922bc2c904474153daae11161d12d43c9d81fafa39a450ed8f53974d3244",
+      "hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e"
+    },
+    {
+      "id": "aud_8KcW2pRt5NvQ1mXb7LzF",
+      "actor": "dana@yourcompany",
+      "action": "payment_item.reject",
+      "object_type": "payment_item",
+      "object_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "details": {
+        "run": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "reason": "Harbor Point confirmed by phone that they did not change banks."
+      },
+      "created_at": "2026-10-06T09:02:47.000Z",
+      "chain_seq": 42,
+      "prev_hash": "5976adaf43f7c79c6b2b7d0f13675143784301d36e6071af6281f2531365828e",
+      "content_hash": "ac61c96d349cb60a92b99c03387a187abe82abf502a09098165a3bd9b5434d13",
+      "hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b"
+    },
+    {
+      "id": "aud_3TnJ9vLq6WbR2kPm8CxD",
+      "actor": "sam@yourcompany",
+      "action": "payment_run.released",
+      "object_type": "payment_run",
+      "object_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+      "details": {
+        "rejected": 1
+      },
+      "created_at": "2026-10-06T09:05:12.000Z",
+      "chain_seq": 43,
+      "prev_hash": "06aba9b80b67e79a14f0f2c267d436cd7e0e09c561343aedaa35458692b5117b",
+      "content_hash": "840a5e844113338dc88fd8356576fbf0f34f791605494eb7f10492664debcf61",
+      "hash": "33b644ad927ab3cf858921b2331e21cfa65d3552530bb4ba2f0d4d7db7b77532"
+    }
+  ],
+  "chain": {
+    "how_to_verify": "Each audit entry carries its place in the chain...",
+    "verification": {
+      "object": "audit_chain_verification",
+      "intact": true
+    }
+  },
+  "truncated": [],
+  "summary": "Claim file: Harbor Point Logistics LLC ..."
+}
+```
+
+## Records and privacy requests
+
+Payment evidence (runs, payments, decisions, call-backs, verifications and the audit log) is kept while the account is open, and for 7 years after it closes unless you choose longer. When an account that sent live payments is erased, Quarter first keeps a sealed copy of its records for that period, which only Quarter staff can open to hand back to you. Uploaded payment files are deleted 90 days after they are scanned or released.
+
+### Read retention and security contacts
+
+`GET /v1/organization` (auth: Signed-in admin)
+
+How long each kind of record is kept, and who Quarter tells first about a security incident, besides your admins.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/organization" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "organization",
+  "id": "org_7TqW2nLp9VkR4mXb8HcZ",
+  "name": "Lakeshore Fabrication Inc.",
+  "retention": {
+    "evidence_years": 7,
+    "payment_files_days": 90,
+    "erase_after_closing_days": 30
+  },
+  "security_contacts": [
+    {
+      "name": "Sam Rivera",
+      "email": "sam@yourcompany",
+      "phone": "+1 312 555 0110"
+    }
+  ]
+}
+```
+
+### Change retention or security contacts
+
+`PATCH /v1/organization` (auth: Signed-in admin)
+
+Fields you leave out are kept. The audit log records which fields changed, never the contacts themselves. An API key answers `403 session_required`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `evidence_retention_years` | integer | No | 7 to 30. How long payment evidence is kept, including after the account closes. |
+| `security_contacts` | object[] | No | Up to 5 people, each with `email` and optionally `name` and `phone`. An empty list leaves only your admins. |
+
+Request:
+
+```bash
+curl -X PATCH "$QUARTER_API_URL/v1/organization" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"evidence_retention_years":10,"security_contacts":[{"name":"Sam Rivera","email":"sam@yourcompany","phone":"+1 312 555 0110"}]}'
+```
+
+Response:
+
+```json
+{
+  "object": "organization",
+  "id": "org_7TqW2nLp9VkR4mXb8HcZ",
+  "name": "Lakeshore Fabrication Inc.",
+  "retention": {
+    "evidence_years": 10,
+    "payment_files_days": 90,
+    "erase_after_closing_days": 30
+  },
+  "security_contacts": [
+    {
+      "name": "Sam Rivera",
+      "email": "sam@yourcompany",
+      "phone": "+1 312 555 0110"
+    }
+  ]
+}
+```
+
+A vendor contact may ask what your business holds about them, or ask for it to be deleted or corrected. These routes find a contact's email, phone number or name in vendor links, verification evidence, call-back notes and the audit log. Erasing replaces it with a pseudonym and keeps every record, so the evidence of each check survives; an email keeps the vendor's domain. A correction never rewrites that evidence. Payments, vendor names and bank details are payment records you keep for your retention period: they are listed as `retained` and never changed. A vendor's own name is corrected on the vendor. Each request is in the audit log by kind and count, never by value. Send exactly one of `email`, `phone` or `name`.
+
+### Find a contact's personal data
+
+`POST /v1/personal_data/search` (auth: Signed-in admin)
+
+A POST, so the email or phone number never sits in a URL. The answer is the copy to give the person who asked.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | No | The contact email. |
+| `phone` | string | No | 7 to 15 digits. Spaces, punctuation and a leading US 1 are ignored. |
+| `name` | string | No | The whole name, matched without regard to case. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/personal_data/search" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"email":"maria@harborpoint.example"}'
+```
+
+Response:
+
+```json
+{
+  "object": "personal_data",
+  "kind": "email",
+  "records": [
+    {
+      "object": "verification_request",
+      "id": "vrq_2KpT9wLn4RvQ7mXc1HbZ",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "field": "contact_email",
+      "value": "maria@harborpoint.example",
+      "created_at": "2026-10-05T13:41:02.000Z",
+      "retained": false
+    }
+  ],
+  "truncated": false
+}
+```
+
+### Erase a contact's personal data
+
+`POST /v1/personal_data/erase` (auth: Signed-in admin)
+
+Open vendor links to an erased email are cancelled. `changed` counts the records changed; `retained` lists the payment records kept.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | No | The contact email. |
+| `phone` | string | No | 7 to 15 digits. Spaces, punctuation and a leading US 1 are ignored. |
+| `name` | string | No | The whole name, matched without regard to case. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/personal_data/erase" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"email":"maria@harborpoint.example"}'
+```
+
+Response:
+
+```json
+{
+  "object": "personal_data_request",
+  "action": "erased",
+  "kind": "email",
+  "changed": 2,
+  "retained": []
+}
+```
+
+### Answer a request to correct a contact's personal data
+
+`POST /v1/personal_data/correct` (auth: Signed-in admin)
+
+A correction never rewrites evidence of a past contact: the number a call-back dialled, the address a code was sent to and the name the caller recorded are accurate records of what happened. Every record is listed in `retained` with the reason, for your answer to the person. Open vendor links to the email are cancelled (`links_cancelled`), so you can send a new link to an address you confirmed. Change a vendor's own name on the vendor.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | No | The contact email. |
+| `phone` | string | No | 7 to 15 digits. Spaces, punctuation and a leading US 1 are ignored. |
+| `name` | string | No | The whole name, matched without regard to case. |
+| `corrected` | string | No | The value the person says is right. Not stored. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/personal_data/correct" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"phone":"+1 312 555 0148","corrected":"+1 312 555 0184"}'
+```
+
+Response:
+
+```json
+{
+  "object": "personal_data_request",
+  "action": "corrected",
+  "kind": "phone",
+  "changed": 0,
+  "links_cancelled": 0,
+  "retained": [
+    {
+      "object": "evidence",
+      "id": "evd_7RmQ2xLc5TnW1pZk8HdY",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "field": "details.phone_number",
+      "value": "+1 312 555 0148",
+      "created_at": "2026-10-05T13:41:02.000Z",
+      "retained": true,
+      "reason": "a record of a past contact (the number called, the address a code was sent to, the name recorded), accurate as a record of what happened; Quarter never rewrites it"
     }
   ]
 }
@@ -301,11 +901,13 @@ Some payment fraud starts inside the business: an employee changes a vendor to t
 - Nobody releases a run with a clear payment to that vendor: `403 releaser_changed_details`. Someone else releases it. A payment to that vendor that someone else approved does not stop the release.
 - The person who added bank details may not confirm them by call-back: `403 attester_changed_details`.
 - Only a signed-in admin can unblock a blocked vendor: `403 unblock_needs_admin`.
+- A person added to the organization after it went live is not one of the two approvers of a payment at or above the two-person threshold for their first 7 days: `403 approver_recently_added`. So an admin cannot add a second account of their own and approve a large payment twice. Rejecting is always allowed.
+- Every admin and [security contact](#records-and-privacy) is emailed when a member is added or removed, a role changes, or the check settings change: who made the change, what changed and when.
 - People are compared by email with the person who added the details, as the audit trail records them. Details added with an API key are recorded against the key, not a person, so these rules cover changes made by people signed in to Quarter.
 
 ### Employee accounts
 
-Keep a list of your employees' own bank accounts, from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is held as [`employee_account_match`](/docs/checks.md#employee-account-match).
+Keep a list of your employees' own bank accounts, from payroll. A vendor payment to one of those accounts, or to a vendor whose account on file is one of them, is held as [`employee_account_match`](/docs/checks.md#employee-account-match). A [payroll](/docs/checks.md#payroll) payment to one of them is held when its employee id is another employee's, so keep the list under the same employee ids as your payroll file.
 
 - Quarter keeps only a fingerprint of each account and your own id for the employee. The account numbers are dropped as soon as they are fingerprinted, and they are never returned.
 - Employee accounts are kept out of the network. Once an account is on the list, your business adds nothing about it to the network. A confirmation made before the account was listed still counts.

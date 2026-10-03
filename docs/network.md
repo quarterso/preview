@@ -6,16 +6,18 @@ An account check answers one question before anyone pays a set of bank details: 
 
 ## What it looks at
 
-- **The routing number:** whether it passes the ABA checksum and is in the routing directory, and the bank name when the directory has it.
+- **The routing number:** whether it passes the ABA checksum and has the structure of a real routing number. `bank_name` is `null`: the Federal Reserve's routing directory may not be used commercially without a licence, and Quarter consults it only where a deployment holds one.
 - **The network:** how many businesses on Quarter confirmed this account by call-back (`verified_by`), and how many reported it in connection with a payment fraud (`flagged_by`).
 - **Your own records:** which of your vendors have these as their current bank details, and how close the name you sent is to theirs (`name_score`, 0 to 1).
-- **Sanctions:** name screening against the OFAC SDN list, when you send a `name`. A resemblance is something for a person to look at, not a finding of fact.
+- **Sanctions:** name screening against OFAC's SDN and Consolidated lists, when you send a `name`; each match names its `list`. A resemblance is something for a person to look at, not a finding of fact. Name screening cannot find a business blocked only because listed parties own 50% or more of it.
 
 ## The network
 
 Customers add to the network as they work. A confirmed [call-back](/docs/verification.md#callbacks) adds one to `verified_by` for that account, once per business. A [fraud report](/docs/network.md#fraud-reports) adds one to `flagged_by`, once per business. The network stores a keyed fingerprint of the account, never the account number. Only live projects contribute: a test project's call-backs and reports reach nobody, its own account checks included.
 
 The network shares counts only. No response, finding or event ever says which business confirmed or reported an account. Bank login results from [verification links](/docs/verification.md) are not shared at all.
+
+The network reports on businesses only. An account tied to a person, meaning a vendor marked `individual` or an account on an [employee list](/docs/compliance.md#employee-accounts), never enters it and is never answered from it: its counts read zero, and a payment to a person gets no `network_flagged` warning. A report about a person's account, used to decide a payment to them, could be a consumer report under the Fair Credit Reporting Act. The database enforces this, not only the code.
 
 > **Note:** The network is built and starts empty. It fills only as businesses use Quarter in live mode, so a count of zero means nobody on Quarter has seen the account, not that it is safe.
 
@@ -59,7 +61,7 @@ Response:
   "object": "account_check",
   "routing": {
     "valid": true,
-    "bank_name": "First Harborview Bank"
+    "bank_name": null
   },
   "network": {
     "verified_by": 1,
@@ -85,7 +87,7 @@ An account reported by two businesses:
   "object": "account_check",
   "routing": {
     "valid": true,
-    "bank_name": "Pinecrest National Bank"
+    "bank_name": null
   },
   "network": {
     "verified_by": 0,
