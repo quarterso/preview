@@ -23,7 +23,7 @@ Every docs page below is plain Markdown. The whole set is one file at [/llms-ful
 - [Checks and settings](/docs/checks.md): The twenty-two checks Quarter runs on payments, the exact message each gives, and the settings that decide whether it holds, warns or is off.
 - [Account checks and fraud reports](/docs/network.md): Check bank details before you pay them, and report an account used in a fraud against you. The network shares counts, never names.
 - [Compliance and insider controls](/docs/compliance.md): The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside.
-- [NetSuite](/docs/netsuite.md): A read-only connection that brings your NetSuite vendors and their bank details into Quarter every hour.
+- [NetSuite](/docs/netsuite.md): Bring your NetSuite vendors and their bank details into Quarter every hour, and check every open vendor bill with a hold that NetSuite itself enforces.
 
 ## Reference
 

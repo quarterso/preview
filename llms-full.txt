@@ -2513,7 +2513,7 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`amount_unusual`](/docs/checks.md#amount-unusual) | Warn | Far above what this vendor is usually paid. |
 | [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | The same amount to the same account twice. |
 | [`shared_account`](/docs/checks.md#shared-account) | Hold | Another of your vendors is paid at this same account. |
-| [`network_flagged`](/docs/checks.md#network-flagged) | Hold (always) | A business on Quarter reported this account in connection with a payment fraud. |
+| [`network_flagged`](/docs/checks.md#network-flagged) | Warn | A business on Quarter reported this account in connection with a payment fraud. |
 | [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | The payee name resembles a name on the OFAC SDN list. |
 | [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | The routing number is not a valid US bank routing number. |
 | [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | The IBAN on an international payment fails its checksum. |
@@ -2534,13 +2534,13 @@ A [check register](/docs/payment-runs.md#check-register) pays names, not account
 
 ## Settings
 
-Settings decide how payments are checked for your account. Set any check to `hold`, `warn` or `off`, or back to `default`, except the four that always hold. The other windows, such as 365 days for a dormant vendor, are fixed. Every change is recorded in the [audit log](/docs/compliance.md#get-v1-audit-log) with the settings it produced, and the [written procedure](/docs/compliance.md) follows the settings at once, so the document and the controls never disagree.
+Settings decide how payments are checked for your account. Set any check to `hold`, `warn` or `off`, or back to `default`, except the three that always hold. The other windows, such as 365 days for a dormant vendor, are fixed. Every change is recorded in the [audit log](/docs/compliance.md#get-v1-audit-log) with the settings it produced, and the [written procedure](/docs/compliance.md) follows the settings at once, so the document and the controls never disagree.
 
 ### Fields
 
 | Field | Default | Meaning |
 | --- | --- | --- |
-| `checks` | `default` for each | Each check set to `hold`, `warn`, `off` or `default` (the default in [Checks](/docs/checks.md#all-checks)). `vendor_blocked`, `network_flagged`, `sanctions_match` and `second_person_required` always show `hold` and cannot be changed. |
+| `checks` | `default` for each | Each check set to `hold`, `warn`, `off` or `default` (the default in [Checks](/docs/checks.md#all-checks)). `vendor_blocked`, `sanctions_match` and `second_person_required` always show `hold` and cannot be changed. |
 | `mandatory_checks` |  | The checks that cannot be changed. Read only. |
 | `defaults` |  | What each check does when left at `default`. Read only. |
 | `cooling_days` | 10 | How long confirmed new bank details still warn, for [`account_changed_recently`](/docs/checks.md#account-changed-recently). 0 to 90. |
@@ -2579,7 +2579,7 @@ Response:
     "amount_unusual": "default",
     "duplicate_payment": "default",
     "shared_account": "default",
-    "network_flagged": "hold",
+    "network_flagged": "default",
     "sanctions_match": "hold",
     "routing_invalid": "default",
     "iban_invalid": "default",
@@ -2593,7 +2593,6 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "network_flagged",
     "sanctions_match",
     "vendor_blocked",
     "second_person_required"
@@ -2609,7 +2608,7 @@ Response:
     "amount_unusual": "warn",
     "duplicate_payment": "hold",
     "shared_account": "hold",
-    "network_flagged": "hold",
+    "network_flagged": "warn",
     "sanctions_match": "hold",
     "routing_invalid": "hold",
     "iban_invalid": "hold",
@@ -2672,7 +2671,7 @@ Response:
     "amount_unusual": "default",
     "duplicate_payment": "default",
     "shared_account": "default",
-    "network_flagged": "hold",
+    "network_flagged": "default",
     "sanctions_match": "hold",
     "routing_invalid": "default",
     "iban_invalid": "default",
@@ -2686,7 +2685,6 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "network_flagged",
     "sanctions_match",
     "vendor_blocked",
     "second_person_required"
@@ -2702,7 +2700,7 @@ Response:
     "amount_unusual": "warn",
     "duplicate_payment": "hold",
     "shared_account": "hold",
-    "network_flagged": "hold",
+    "network_flagged": "warn",
     "sanctions_match": "hold",
     "routing_invalid": "hold",
     "iban_invalid": "hold",
@@ -2856,7 +2854,7 @@ Two vendors with one bank account is a sign that one of them is not who it says.
 
 ### `network_flagged`
 
-**Default: hold, cannot be turned off.** A business on Quarter reported this account in connection with a payment fraud.
+**Default: warn.** A business on Quarter reported this account in connection with a payment fraud.
 
 Messages:
 
@@ -2865,7 +2863,7 @@ this account was reported as used in fraud by a business on Quarter
 this account was reported as used in fraud by {count} businesses on Quarter
 ```
 
-The finding gives a count, never who reported. See [fraud reports](/docs/network.md#fraud-reports). This check always holds and cannot be turned off.
+The finding gives a count, never who reported. See [fraud reports](/docs/network.md#fraud-reports). It warns by default until reports can be disputed, so one business cannot hold another's payments by mistake. Set it to `hold` if you want that.
 
 ### `sanctions_match`
 
@@ -3111,7 +3109,7 @@ An account reported by two businesses:
 
 ## Fraud reports
 
-When a fraudster gets you to pay an account, or tries to, a person signed in to the console reports the account from a live project. An API key cannot report or retract: it answers `403 session_required`. From then on, any payment to it by any business on Quarter is held as [`network_flagged`](/docs/checks.md#network-flagged), and an [account check](/docs/network.md) on it says `do_not_pay`.
+When a fraudster gets you to pay an account, or tries to, a person signed in to the console reports the account from a live project. An API key cannot report or retract: it answers `403 session_required`. From then on, any payment to it by any business on Quarter gets a [`network_flagged`](/docs/checks.md#network-flagged) warning (a hold if that business chose one), and an [account check](/docs/network.md) on it says `do_not_pay`.
 
 ### What other businesses see
 
@@ -3271,7 +3269,7 @@ Each payment file is checked before release.
 | Amounts far above what the vendor is usually paid | Flagged to the reviewer |
 | The same payment made twice | Held for review |
 | One bank account used by two vendors | Held for review |
-| Accounts other businesses reported as used in fraud | Held for review |
+| Accounts other businesses reported as used in fraud | Flagged to the reviewer |
 | Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |
 | Invalid routing numbers | Held for review |
 | Invalid IBANs on international payments | Held for review |
@@ -3340,7 +3338,7 @@ Response:
   "generated_at": "2026-10-06T09:30:00.000Z",
   "last_reviewed_at": "2026-10-02T16:20:00.000Z",
   "next_review_due": "2027-10-02",
-  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Held for review |\n| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |\n| Invalid routing numbers | Held for review |\n| Invalid IBANs on international payments | Held for review |\n| A check number already used on the same account | Held for review |\n| A check payee line that differs from the vendor name on file | Flagged to the reviewer |\n| Checks just under the two-person approval threshold | Flagged to the reviewer |\n| Payments to an account on the employee account list | Held for review |\n| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |\n| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |\n| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |\n| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |\n\n## Insider controls\n\n- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.\n- A report of every change to vendors and their bank details, by person, is kept for review.\n\n## Check runs\n\n- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.\n- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.\n- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.\n- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
+  "markdown": "# Payment fraud monitoring procedure\n\nLakeshore Fabrication Inc. checks every outgoing vendor payment before it is sent, to detect payments authorized under false pretenses, such as a vendor impersonated by email or bank details changed by someone other than the vendor. This procedure is carried out with Quarter.\n\n## Before a vendor is paid\n\n- Every vendor is approved and recorded before its first payment.\n- Bank details are confirmed with the vendor out of band before they are used: through the vendor's own bank login, or by a call to a phone number we already held, made by someone other than the person who entered the details. A number supplied in the change request is never used to confirm the change. Where the number came from is recorded by the person who made the call.\n- A change of bank details puts the vendor back to unconfirmed. Payments to the new details are held until the change is confirmed with the vendor, and flagged to the reviewer for 10 days after it was made.\n\n## Every payment run\n\nEach payment file is checked before release.\n\n| What we check | What happens |\n|---|---|\n| Payments to anyone who is not an approved vendor | Held for review |\n| Payments to vendors the business has blocked | Held for review |\n| Payments to bank details never confirmed with the vendor | Held for review |\n| Payments to bank details changed recently and not confirmed out of band | Held for review |\n| Payments to a vendor at an account other than the one on file | Held for review |\n| Payee names that do not match the vendor | Flagged to the reviewer |\n| First payments to a vendor | Flagged to the reviewer |\n| Amounts far above what the vendor is usually paid | Flagged to the reviewer |\n| The same payment made twice | Held for review |\n| One bank account used by two vendors | Held for review |\n| Accounts other businesses reported as used in fraud | Flagged to the reviewer |\n| Payees resembling a party on the OFAC sanctions list, and every live payment while that list is more than 48 hours old | Held for review |\n| Invalid routing numbers | Held for review |\n| Invalid IBANs on international payments | Held for review |\n| A check number already used on the same account | Held for review |\n| A check payee line that differs from the vendor name on file | Flagged to the reviewer |\n| Checks just under the two-person approval threshold | Flagged to the reviewer |\n| Payments to an account on the employee account list | Held for review |\n| A vendor unpaid for a year or more, paid again after its bank details changed | Flagged to the reviewer |\n| Payments to one vendor within 7 days that together reach the two-person threshold, each under it | Flagged to the reviewer |\n| A vendor added in the last 14 days and paid by the same person who added it | Flagged to the reviewer |\n| Payments at or above the two-person threshold, and payments by a person who changed the vendor's bank details | Held for review |\n\n## Insider controls\n\n- Lakeshore Fabrication Inc. keeps a list of its employees' own bank accounts in Quarter, as fingerprints only, and refreshes it from payroll. A payment to one of those accounts, or to a vendor whose account on file is one of them, is checked as set out above.\n- A report of every change to vendors and their bank details, by person, is kept for review.\n\n## Check runs\n\n- Every check register is checked the same way before the checks are released, except for the checks on bank details, since a check pays a name and not an account.\n- On release, the issued-check file for the bank's Positive Pay is produced from the register: every check issued, and as void every check rejected or voided. Lakeshore Fabrication Inc. uploads it to its bank, which compares each presented check against it. Quarter never sends it.\n\n## Review and release\n\n- A held payment is released only when a named person approves it with a reason. Every payment of $50,000 or more is held, and needs two different people to approve it.\n- Nobody may approve a payment to a vendor whose bank details they changed in the last 90 days, as the first approver or the second. A payment to that vendor made by that person is held for someone else to approve, and that person may not release a run paying the vendor unless someone else approved the payment.\n- Approvals, call-back confirmations and releases are made only by people signed in to Quarter. An integration using an API key can submit payments and read the results, but never approves or releases them.\n- A rejected payment is removed from the file before it is sent.\n- Every check, decision, approver and piece of evidence is recorded and kept.\n\n## Review of this procedure\n\nThis procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.\n"
 }
 ```
 
@@ -3381,7 +3379,7 @@ Response:
     "amount_unusual": "default",
     "duplicate_payment": "default",
     "shared_account": "default",
-    "network_flagged": "hold",
+    "network_flagged": "default",
     "sanctions_match": "hold",
     "routing_invalid": "default",
     "iban_invalid": "default",
@@ -3395,7 +3393,6 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "network_flagged",
     "sanctions_match",
     "vendor_blocked",
     "second_person_required"
@@ -3411,7 +3408,7 @@ Response:
     "amount_unusual": "warn",
     "duplicate_payment": "hold",
     "shared_account": "hold",
-    "network_flagged": "hold",
+    "network_flagged": "warn",
     "sanctions_match": "hold",
     "routing_invalid": "hold",
     "iban_invalid": "hold",
@@ -3665,11 +3662,13 @@ Response:
 
 # NetSuite
 
-> A read-only connection that brings your NetSuite vendors and their bank details into Quarter every hour.
+> Bring your NetSuite vendors and their bank details into Quarter every hour, and check every open vendor bill with a hold that NetSuite itself enforces.
 
-> **Note:** The NetSuite connection is built and tested against a sample account. It is in testing before the first pilot and has not yet run against a real NetSuite account.
+> **Note:** The NetSuite connection and the payment flow are built and tested against a simulated NetSuite account. They are in testing before the first pilot and have not yet run against a real NetSuite account.
 
-Quarter reads your vendors and their primary bank details from NetSuite every hour. It never writes to NetSuite. Bank details that change in NetSuite are recorded in Quarter like any other change, so the next payment to them is held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) until someone confirms them with the vendor.
+Quarter reads your vendors and their primary bank details from NetSuite every hour. Bank details that change in NetSuite are recorded in Quarter like any other change, so the next payment to them is held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) until someone confirms them with the vendor.
+
+With the [payment flow](#payment-flow) on, Quarter also checks every open vendor bill and writes the result onto the bill, using NetSuite's own Payment Hold. That is the only thing Quarter writes. Until you turn the payment flow on, Quarter only reads.
 
 ## What a sync does
 
@@ -3684,6 +3683,61 @@ Quarter reads your vendors and their primary bank details from NetSuite every ho
 Connect NetSuite from the console's Integrations settings, as an admin. Quarter uses OAuth 2.0 client credentials with a certificate: an RSA key of 3072 bits or more, or EC P-256. The credentials are tested against NetSuite before they are saved, then sealed. They are never returned, logged or put in the audit log, and they are wiped on disconnect.
 
 These routes take a signed-in admin's session, never an API key: an API key answers `403 session_required`. A test project can connect Quarter's sample account of four vendors with `sandbox: true`. A live project refuses NetSuite sandbox accounts.
+
+## The payment flow
+
+A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Payment button is gone, the bill is left off the Pay Bills page, and Electronic Bank Payments does not process it. Oracle's NetSuite help says so on its page Entering a Vendor Bill. Quarter uses that box, so a held bill is stopped by NetSuite itself, before any payment file exists.
+
+1. A workflow you add holds every new bill, with Quarter's field saying `Held by Quarter until checked`. It holds a bill again when its amount or vendor changes.
+2. Every 15 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
+3. Quarter writes each result to the bill. A clear bill comes off hold, and Quarter's field says it was cleared, with a link to the run. A held bill stays on hold, and the field says why and where to decide.
+4. A person approves or rejects the held payment in Quarter, signed in, never with an API key. Two different people approve at or above your two-person threshold. Quarter then takes the hold off an approved bill and keeps it on a rejected one.
+5. A bill that changes after its check, in amount, vendor or bank details, is checked again in a new run and held again if it needs to be. The first check is closed as rejected, with the reason.
+
+### What it cannot stop
+
+- Someone with edit access to bills in NetSuite can clear Payment Hold and pay at once. Quarter puts the hold back at the next sync and sends `integration.hold_overridden`, but a payment made in between is made. A bill that leaves the open bills while Quarter holds it is recorded in the audit log, since it was paid, voided or deleted in NetSuite.
+- Payments that do not come from a vendor bill: checks written directly, journal entries, and payments keyed in your bank portal.
+- A bank change made on the vendor in NetSuite after a bill was cleared is seen at the next sync, at most 15 minutes later. Sync now before a payment run to close that gap.
+- Without the workflow, a new bill can be paid before Quarter first sees it. Quarter counts bills that arrive without a hold and shows the count in the console.
+- A payment file Electronic Bank Payments already generated. Quarter acts on the bill, before the file.
+
+### When something fails
+
+- Quarter only takes a hold off a bill it checked and found clear, or a person approved. A bill Quarter could not check stays on hold, and its field says why.
+- If NetSuite cannot be read, Quarter writes nothing and every hold stays. If a write fails, the bill keeps what NetSuite shows: an approved bill stays on hold until the write goes through. Quarter tries again at every sync and sends `integration.write_failed` once.
+- Quarter never lifts a hold it did not put on. If someone holds a bill Quarter cleared, for a dispute for example, Quarter leaves the hold on and changes only its own field.
+- Syncing the same bills again changes nothing: no new run and no new write.
+- A test project writes only to a NetSuite sandbox account or to Quarter's sample account, never to a production account. A live project refuses sandbox accounts.
+
+### Setting it up in NetSuite
+
+Your NetSuite administrator does this once, after the [connection](#connecting) works. Then an admin turns the payment flow on in the console under Settings, Integrations. Quarter reads one bill with its field before it accepts, so a missing step is refused with the reason.
+
+1. Give Quarter's role **Transactions > Bills** at **Edit**, and **Lists > Currency** at **View**. NetSuite has no field-level edit permission, so Edit lets the role change any field on a bill. Quarter's code writes only Payment Hold and its own field, and each write is in the bill's system notes and Quarter's audit log. Vendors and bank details stay view only.
+2. Add the custom transaction body field `custbody_quarter_check`: free-form text, 300 characters, applied to Purchase, shown inline so people cannot edit it. Deploy the object definition below with SuiteCloud Development Framework, or create it by hand under Customization > Lists, Records, & Fields > Transaction Body Fields.
+3. Add a workflow on Transaction, sub-type Bill, triggered on create and on update, before record submit. Give it one state with two Set Field Value actions: Payment Hold checked, and Quarter check set to `Held by Quarter until checked`. On update, run the actions only when Total or Vendor differs from the old record's value.
+4. Turn the payment flow on in the console. Leave Payment Hold to Quarter: clearing it in NetSuite is reported.
+
+Objects/custbody_quarter_check.xml:
+
+```shell
+<transactionbodycustomfield scriptid="custbody_quarter_check">
+  <label>Quarter check</label>
+  <description>What Quarter decided about this bill, written by Quarter.</description>
+  <fieldtype>TEXT</fieldtype>
+  <maxlength>300</maxlength>
+  <storevalue>T</storevalue>
+  <displaytype>INLINE</displaytype>
+  <accesslevel>2</accesslevel>
+  <searchlevel>2</searchlevel>
+  <showinlist>T</showinlist>
+  <bodypurchase>T</bodypurchase>
+  <subtab>TRANSACTIONMAIN</subtab>
+</transactionbodycustomfield>
+```
+
+Turning the payment flow off stops every write and leaves every hold where it is. Bills Quarter held stay on hold until someone clears them in NetSuite.
 
 ## Endpoints
 
@@ -3736,7 +3790,22 @@ Response:
     "deleted": 0,
     "failed": 0
   },
-  "failures": []
+  "failures": [],
+  "payment_flow": {
+    "enabled": false,
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
 }
 ```
 
@@ -3744,7 +3813,7 @@ Response:
 
 `GET /v1/integrations/netsuite` (auth: Signed-in admin)
 
-The connection, its last sync and the vendors that failed to save. Never the credentials.
+The connection, its last sync, the vendors that failed to save and the payment flow with its bill counts. Never the credentials.
 
 Request:
 
@@ -3765,7 +3834,7 @@ Response:
   "connected_by": "dana@yourcompany",
   "connected_at": "2026-10-05T15:20:04.000Z",
   "last_synced_at": "2026-10-05T15:20:31.000Z",
-  "next_sync_at": "2026-10-05T16:20:04.000Z",
+  "next_sync_at": "2026-10-05T15:35:31.000Z",
   "syncing": false,
   "last_error": null,
   "last_sync": {
@@ -3783,7 +3852,33 @@ Response:
     "deleted": 0,
     "failed": 0
   },
-  "failures": []
+  "failures": [],
+  "payment_flow": {
+    "enabled": true,
+    "last_synced_at": "2026-10-05T15:20:33.000Z",
+    "last_error": null,
+    "last_sync": {
+      "open": 3,
+      "checked": 3,
+      "rechecked": 0,
+      "check_failed": 0,
+      "written": 3,
+      "write_failed": 0,
+      "overridden": 0,
+      "unheld_on_arrival": 0,
+      "closed": 0,
+      "closed_while_held": 0
+    },
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
 }
 ```
 
@@ -3791,7 +3886,7 @@ Response:
 
 `POST /v1/integrations/netsuite/sync` (auth: Signed-in admin)
 
-Starts a sync now instead of at the next hour. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
+Starts a sync now instead of at the next one, which is every hour, or every 15 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
 
 Request:
 
@@ -3830,7 +3925,144 @@ Response:
     "deleted": 0,
     "failed": 0
   },
-  "failures": []
+  "failures": [],
+  "payment_flow": {
+    "enabled": false,
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Turn the payment flow on or off
+
+`PUT /v1/integrations/netsuite/payment_flow` (auth: Signed-in admin)
+
+On, Quarter checks open bills every 15 minutes and writes its result to each one. Off, Quarter stops writing and leaves every hold where it is. Before turning it on, Quarter reads one bill with Payment Hold and its own field.
+
+Errors: `enabled_invalid`, `production_account_in_test`, `netsuite_field_missing`, `netsuite_unauthorized` and `netsuite_forbidden`, all `400`; `not_connected`, `409`; `netsuite_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `enabled` | boolean | Yes | True to turn the payment flow on, false to turn it off. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/netsuite/payment_flow" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"enabled":true}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "netsuite",
+  "status": "active",
+  "account_id": "1234567",
+  "sandbox": false,
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-05T15:20:04.000Z",
+  "last_synced_at": "2026-10-05T15:20:31.000Z",
+  "next_sync_at": "2026-10-05T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "payment_flow": {
+    "enabled": true,
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### List the open bills
+
+`GET /v1/integrations/netsuite/bills` (auth: Signed-in admin)
+
+The open bills Quarter follows, newest change first. `status` is `waiting` (not checked yet, or changed since), `held`, `rejected` or `cleared`; `failed` lists the bills with a `check_error` or `write_error`. Decide a held bill at `/v1/payment_runs/{run_id}/items/{item_id}/decision`.
+
+Errors: `status_invalid` and `limit_invalid`, `400`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `waiting`, `held`, `rejected`, `cleared`, `failed` or `all`, the default. |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/netsuite/bills?status=held" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "netsuite_bill",
+      "id": "48213",
+      "bill_number": "BILL-2207",
+      "vendor_external_id": "1187",
+      "payee_name": "Northwind Logistics",
+      "amount": 18400,
+      "currency": "USD",
+      "due_date": "2026-10-09",
+      "status": "held",
+      "held_in_netsuite": true,
+      "run_id": "run_8Hq2LmZx4TbN0cVwYp3R",
+      "item_id": "itm_Qe7Rt2Yu9Io1Pa4Sd6Fg",
+      "check_error": null,
+      "write_error": null,
+      "written_at": "2026-10-05T15:20:33.000Z",
+      "updated_at": "2026-10-05T15:20:33.000Z"
+    }
+  ]
 }
 ```
 
@@ -3838,7 +4070,7 @@ Response:
 
 `DELETE /v1/integrations/netsuite` (auth: Signed-in admin)
 
-Stops the syncs and wipes the credentials. Vendors already synced, and their history, stay.
+Stops the syncs, and the payment flow with them, and wipes the credentials. Vendors already synced, and their history, stay. Bills Quarter held stay on hold in NetSuite.
 
 Request:
 
@@ -3877,7 +4109,22 @@ Response:
     "deleted": 0,
     "failed": 0
   },
-  "failures": []
+  "failures": [],
+  "payment_flow": {
+    "enabled": false,
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
 }
 ```
 
@@ -3901,8 +4148,10 @@ Quarter records each change as an event and sends it to your webhook endpoints. 
 | `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes) |
 | `payment_run.released` | A run was released. | `run_id`, `released_by`, `rejected` (how many payments were left out), and `release_code` for a [payment check](/docs/payment-checks.md) |
 | `fraud_report.created` | You reported an account. | `id`, `routing_number`, `last4` |
-| `integration.synced` | A [NetSuite](/docs/netsuite.md) sync finished. | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed` |
+| `integration.synced` | A [NetSuite](/docs/netsuite.md) sync finished. | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed`; with the [payment flow](/docs/netsuite.md#payment-flow) on, `bills` with its own counts |
 | `integration.failed` | A NetSuite sync failed. | `provider`, `error` |
+| `integration.hold_overridden` | Someone cleared Quarter's Payment Hold on a bill in NetSuite. Quarter put it back. | `provider`, `external_id`, `bill_number`, `run_id` |
+| `integration.write_failed` | Quarter could not write its result to a NetSuite bill. Sent once until a write to that bill succeeds. | `provider`, `external_id`, `bill_number`, `error` |
 | `billing.trial_ending` | The free trial ends in 3 days or less. Sent to every project. | `trial_ends_at` |
 | `billing.trial_ended` | The free trial ended without a subscription. Sent to every project. | `trial_ended_at` |
 
@@ -4226,12 +4475,12 @@ Response:
 | [Payment checks](/docs/payment-checks.md) | 400 | `rail_invalid`, `payee_name_required`, `currency_invalid`, `iban_format_invalid`, `bic_invalid` |
 | [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `template_invalid`, `template_does_not_fit` |
 | [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `releaser_changed_details` |
-| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `not_a_check_run`, `run_not_released`, `file_deleted` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 400 | `description_required`, `report_not_open` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 429 | `fraud_report_limit` |
 | [Settings](/docs/checks.md#settings) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |
 | [Insider controls](/docs/compliance.md#insider-controls) | 400 | `employees_invalid`, `employee_ref_invalid`, `from_invalid`, `to_invalid` |
-| [NetSuite](/docs/netsuite.md) | 400 | `account_id_invalid`, `client_id_invalid`, `certificate_id_invalid`, `private_key_invalid`, `sandbox_invalid`, `sandbox_test_only`, `sandbox_account_in_live`, `netsuite_unauthorized`, `netsuite_forbidden`, `netsuite_bank_details_unavailable`, `netsuite_query_failed`, `netsuite_response_too_large` |
+| [NetSuite](/docs/netsuite.md) | 400 | `account_id_invalid`, `client_id_invalid`, `certificate_id_invalid`, `private_key_invalid`, `sandbox_invalid`, `sandbox_test_only`, `sandbox_account_in_live`, `netsuite_unauthorized`, `netsuite_forbidden`, `netsuite_bank_details_unavailable`, `netsuite_field_missing`, `netsuite_query_failed`, `netsuite_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
 | [NetSuite](/docs/netsuite.md) | 409 | `netsuite_account_changed`, `not_connected`, `sync_in_progress` |
 | [NetSuite](/docs/netsuite.md) | 429 | `sync_rate_limited` |
 | [NetSuite](/docs/netsuite.md) | 503 | `netsuite_unreachable` |
