@@ -27,10 +27,10 @@ Once a held payment has a decision, a person records what it was: `fraud_attempt
 | --- | --- |
 | `fraud_attempt` | `vendor_impersonation`, `executive_impersonation`, `account_takeover`, `insider`, `other_fraud` |
 | `error` | `wrong_amount`, `duplicate`, `wrong_details`, `other_error` |
-| `legitimate` | `confirmed_by_callback`, `confirmed_by_bank_login`, `vendor_confirmed_receipt`, `known_to_approver` |
+| `legitimate` | `confirmed_by_callback`, `confirmed_by_bank_login`, `vendor_confirmed_receipt`, `known_to_approver`, `hold_not_warranted` |
 | `unknown` | `not_verified`, `still_checking` |
 
-The fraud reasons follow the Federal Reserve's FraudClassifier and ScamClassifier models: first who started the payment (your team, tricked by an impersonator; someone who got into your or the vendor's systems; or one of your own people), then how.
+The fraud reasons follow the Federal Reserve's FraudClassifier and ScamClassifier models: first who started the payment (your team, tricked by an impersonator; someone who got into your or the vendor's systems; or one of your own people), then how. `hold_not_warranted` says the hold had no reasonable basis for review; a changed account you then confirmed is `confirmed_by_callback` or `confirmed_by_bank_login`, since the hold did its job.
 
 - A payment Quarter held takes an outcome once it is decided or its run was cancelled: otherwise `409 item_not_decided`. A payment Quarter cleared takes one only once its run is released, as a miss (below): otherwise `409 item_not_held`.
 - A `reason` that is not one of the outcome's answers `400 reason_invalid`.
