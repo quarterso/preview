@@ -60,6 +60,7 @@ Settings decide how payments are checked for your account. Set any check to `hol
 | `checks` | `default` for each | Each check set to `hold`, `warn`, `off` or `default` (the default in [Checks](/docs/checks.md#all-checks)). `vendor_blocked`, `sanctions_match` and `second_person_required` always show `hold` and cannot be changed. |
 | `mandatory_checks` |  | The checks that cannot be changed. Read only. |
 | `defaults` |  | What each check does when left at `default`. Read only. |
+| `check_names` |  | The plain name of each check, as the console shows it. Read only. |
 | `cooling_days` | 10 | How long confirmed new bank details still warn, for [`account_changed_recently`](/docs/checks.md#account-changed-recently). 0 to 90. |
 | `unusual_multiplier` | 3 | How many times the usual amount counts as unusual, for [`amount_unusual`](/docs/checks.md#amount-unusual). 1.5 to 100. |
 | `two_person_threshold` | 50000 | In dollars, 0 to 1,000,000,000. Every payment of this amount or more is held as [`second_person_required`](/docs/checks.md#second-person-required), and approving it needs [two different people](/docs/releases.md#two-person-approval). 0 holds every payment for two people. Also used by [`just_under_threshold`](/docs/checks.md#just-under-threshold) and [`split_below_threshold`](/docs/checks.md#split-below-threshold). |
@@ -110,8 +111,8 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "sanctions_match",
     "vendor_blocked",
+    "sanctions_match",
     "second_person_required"
   ],
   "defaults": {
@@ -137,6 +138,30 @@ Response:
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
     "second_person_required": "hold"
+  },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "second_person_required": "Needs a second person to approve"
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
@@ -202,8 +227,8 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "sanctions_match",
     "vendor_blocked",
+    "sanctions_match",
     "second_person_required"
   ],
   "defaults": {
@@ -229,6 +254,30 @@ Response:
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
     "second_person_required": "hold"
+  },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "second_person_required": "Needs a second person to approve"
   },
   "cooling_days": 14,
   "unusual_multiplier": 3,

@@ -2,7 +2,11 @@
 
 > Check every outgoing vendor payment before it leaves your bank. Hold the suspicious ones for a person, with the reason in plain words.
 
-Quarter is a payment firewall. You give it a payment run, as a NACHA file, a CSV or a list of payments, before you upload it to your bank. Quarter matches each payment to a vendor you know, checks it, and holds anything wrong for a person to approve or reject. When every held payment has a decision, Quarter gives the file back without the rejected payments, and you upload that file to your bank as usual.
+Quarter is a payment firewall. It matches each payment to a vendor you know, checks it, and holds anything wrong for a person to approve or reject.
+
+If you pay bills from NetSuite, you upload nothing. Quarter checks every open, approved vendor bill and holds the suspicious ones with NetSuite's own Payment Hold box, so NetSuite does not pay them until a person decides in Quarter. See [the payment flow](/docs/netsuite.md#payment-flow). It is built and tested against a simulated NetSuite account; not yet run against a real one.
+
+Otherwise, you give Quarter a payment run, as a NACHA file, a CSV, a list of payments or a check register, before you upload it to your bank. When every held payment has a decision, Quarter gives the file back without the rejected payments, and you upload that file to your bank as usual.
 
 ## How a payment run flows
 

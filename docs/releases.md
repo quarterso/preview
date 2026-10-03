@@ -15,6 +15,15 @@ Decisions and releases are made by people signed in to the Quarter console, with
 - Nobody approves a payment to a vendor whose bank details they added in the last 90 days: `403 approver_changed_details`. Rejecting is allowed. See [segregation of duties](/docs/compliance.md#segregation-of-duties).
 - Nobody releases a run with a clear payment to a vendor whose bank details they added in the last 90 days: `403 releaser_changed_details`. Someone else releases it. A payment to that vendor that someone else approved does not stop the release.
 
+## What a hold turned out to be
+
+Once a held payment has a decision, a person records what it was: `fraud_attempt`, `error` (wrong amount, duplicate or wrong details), `legitimate` or `unknown`, with an optional note. The console asks for it when someone rejects a payment; an approval may leave it for later. It moves no money and changes no decision.
+
+- Only a payment Quarter held takes an outcome, once it is decided or its run was cancelled: otherwise `409 item_not_held` or `409 item_not_decided`.
+- Recording again replaces it. Each recording goes into the [audit log](/docs/compliance.md#get-v1-audit-log) with the one it replaced. It shows on the item as `outcome`.
+- A **catch** is a hold recorded as `fraud_attempt` or `error` whose payment never left: rejected, or in a run cancelled before release. A NetSuite bill changed after its check counts as rejected.
+- Like decisions, outcomes are recorded by a signed-in person; with an API key the route answers `403 session_required`.
+
 ## Two-person approval
 
 Every payment at or above the two-person threshold is held as [`second_person_required`](/docs/checks.md#second-person-required), even when no other check holds it, and its approval needs two different people. The threshold is `two_person_threshold` in [settings](/docs/checks.md#settings), $50,000 by default. The first approval is recorded and the payment stays `held`. A second approval by a different person makes it `approved`. The same person approving twice answers `409 second_approver_required`.
@@ -85,7 +94,7 @@ Releasing a check run returns the issued-check file for your bank's Positive Pay
 
 `POST /v1/payment_runs/{run}/items/{item}/decision` (auth: Signed-in approver)
 
-Approves or rejects one held payment. Returns the whole run.
+Approves or rejects one held payment. Answers with the payment and its run's totals, not the run's other payments.
 
 **Path parameters**
 
@@ -115,96 +124,136 @@ Response:
 
 ```json
 {
-  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
-  "object": "payment_run",
-  "name": "October 6 vendor run",
-  "format": "nacha",
-  "status": "scanned",
-  "created_by": "api_key:qk_test_Xy7P",
-  "created_at": "2026-10-06T08:15:03.000Z",
-  "released_at": null,
-  "released_by": null,
-  "release_code": null,
-  "file_deleted_at": null,
-  "summary": {
-    "payments": 3,
-    "total": 52322.4,
-    "held": 0,
-    "held_amount": 0,
-    "rejected": 1,
-    "rejected_amount": 12000
+  "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+  "object": "payment_item",
+  "position": 2,
+  "rail": "ach",
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "payee_name": "HARBOR POINT LOGISTICS",
+  "routing_number": "263391271",
+  "bic": null,
+  "last4": "8226",
+  "check_number": null,
+  "drawn_on_last4": null,
+  "amount": 12000,
+  "currency": "USD",
+  "effective_date": "2026-10-06",
+  "reference": "INV-20981",
+  "status": "rejected",
+  "findings": [
+    {
+      "code": "account_not_on_file",
+      "severity": "hold",
+      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+    }
+  ],
+  "decision": {
+    "by": "dana@yourcompany",
+    "at": "2026-10-06T09:02:47.000Z",
+    "reason": "Harbor Point confirmed by phone that they did not change banks.",
+    "second_by": null
   },
-  "items": [
+  "outcome": null,
+  "run": {
+    "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+    "name": "October 6 vendor run",
+    "format": "nacha",
+    "status": "scanned",
+    "released_at": null,
+    "summary": {
+      "payments": 3,
+      "held": 0,
+      "held_amount": 0
+    }
+  }
+}
+```
+
+### Record what a hold was
+
+`POST /v1/payment_runs/{run}/items/{item}/outcome` (auth: Signed-in approver)
+
+Records or replaces what a decided hold turned out to be. `caught` says whether it counts as a catch.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+| `item` | string | Yes | The payment item id, starting with `itm_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `outcome` | string | Yes | `fraud_attempt`, `error`, `legitimate` or `unknown`. |
+| `note` | string | No | Up to 2,000 characters. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/items/itm_5RnX9cLw3TbM7kQp2VjF/outcome" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"outcome":"fraud_attempt","note":"The change request came from a lookalike domain."}'
+```
+
+Response:
+
+```json
+{
+  "object": "payment_item_outcome",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "item_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+  "outcome": {
+    "kind": "fraud_attempt",
+    "note": "The change request came from a lookalike domain.",
+    "by": "dana@yourcompany",
+    "at": "2026-10-06T09:03:10.000Z"
+  },
+  "caught": true
+}
+```
+
+### A month of holds
+
+`GET /v1/monthly_summary` (auth: API key)
+
+The payments held in runs checked in one month, how many got a final decision from a person (a payment waiting for its second approver is not counted yet), the median minutes from the check to the first decision, the outcomes recorded, and the catches with the amount kept from leaving, by currency. Only your own project is counted.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `month` | string | No | `YYYY-MM`, in UTC. This month by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/monthly_summary?month=2026-10" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "monthly_summary",
+  "month": "2026-10",
+  "holds": 3,
+  "decided": 3,
+  "median_minutes_to_decide": 41,
+  "outcomes": {
+    "fraud_attempt": 1,
+    "error": 1,
+    "legitimate": 1,
+    "unknown": 0
+  },
+  "catches": 2,
+  "amount_protected": [
     {
-      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
-      "object": "payment_item",
-      "position": 0,
-      "rail": "ach",
-      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
-      "payee_name": "HARBOR POINT LOGISTICS",
-      "routing_number": "091408501",
-      "bic": null,
-      "last4": "7365",
-      "check_number": null,
-      "drawn_on_last4": null,
-      "amount": 36410,
       "currency": "USD",
-      "effective_date": "2026-10-06",
-      "reference": "INV-20977",
-      "status": "clear",
-      "findings": [],
-      "decision": null
-    },
-    {
-      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
-      "object": "payment_item",
-      "position": 1,
-      "rail": "ach",
-      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
-      "payee_name": "CEDAR RIDGE SUPPLY CO",
-      "routing_number": "102103384",
-      "bic": null,
-      "last4": "1904",
-      "check_number": null,
-      "drawn_on_last4": null,
-      "amount": 3912.4,
-      "currency": "USD",
-      "effective_date": "2026-10-06",
-      "reference": "INV-7718",
-      "status": "clear",
-      "findings": [],
-      "decision": null
-    },
-    {
-      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
-      "object": "payment_item",
-      "position": 2,
-      "rail": "ach",
-      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
-      "payee_name": "HARBOR POINT LOGISTICS",
-      "routing_number": "263391271",
-      "bic": null,
-      "last4": "8226",
-      "check_number": null,
-      "drawn_on_last4": null,
-      "amount": 12000,
-      "currency": "USD",
-      "effective_date": "2026-10-06",
-      "reference": "INV-20981",
-      "status": "rejected",
-      "findings": [
-        {
-          "code": "account_not_on_file",
-          "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
-        }
-      ],
-      "decision": {
-        "by": "dana@yourcompany",
-        "at": "2026-10-06T09:02:47.000Z",
-        "reason": "Harbor Point confirmed by phone that they did not change banks.",
-        "second_by": null
-      }
+      "amount": 14150
     }
   ]
 }
@@ -435,7 +484,8 @@ Response:
       "reference": "INV-20977",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_7BkP4zTm1WqH6nRv8CxL",
@@ -455,7 +505,8 @@ Response:
       "reference": "INV-7718",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_5RnX9cLw3TbM7kQp2VjF",
@@ -481,7 +532,8 @@ Response:
           "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }

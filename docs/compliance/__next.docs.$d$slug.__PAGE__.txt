@@ -63,7 +63,7 @@ Each payment file is checked before release.
 This procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.42:X
 47:X
 47:C
-0:{"buildId":"WD8MrjvlnpNmBMJEDl6Rm","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Compliance and insider controls"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."]}],["$","a",null,{"href":"/preview/docs/compliance.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["Nacha's rules ask every business that sends ACH payments to have a risk-based process to find payments authorized under false pretenses, such as a vendor impersonated by email, and to review it at least once a year. For businesses below the first phase's volume threshold, the rule applies from June 19, 2026. That day is a federal holiday, so in practice it applies from June 22, 2026."]}],["$","p","1",{"children":["Quarter does not make you compliant, and no tool can. It gives you a documented, risk-based process and the evidence that you followed it, which helps you meet Nacha's fraud-monitoring rule. Your bank and your auditor decide whether your process is enough."]}],["$","h2","2",{"id":"written-procedure","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#written-procedure","className":"docs-module__RdmBMa__anchor","children":["The written procedure"]}]}],["$","p","3",{"children":["Quarter writes the procedure from your ",["$","$L2","39",{"href":"/docs/checks#settings","children":["settings"]}]," each time you ask for it, so the document always describes the controls actually in force. It lists every check that is on and what it does, names the checks you turned off as your own decision, and states the cooling period, the two-person threshold and the last review. It comes back as Markdown, ready to print, sign or hand to your bank."]}],["$","$L3","4",{"tabs":[{"label":"Markdown","language":"shell","code":"$4"}],"title":"markdown"}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38","$L39","$L3a","$L3b","$L3c"]}],"$L3d"]}],"$L3e"]}],["$L3f"],"$L40"]}],"isPartial":"$@41","staleTime":"$42","varyParams":null},{"rsc":"$L43","isPartial":"$@44","staleTime":"$42","varyParams":null},{"rsc":"$L45","isPartial":"$@46","staleTime":"$42","varyParams":"$47"},{"rsc":"$L48","isPartial":"$@49","staleTime":"$42","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@4a","rootVaryParams":null,"needsRuntimeRequest":"$@4b"}
+0:{"buildId":"fJbpDBOYiot9vcFUpIglk","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Compliance and insider controls"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."]}],["$","a",null,{"href":"/preview/docs/compliance.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["Nacha's rules ask every business that sends ACH payments to have a risk-based process to find payments authorized under false pretenses, such as a vendor impersonated by email, and to review it at least once a year. For businesses below the first phase's volume threshold, the rule applies from June 19, 2026. That day is a federal holiday, so in practice it applies from June 22, 2026."]}],["$","p","1",{"children":["Quarter does not make you compliant, and no tool can. It gives you a documented, risk-based process and the evidence that you followed it, which helps you meet Nacha's fraud-monitoring rule. Your bank and your auditor decide whether your process is enough."]}],["$","h2","2",{"id":"written-procedure","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#written-procedure","className":"docs-module__RdmBMa__anchor","children":["The written procedure"]}]}],["$","p","3",{"children":["Quarter writes the procedure from your ",["$","$L2","39",{"href":"/docs/checks#settings","children":["settings"]}]," each time you ask for it, so the document always describes the controls actually in force. It lists every check that is on and what it does, names the checks you turned off as your own decision, and states the cooling period, the two-person threshold and the last review. It comes back as Markdown, ready to print, sign or hand to your bank."]}],["$","$L3","4",{"tabs":[{"label":"Markdown","language":"shell","code":"$4"}],"title":"markdown"}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38","$L39","$L3a","$L3b","$L3c"]}],"$L3d"]}],"$L3e"]}],["$L3f"],"$L40"]}],"isPartial":"$@41","staleTime":"$42","varyParams":null},{"rsc":"$L43","isPartial":"$@44","staleTime":"$42","varyParams":null},{"rsc":"$L45","isPartial":"$@46","staleTime":"$42","varyParams":"$47"},{"rsc":"$L48","isPartial":"$@49","staleTime":"$42","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@4a","rootVaryParams":null,"needsRuntimeRequest":"$@4b"}
 50:I[20795,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
 51:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
 52:"$Sreact.suspense"
@@ -96,7 +96,7 @@ e:["$","$L3","14",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUA
 13:["$","p","19",{"children":[["$","strong","0",{"children":"Body"}]]}]
 14:["$","div","20",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"reviewer"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Your own email, as the person reviewing. Taken from the session; any other email answers ",["$","code","89",{"children":"400 reviewer_not_you"}],". Kept in the audit trail."]}]]}]]}]]}]}]
 15:["$","$L3","21",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/compliance/reviews\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"reviewer\":\"dana@yourcompany\"}'"}],"title":"Request"}]
-4d:T74e,{
+4d:Tc6c,{
   "object": "settings",
   "checks": {
     "unknown_payee": "default",
@@ -123,8 +123,8 @@ e:["$","$L3","14",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUA
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "sanctions_match",
     "vendor_blocked",
+    "sanctions_match",
     "second_person_required"
   ],
   "defaults": {
@@ -151,6 +151,30 @@ e:["$","$L3","14",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUA
     "vendor_new_paid_fast": "warn",
     "second_person_required": "hold"
   },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "second_person_required": "Needs a second person to approve"
+  },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
@@ -159,9 +183,9 @@ e:["$","$L3","14",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUA
 }16:["$","$L3","22",{"tabs":[{"label":"201","language":"json","code":"$4d"}],"title":"Response"}]
 17:["$","h3","23",{"id":"get-v1-audit-log","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-audit-log","className":"docs-module__RdmBMa__anchor","children":["Export the audit log"]}]}]
 18:["$","p","24",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/audit_log"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
-19:["$","p","25",{"children":["Every recorded action, oldest first. To page through it, pass the ",["$","code","66",{"children":"id"}]," of the last entry you have as ",["$","code","101",{"children":"after"}],"."]}]
+19:["$","p","25",{"children":["Every recorded action, oldest first, or newest first with ",["$","code","58",{"children":"order=desc"}],". To page through it, pass the ",["$","code","101",{"children":"id"}]," of the last entry you have as ",["$","code","136",{"children":"after"}],"."]}]
 1a:["$","p","26",{"children":[["$","strong","0",{"children":"Query parameters"}]]}]
-1b:["$","div","27",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"after"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["An audit entry id. Returns entries after it."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"limit"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1 to 5,000. Default 500."]}]]}]]}]]}]}]
+1b:["$","div","27",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"after"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["An audit entry id. Returns the entries after it, in the order asked for."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"limit"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1 to 5,000. Default 500."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"order"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"asc"}],", oldest first, the default, or ",["$","code","37",{"children":"desc"}],", newest first."]}]]}]]}]]}]}]
 1c:["$","$L3","28",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/audit_log?limit=3\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
 4e:T448,{
   "object": "list",

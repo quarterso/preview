@@ -120,7 +120,8 @@ One item of a check run:
   "reference": "INV-7718",
   "status": "clear",
   "findings": [],
-  "decision": null
+  "decision": null,
+  "outcome": null
 }
 ```
 
@@ -227,7 +228,8 @@ Response:
       "reference": "INV-20977",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_7BkP4zTm1WqH6nRv8CxL",
@@ -247,7 +249,8 @@ Response:
       "reference": "INV-7718",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_5RnX9cLw3TbM7kQp2VjF",
@@ -273,7 +276,8 @@ Response:
           "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }
@@ -294,11 +298,14 @@ curl -X POST "$QUARTER_API_URL/v1/payment_runs" \
 
 Runs, newest first, with counts and totals but without their items. A [payment check](/docs/payment-checks.md) is listed as a run of format `single`.
 
+To read the next page, pass the `id` of the last run you have as `after` while `has_more` is `true`.
+
 **Query parameters**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `limit` | integer | No | 1 to 200. Default 50. |
+| `after` | string | No | A run id. Returns the runs after it. |
 
 Request:
 
@@ -312,6 +319,7 @@ Response:
 ```json
 {
   "object": "list",
+  "has_more": true,
   "data": [
     {
       "id": "run_8TpQ3xWm6KvB1nRz4LcH",
@@ -322,6 +330,7 @@ Response:
       "created_at": "2026-10-06T08:15:03.000Z",
       "payments": 3,
       "held": 1,
+      "held_amount": 12000,
       "total": 52322.4
     },
     {
@@ -333,7 +342,80 @@ Response:
       "created_at": "2026-10-05T14:02:11.000Z",
       "payments": 2,
       "held": 0,
+      "held_amount": 0,
       "total": 58050
+    }
+  ]
+}
+```
+
+### List held payments
+
+`GET /v1/payment_items` (auth: API key)
+
+Every held payment in a run not yet released or cancelled, across runs, the longest waiting first, each with the run it is in. This is the one queue to decide from. A payment with a first approval that still needs a second is in it, with its `decision`.
+
+`summary` counts the whole queue, not the page. Pass the `id` of the last payment you have as `after` while `has_more` is `true`. Errors: `status_invalid` and `limit_invalid`, `400`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `held`, the default and the only value. |
+| `limit` | integer | No | 1 to 200. Default 50. |
+| `after` | string | No | A payment item id. Returns the payments after it. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payment_items?limit=1" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "summary": {
+    "held": 1,
+    "held_amount": 12000,
+    "runs": 1
+  },
+  "data": [
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "rail": "ach",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "bic": null,
+      "last4": "8226",
+      "check_number": null,
+      "drawn_on_last4": null,
+      "amount": 12000,
+      "currency": "USD",
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "held",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": null,
+      "outcome": null,
+      "run": {
+        "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "name": "October 6 vendor run",
+        "format": "nacha",
+        "created_at": "2026-10-06T08:15:03.000Z"
+      }
     }
   ]
 }
@@ -421,7 +503,8 @@ Response:
       "reference": "INV-20977",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_7BkP4zTm1WqH6nRv8CxL",
@@ -441,7 +524,8 @@ Response:
       "reference": "INV-7718",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_5RnX9cLw3TbM7kQp2VjF",
@@ -467,7 +551,8 @@ Response:
           "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }
@@ -507,6 +592,7 @@ One item, decided:
     "at": "2026-10-06T09:02:47.000Z",
     "reason": "Harbor Point confirmed by phone that they did not change banks.",
     "second_by": null
-  }
+  },
+  "outcome": null
 }
 ```

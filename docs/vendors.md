@@ -95,6 +95,8 @@ Response:
 
 Vendors in name order, each with its current bank details: the last 4 digits, the status, when they were added, and `changed`, which is `true` when they replaced earlier details.
 
+`total` counts every vendor that matches, not just this page. To read the next page, pass the `id` of the last vendor you have as `after` while `has_more` is `true`.
+
 **Query parameters**
 
 | Field | Type | Required | Description |
@@ -102,6 +104,7 @@ Vendors in name order, each with its current bank details: the last 4 digits, th
 | `status` | string | No | `unverified`, `verified` or `blocked`. |
 | `search` | string | No | Part of a name. Matched the same way payee names are. |
 | `limit` | integer | No | 1 to 1000. Default 100. |
+| `after` | string | No | A vendor id. Returns the vendors after it, by name. |
 
 Request:
 
@@ -115,6 +118,8 @@ Response:
 ```json
 {
   "object": "list",
+  "total": 2,
+  "has_more": false,
   "data": [
     {
       "id": "ven_2PwK7nTq4XmB9vLr6JcH",

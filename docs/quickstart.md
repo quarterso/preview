@@ -192,7 +192,8 @@ Response:
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -218,7 +219,8 @@ Response:
           "message": "J. Reyes Consulting is not a vendor on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }
@@ -285,7 +287,8 @@ Response:
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -316,7 +319,8 @@ Response:
         "at": "2026-10-05T14:09:31.000Z",
         "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
         "second_by": null
-      }
+      },
+      "outcome": null
     }
   ]
 }
@@ -390,7 +394,8 @@ Response:
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -421,7 +426,8 @@ Response:
         "at": "2026-10-05T14:09:31.000Z",
         "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
         "second_by": null
-      }
+      },
+      "outcome": null
     }
   ]
 }

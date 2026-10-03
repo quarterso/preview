@@ -37,7 +37,7 @@ Response:
 | Any request | 400 | `request_invalid`, `limit_invalid`, `json_too_deep`. `request_invalid` covers a body that is not valid JSON; `json_too_deep` one nested more than 32 levels. |
 | Any request | 413, 415 | `payload_too_large`, `unsupported_media_type`. Send `application/json`, up to 256 KB, or 10 MB to the payment run and import routes. |
 | Any request | 401 | `api_key_missing`, `api_key_invalid`, `session_invalid`, `session_expired` |
-| Any request | 403 | `role_required`, `session_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`. |
+| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions when the last check is more than 5 minutes old. |
 | Any request | 429 | `rate_limited` |
 | Any request | 500 | `internal` |
 | Any request | 404 | `route_not_found`, `vendor_not_found`, `bank_account_not_found`, `payment_run_not_found`, `payment_item_not_found`, `payment_check_not_found`, `verification_request_not_found`, `webhook_delivery_not_found` |

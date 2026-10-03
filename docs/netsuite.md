@@ -356,7 +356,7 @@ Response:
 
 ### List the open bills
 
-`GET /v1/integrations/netsuite/bills` (auth: Signed-in admin)
+`GET /v1/integrations/netsuite/bills` (auth: API key, or anyone signed in)
 
 The open bills Quarter follows, newest change first. `status` is `waiting` (not checked yet, or changed since), `held`, `rejected` or `cleared`; `failed` lists the bills with a `check_error` or `write_error`. Decide a held bill at `/v1/payment_runs/{run_id}/items/{item_id}/decision`.
 

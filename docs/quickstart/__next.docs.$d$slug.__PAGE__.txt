@@ -3,7 +3,7 @@
 22:X
 27:X
 27:C
-0:{"buildId":"WD8MrjvlnpNmBMJEDl6Rm","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Get started"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Quickstart"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Add a vendor, upload a small payment run with a test key, and read the result after a person decides the held payment and releases the run."]}],["$","a",null,{"href":"/preview/docs/quickstart.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["One small payment run, start to finish. Your integration adds the vendor, uploads the run and reads the results with a test key. A person signed in to the Quarter console confirms the bank details, decides the held payment and releases the run. An API key never does those: it answers ",["$","code","285",{"children":"403 session_required"}],". Every response below is the full JSON the api returns."]}],["$","h2","1",{"id":"before-you-start","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#before-you-start","className":"docs-module__RdmBMa__anchor","children":["Before you start"]}]}],["$","p","2",{"children":["You need a test API key, which starts with ",["$","code","43",{"children":"qk_test_"}],", and your API URL. Before launch, Quarter gives you the URL, and an admin creates the key in the console. You also need ",["$","code","174",{"children":"curl"}]," and ",["$","code","185",{"children":"jq"}],"."]}],["$","$L2","3",{"tabs":[{"label":"Shell","language":"bash","code":"export QUARTER_API_URL=\"<your API URL>\"\nexport QUARTER_API_KEY=\"qk_test_...\""}]}],["$","h2","4",{"id":"1-add-a-vendor-with-bank-details","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#1-add-a-vendor-with-bank-details","className":"docs-module__RdmBMa__anchor","children":["1. Add a vendor with bank details"]}]}],["$","p","5",{"children":["A vendor is someone you pay. Give its name, the domain of its email addresses and the bank details you have on file. The details start ",["$","code","135",{"children":"unverified"}],": nobody has confirmed them with the vendor yet, so payments to them would be held."]}],["$","$L2","6",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/vendors\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"name\":\"Harbor Point Logistics LLC\",\"email_domain\":\"harborpoint.example\",\"external_id\":\"V-1042\",\"routing_number\":\"091408501\",\"account_number\":\"4021887365\",\"holder_name\":\"Harbor Point Logistics LLC\"}'"}],"title":"Request"}],["$","$L2","7",{"tabs":[{"label":"201","language":"json","code":"{\n  \"id\": \"ven_7Qm2KxR9pLwT4nVb8YcD\",\n  \"object\": \"vendor\",\n  \"name\": \"Harbor Point Logistics LLC\",\n  \"email_domain\": \"harborpoint.example\",\n  \"external_id\": \"V-1042\",\n  \"status\": \"unverified\",\n  \"created_at\": \"2026-10-05T13:40:12.000Z\",\n  \"bank_accounts\": [\n    {\n      \"id\": \"ba_3HfJ6tWq1ZsN8kPm2RxA\",\n      \"object\": \"bank_account\",\n      \"routing_number\": \"091408501\",\n      \"last4\": \"7365\",\n      \"holder_name\": \"Harbor Point Logistics LLC\",\n      \"source\": \"api\",\n      \"status\": \"unverified\",\n      \"verified_at\": null,\n      \"verified_method\": null,\n      \"created_at\": \"2026-10-05T13:40:12.000Z\",\n      \"replaced_at\": null\n    }\n  ],\n  \"evidence\": []\n}"}],"title":"Response"}],["$","p","8",{"children":["The response never repeats the account number. Quarter seals it and shows the last 4 digits. Keep the vendor ","$L3"," and the bank account ","$L4","."]}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c"]}],"$L1d"]}],"$L1e"]}],["$L1f"],"$L20"]}],"isPartial":"$@21","staleTime":"$22","varyParams":null},{"rsc":"$L23","isPartial":"$@24","staleTime":"$22","varyParams":null},{"rsc":"$L25","isPartial":"$@26","staleTime":"$22","varyParams":"$27"},{"rsc":"$L28","isPartial":"$@29","staleTime":"$22","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@2a","rootVaryParams":null,"needsRuntimeRequest":"$@2b"}
+0:{"buildId":"fJbpDBOYiot9vcFUpIglk","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Get started"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Quickstart"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Add a vendor, upload a small payment run with a test key, and read the result after a person decides the held payment and releases the run."]}],["$","a",null,{"href":"/preview/docs/quickstart.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["One small payment run, start to finish. Your integration adds the vendor, uploads the run and reads the results with a test key. A person signed in to the Quarter console confirms the bank details, decides the held payment and releases the run. An API key never does those: it answers ",["$","code","285",{"children":"403 session_required"}],". Every response below is the full JSON the api returns."]}],["$","h2","1",{"id":"before-you-start","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#before-you-start","className":"docs-module__RdmBMa__anchor","children":["Before you start"]}]}],["$","p","2",{"children":["You need a test API key, which starts with ",["$","code","43",{"children":"qk_test_"}],", and your API URL. Before launch, Quarter gives you the URL, and an admin creates the key in the console. You also need ",["$","code","174",{"children":"curl"}]," and ",["$","code","185",{"children":"jq"}],"."]}],["$","$L2","3",{"tabs":[{"label":"Shell","language":"bash","code":"export QUARTER_API_URL=\"<your API URL>\"\nexport QUARTER_API_KEY=\"qk_test_...\""}]}],["$","h2","4",{"id":"1-add-a-vendor-with-bank-details","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#1-add-a-vendor-with-bank-details","className":"docs-module__RdmBMa__anchor","children":["1. Add a vendor with bank details"]}]}],["$","p","5",{"children":["A vendor is someone you pay. Give its name, the domain of its email addresses and the bank details you have on file. The details start ",["$","code","135",{"children":"unverified"}],": nobody has confirmed them with the vendor yet, so payments to them would be held."]}],["$","$L2","6",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/vendors\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"name\":\"Harbor Point Logistics LLC\",\"email_domain\":\"harborpoint.example\",\"external_id\":\"V-1042\",\"routing_number\":\"091408501\",\"account_number\":\"4021887365\",\"holder_name\":\"Harbor Point Logistics LLC\"}'"}],"title":"Request"}],["$","$L2","7",{"tabs":[{"label":"201","language":"json","code":"{\n  \"id\": \"ven_7Qm2KxR9pLwT4nVb8YcD\",\n  \"object\": \"vendor\",\n  \"name\": \"Harbor Point Logistics LLC\",\n  \"email_domain\": \"harborpoint.example\",\n  \"external_id\": \"V-1042\",\n  \"status\": \"unverified\",\n  \"created_at\": \"2026-10-05T13:40:12.000Z\",\n  \"bank_accounts\": [\n    {\n      \"id\": \"ba_3HfJ6tWq1ZsN8kPm2RxA\",\n      \"object\": \"bank_account\",\n      \"routing_number\": \"091408501\",\n      \"last4\": \"7365\",\n      \"holder_name\": \"Harbor Point Logistics LLC\",\n      \"source\": \"api\",\n      \"status\": \"unverified\",\n      \"verified_at\": null,\n      \"verified_method\": null,\n      \"created_at\": \"2026-10-05T13:40:12.000Z\",\n      \"replaced_at\": null\n    }\n  ],\n  \"evidence\": []\n}"}],"title":"Response"}],["$","p","8",{"children":["The response never repeats the account number. Quarter seals it and shows the last 4 digits. Keep the vendor ","$L3"," and the bank account ","$L4","."]}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c"]}],"$L1d"]}],"$L1e"]}],["$L1f"],"$L20"]}],"isPartial":"$@21","staleTime":"$22","varyParams":null},{"rsc":"$L23","isPartial":"$@24","staleTime":"$22","varyParams":null},{"rsc":"$L25","isPartial":"$@26","staleTime":"$22","varyParams":"$27"},{"rsc":"$L28","isPartial":"$@29","staleTime":"$22","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@2a","rootVaryParams":null,"needsRuntimeRequest":"$@2b"}
 2c:I[56448,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],""]
 31:I[20795,["/preview/_next/static/chunks/1qi2pnm0e6b_y.js","/preview/_next/static/chunks/1wg-g500q1kp4.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
 32:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
@@ -66,7 +66,7 @@ b:["$","p","15",{"children":["Here is a CSV with two payments: one to Harbor Poi
 c:["$","$L2","16",{"tabs":[{"label":"CSV","language":"shell","code":"payee,routing_number,account_number,amount,payment_date,invoice\nHarbor Point Logistics LLC,091408501,4021887365,\"48,250.00\",2026-10-06,INV-20931\nJ. Reyes Consulting,063174290,88412007,\"9,800.00\",2026-10-06,INV-0412"}],"title":"run.csv"}]
 d:["$","p","17",{"children":["The api takes the file as text inside a JSON body. ",["$","code","51",{"children":"jq"}]," builds that body from the file."]}]
 e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --rawfile file run.csv '{format: \"csv\", name: \"Week 41 vendor payments\", file: $file}' |\n  curl -X POST \"$QUARTER_API_URL/v1/payment_runs\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d @-"}],"title":"Request"}]
-2e:T74d,{
+2e:T77b,{
   "id": "run_4VbN8qLs2TjW6hPx9RkM",
   "object": "payment_run",
   "name": "Week 41 vendor payments",
@@ -111,7 +111,8 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -137,7 +138,8 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
           "message": "J. Reyes Consulting is not a vendor on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }f:["$","$L2","19",{"tabs":[{"label":"201","language":"json","code":"$2e"}],"title":"Response"}]
@@ -145,7 +147,7 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
 11:["$","h2","21",{"id":"4-a-person-decides-the-held-payment","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#4-a-person-decides-the-held-payment","className":"docs-module__RdmBMa__anchor","children":["4. A person decides the held payment"]}]}]
 12:["$","p","22",{"children":["In the console, a person approves or rejects each held payment and says why. The reason and the person go into the audit trail. Here, they reject J. Reyes Consulting. Read the run to see the decision."]}]
 13:["$","$L2","23",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
-2f:T818,{
+2f:T846,{
   "id": "run_4VbN8qLs2TjW6hPx9RkM",
   "object": "payment_run",
   "name": "Week 41 vendor payments",
@@ -190,7 +192,8 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -221,7 +224,8 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
         "at": "2026-10-05T14:09:31.000Z",
         "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
         "second_by": null
-      }
+      },
+      "outcome": null
     }
   ]
 }14:["$","$L2","24",{"tabs":[{"label":"200","language":"json","code":"$2f"}],"title":"Response"}]
@@ -230,7 +234,7 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
 17:["$","$L2","27",{"tabs":[{"label":"CSV","language":"shell","code":"payee,routing_number,account_number,amount,payment_date,invoice\nHarbor Point Logistics LLC,091408501,4021887365,\"48,250.00\",2026-10-06,INV-20931"}],"title":"run-released.csv"}]
 18:["$","p","28",{"children":["Your integration hears about it from the ",["$","code","41",{"children":"payment_run.released"}]," ",["$","$L2c","64",{"href":"/docs/webhooks#event-types","children":["webhook"]}],", or by reading the run. A run is released once and then never changes."]}]
 19:["$","$L2","29",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/payment_runs/run_4VbN8qLs2TjW6hPx9RkM\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
-30:T83d,{
+30:T86b,{
   "id": "run_4VbN8qLs2TjW6hPx9RkM",
   "object": "payment_run",
   "name": "Week 41 vendor payments",
@@ -275,7 +279,8 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -306,7 +311,8 @@ e:["$","$L2","18",{"tabs":[{"label":"curl","language":"bash","code":"jq -n --raw
         "at": "2026-10-05T14:09:31.000Z",
         "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
         "second_by": null
-      }
+      },
+      "outcome": null
     }
   ]
 }1a:["$","$L2","30",{"tabs":[{"label":"200","language":"json","code":"$30"}],"title":"Response"}]

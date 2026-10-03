@@ -2,7 +2,11 @@
 
 > Check every outgoing vendor payment before it leaves your bank. Hold the suspicious ones for a person, with the reason in plain words.
 
-Quarter is a payment firewall. You give it a payment run, as a NACHA file, a CSV or a list of payments, before you upload it to your bank. Quarter matches each payment to a vendor you know, checks it, and holds anything wrong for a person to approve or reject. When every held payment has a decision, Quarter gives the file back without the rejected payments, and you upload that file to your bank as usual.
+Quarter is a payment firewall. It matches each payment to a vendor you know, checks it, and holds anything wrong for a person to approve or reject.
+
+If you pay bills from NetSuite, you upload nothing. Quarter checks every open, approved vendor bill and holds the suspicious ones with NetSuite's own Payment Hold box, so NetSuite does not pay them until a person decides in Quarter. See [the payment flow](/docs/netsuite.md#payment-flow). It is built and tested against a simulated NetSuite account; not yet run against a real one.
+
+Otherwise, you give Quarter a payment run, as a NACHA file, a CSV, a list of payments or a check register, before you upload it to your bank. When every held payment has a decision, Quarter gives the file back without the rejected payments, and you upload that file to your bank as usual.
 
 ## How a payment run flows
 
@@ -239,7 +243,8 @@ Response:
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -265,7 +270,8 @@ Response:
           "message": "J. Reyes Consulting is not a vendor on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }
@@ -332,7 +338,8 @@ Response:
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -363,7 +370,8 @@ Response:
         "at": "2026-10-05T14:09:31.000Z",
         "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
         "second_by": null
-      }
+      },
+      "outcome": null
     }
   ]
 }
@@ -437,7 +445,8 @@ Response:
           "message": "first payment to Harbor Point Logistics LLC"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_1TzH6kQb3WmF8rNy4PdV",
@@ -468,7 +477,8 @@ Response:
         "at": "2026-10-05T14:09:31.000Z",
         "reason": "Not a vendor of ours. The invoice came from an address we do not know.",
         "second_by": null
-      }
+      },
+      "outcome": null
     }
   ]
 }
@@ -581,6 +591,8 @@ Response:
 
 Vendors in name order, each with its current bank details: the last 4 digits, the status, when they were added, and `changed`, which is `true` when they replaced earlier details.
 
+`total` counts every vendor that matches, not just this page. To read the next page, pass the `id` of the last vendor you have as `after` while `has_more` is `true`.
+
 **Query parameters**
 
 | Field | Type | Required | Description |
@@ -588,6 +600,7 @@ Vendors in name order, each with its current bank details: the last 4 digits, th
 | `status` | string | No | `unverified`, `verified` or `blocked`. |
 | `search` | string | No | Part of a name. Matched the same way payee names are. |
 | `limit` | integer | No | 1 to 1000. Default 100. |
+| `after` | string | No | A vendor id. Returns the vendors after it, by name. |
 
 Request:
 
@@ -601,6 +614,8 @@ Response:
 ```json
 {
   "object": "list",
+  "total": 2,
+  "has_more": false,
   "data": [
     {
       "id": "ven_2PwK7nTq4XmB9vLr6JcH",
@@ -1430,7 +1445,8 @@ One item of a check run:
   "reference": "INV-7718",
   "status": "clear",
   "findings": [],
-  "decision": null
+  "decision": null,
+  "outcome": null
 }
 ```
 
@@ -1537,7 +1553,8 @@ Response:
       "reference": "INV-20977",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_7BkP4zTm1WqH6nRv8CxL",
@@ -1557,7 +1574,8 @@ Response:
       "reference": "INV-7718",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_5RnX9cLw3TbM7kQp2VjF",
@@ -1583,7 +1601,8 @@ Response:
           "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }
@@ -1604,11 +1623,14 @@ curl -X POST "$QUARTER_API_URL/v1/payment_runs" \
 
 Runs, newest first, with counts and totals but without their items. A [payment check](/docs/payment-checks.md) is listed as a run of format `single`.
 
+To read the next page, pass the `id` of the last run you have as `after` while `has_more` is `true`.
+
 **Query parameters**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `limit` | integer | No | 1 to 200. Default 50. |
+| `after` | string | No | A run id. Returns the runs after it. |
 
 Request:
 
@@ -1622,6 +1644,7 @@ Response:
 ```json
 {
   "object": "list",
+  "has_more": true,
   "data": [
     {
       "id": "run_8TpQ3xWm6KvB1nRz4LcH",
@@ -1632,6 +1655,7 @@ Response:
       "created_at": "2026-10-06T08:15:03.000Z",
       "payments": 3,
       "held": 1,
+      "held_amount": 12000,
       "total": 52322.4
     },
     {
@@ -1643,7 +1667,80 @@ Response:
       "created_at": "2026-10-05T14:02:11.000Z",
       "payments": 2,
       "held": 0,
+      "held_amount": 0,
       "total": 58050
+    }
+  ]
+}
+```
+
+### List held payments
+
+`GET /v1/payment_items` (auth: API key)
+
+Every held payment in a run not yet released or cancelled, across runs, the longest waiting first, each with the run it is in. This is the one queue to decide from. A payment with a first approval that still needs a second is in it, with its `decision`.
+
+`summary` counts the whole queue, not the page. Pass the `id` of the last payment you have as `after` while `has_more` is `true`. Errors: `status_invalid` and `limit_invalid`, `400`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `held`, the default and the only value. |
+| `limit` | integer | No | 1 to 200. Default 50. |
+| `after` | string | No | A payment item id. Returns the payments after it. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payment_items?limit=1" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "summary": {
+    "held": 1,
+    "held_amount": 12000,
+    "runs": 1
+  },
+  "data": [
+    {
+      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+      "object": "payment_item",
+      "position": 2,
+      "rail": "ach",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "payee_name": "HARBOR POINT LOGISTICS",
+      "routing_number": "263391271",
+      "bic": null,
+      "last4": "8226",
+      "check_number": null,
+      "drawn_on_last4": null,
+      "amount": 12000,
+      "currency": "USD",
+      "effective_date": "2026-10-06",
+      "reference": "INV-20981",
+      "status": "held",
+      "findings": [
+        {
+          "code": "account_not_on_file",
+          "severity": "hold",
+          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+        }
+      ],
+      "decision": null,
+      "outcome": null,
+      "run": {
+        "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+        "name": "October 6 vendor run",
+        "format": "nacha",
+        "created_at": "2026-10-06T08:15:03.000Z"
+      }
     }
   ]
 }
@@ -1731,7 +1828,8 @@ Response:
       "reference": "INV-20977",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_7BkP4zTm1WqH6nRv8CxL",
@@ -1751,7 +1849,8 @@ Response:
       "reference": "INV-7718",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_5RnX9cLw3TbM7kQp2VjF",
@@ -1777,7 +1876,8 @@ Response:
           "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }
@@ -1817,7 +1917,8 @@ One item, decided:
     "at": "2026-10-06T09:02:47.000Z",
     "reason": "Harbor Point confirmed by phone that they did not change banks.",
     "second_by": null
-  }
+  },
+  "outcome": null
 }
 ```
 
@@ -1839,6 +1940,15 @@ Decisions and releases are made by people signed in to the Quarter console, with
 - Decisions stop when the run is released or cancelled: `409 run_closed`.
 - Nobody approves a payment to a vendor whose bank details they added in the last 90 days: `403 approver_changed_details`. Rejecting is allowed. See [segregation of duties](/docs/compliance.md#segregation-of-duties).
 - Nobody releases a run with a clear payment to a vendor whose bank details they added in the last 90 days: `403 releaser_changed_details`. Someone else releases it. A payment to that vendor that someone else approved does not stop the release.
+
+## What a hold turned out to be
+
+Once a held payment has a decision, a person records what it was: `fraud_attempt`, `error` (wrong amount, duplicate or wrong details), `legitimate` or `unknown`, with an optional note. The console asks for it when someone rejects a payment; an approval may leave it for later. It moves no money and changes no decision.
+
+- Only a payment Quarter held takes an outcome, once it is decided or its run was cancelled: otherwise `409 item_not_held` or `409 item_not_decided`.
+- Recording again replaces it. Each recording goes into the [audit log](/docs/compliance.md#get-v1-audit-log) with the one it replaced. It shows on the item as `outcome`.
+- A **catch** is a hold recorded as `fraud_attempt` or `error` whose payment never left: rejected, or in a run cancelled before release. A NetSuite bill changed after its check counts as rejected.
+- Like decisions, outcomes are recorded by a signed-in person; with an API key the route answers `403 session_required`.
 
 ## Two-person approval
 
@@ -1910,7 +2020,7 @@ Releasing a check run returns the issued-check file for your bank's Positive Pay
 
 `POST /v1/payment_runs/{run}/items/{item}/decision` (auth: Signed-in approver)
 
-Approves or rejects one held payment. Returns the whole run.
+Approves or rejects one held payment. Answers with the payment and its run's totals, not the run's other payments.
 
 **Path parameters**
 
@@ -1940,96 +2050,136 @@ Response:
 
 ```json
 {
-  "id": "run_8TpQ3xWm6KvB1nRz4LcH",
-  "object": "payment_run",
-  "name": "October 6 vendor run",
-  "format": "nacha",
-  "status": "scanned",
-  "created_by": "api_key:qk_test_Xy7P",
-  "created_at": "2026-10-06T08:15:03.000Z",
-  "released_at": null,
-  "released_by": null,
-  "release_code": null,
-  "file_deleted_at": null,
-  "summary": {
-    "payments": 3,
-    "total": 52322.4,
-    "held": 0,
-    "held_amount": 0,
-    "rejected": 1,
-    "rejected_amount": 12000
+  "id": "itm_5RnX9cLw3TbM7kQp2VjF",
+  "object": "payment_item",
+  "position": 2,
+  "rail": "ach",
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "payee_name": "HARBOR POINT LOGISTICS",
+  "routing_number": "263391271",
+  "bic": null,
+  "last4": "8226",
+  "check_number": null,
+  "drawn_on_last4": null,
+  "amount": 12000,
+  "currency": "USD",
+  "effective_date": "2026-10-06",
+  "reference": "INV-20981",
+  "status": "rejected",
+  "findings": [
+    {
+      "code": "account_not_on_file",
+      "severity": "hold",
+      "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
+    }
+  ],
+  "decision": {
+    "by": "dana@yourcompany",
+    "at": "2026-10-06T09:02:47.000Z",
+    "reason": "Harbor Point confirmed by phone that they did not change banks.",
+    "second_by": null
   },
-  "items": [
+  "outcome": null,
+  "run": {
+    "id": "run_8TpQ3xWm6KvB1nRz4LcH",
+    "name": "October 6 vendor run",
+    "format": "nacha",
+    "status": "scanned",
+    "released_at": null,
+    "summary": {
+      "payments": 3,
+      "held": 0,
+      "held_amount": 0
+    }
+  }
+}
+```
+
+### Record what a hold was
+
+`POST /v1/payment_runs/{run}/items/{item}/outcome` (auth: Signed-in approver)
+
+Records or replaces what a decided hold turned out to be. `caught` says whether it counts as a catch.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `run` | string | Yes | The payment run id, starting with `run_`. |
+| `item` | string | Yes | The payment item id, starting with `itm_`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `outcome` | string | Yes | `fraud_attempt`, `error`, `legitimate` or `unknown`. |
+| `note` | string | No | Up to 2,000 characters. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payment_runs/run_8TpQ3xWm6KvB1nRz4LcH/items/itm_5RnX9cLw3TbM7kQp2VjF/outcome" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"outcome":"fraud_attempt","note":"The change request came from a lookalike domain."}'
+```
+
+Response:
+
+```json
+{
+  "object": "payment_item_outcome",
+  "run_id": "run_8TpQ3xWm6KvB1nRz4LcH",
+  "item_id": "itm_5RnX9cLw3TbM7kQp2VjF",
+  "outcome": {
+    "kind": "fraud_attempt",
+    "note": "The change request came from a lookalike domain.",
+    "by": "dana@yourcompany",
+    "at": "2026-10-06T09:03:10.000Z"
+  },
+  "caught": true
+}
+```
+
+### A month of holds
+
+`GET /v1/monthly_summary` (auth: API key)
+
+The payments held in runs checked in one month, how many got a final decision from a person (a payment waiting for its second approver is not counted yet), the median minutes from the check to the first decision, the outcomes recorded, and the catches with the amount kept from leaving, by currency. Only your own project is counted.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `month` | string | No | `YYYY-MM`, in UTC. This month by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/monthly_summary?month=2026-10" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "monthly_summary",
+  "month": "2026-10",
+  "holds": 3,
+  "decided": 3,
+  "median_minutes_to_decide": 41,
+  "outcomes": {
+    "fraud_attempt": 1,
+    "error": 1,
+    "legitimate": 1,
+    "unknown": 0
+  },
+  "catches": 2,
+  "amount_protected": [
     {
-      "id": "itm_2LwQ8vNc5RtK9mBx3JhP",
-      "object": "payment_item",
-      "position": 0,
-      "rail": "ach",
-      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
-      "payee_name": "HARBOR POINT LOGISTICS",
-      "routing_number": "091408501",
-      "bic": null,
-      "last4": "7365",
-      "check_number": null,
-      "drawn_on_last4": null,
-      "amount": 36410,
       "currency": "USD",
-      "effective_date": "2026-10-06",
-      "reference": "INV-20977",
-      "status": "clear",
-      "findings": [],
-      "decision": null
-    },
-    {
-      "id": "itm_7BkP4zTm1WqH6nRv8CxL",
-      "object": "payment_item",
-      "position": 1,
-      "rail": "ach",
-      "vendor_id": "ven_2PwK7nTq4XmB9vLr6JcH",
-      "payee_name": "CEDAR RIDGE SUPPLY CO",
-      "routing_number": "102103384",
-      "bic": null,
-      "last4": "1904",
-      "check_number": null,
-      "drawn_on_last4": null,
-      "amount": 3912.4,
-      "currency": "USD",
-      "effective_date": "2026-10-06",
-      "reference": "INV-7718",
-      "status": "clear",
-      "findings": [],
-      "decision": null
-    },
-    {
-      "id": "itm_5RnX9cLw3TbM7kQp2VjF",
-      "object": "payment_item",
-      "position": 2,
-      "rail": "ach",
-      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
-      "payee_name": "HARBOR POINT LOGISTICS",
-      "routing_number": "263391271",
-      "bic": null,
-      "last4": "8226",
-      "check_number": null,
-      "drawn_on_last4": null,
-      "amount": 12000,
-      "currency": "USD",
-      "effective_date": "2026-10-06",
-      "reference": "INV-20981",
-      "status": "rejected",
-      "findings": [
-        {
-          "code": "account_not_on_file",
-          "severity": "hold",
-          "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
-        }
-      ],
-      "decision": {
-        "by": "dana@yourcompany",
-        "at": "2026-10-06T09:02:47.000Z",
-        "reason": "Harbor Point confirmed by phone that they did not change banks.",
-        "second_by": null
-      }
+      "amount": 14150
     }
   ]
 }
@@ -2260,7 +2410,8 @@ Response:
       "reference": "INV-20977",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_7BkP4zTm1WqH6nRv8CxL",
@@ -2280,7 +2431,8 @@ Response:
       "reference": "INV-7718",
       "status": "clear",
       "findings": [],
-      "decision": null
+      "decision": null,
+      "outcome": null
     },
     {
       "id": "itm_5RnX9cLw3TbM7kQp2VjF",
@@ -2306,7 +2458,8 @@ Response:
           "message": "this pays Harbor Point Logistics LLC at an account that is not the one on file"
         }
       ],
-      "decision": null
+      "decision": null,
+      "outcome": null
     }
   ]
 }
@@ -2543,6 +2696,7 @@ Settings decide how payments are checked for your account. Set any check to `hol
 | `checks` | `default` for each | Each check set to `hold`, `warn`, `off` or `default` (the default in [Checks](/docs/checks.md#all-checks)). `vendor_blocked`, `sanctions_match` and `second_person_required` always show `hold` and cannot be changed. |
 | `mandatory_checks` |  | The checks that cannot be changed. Read only. |
 | `defaults` |  | What each check does when left at `default`. Read only. |
+| `check_names` |  | The plain name of each check, as the console shows it. Read only. |
 | `cooling_days` | 10 | How long confirmed new bank details still warn, for [`account_changed_recently`](/docs/checks.md#account-changed-recently). 0 to 90. |
 | `unusual_multiplier` | 3 | How many times the usual amount counts as unusual, for [`amount_unusual`](/docs/checks.md#amount-unusual). 1.5 to 100. |
 | `two_person_threshold` | 50000 | In dollars, 0 to 1,000,000,000. Every payment of this amount or more is held as [`second_person_required`](/docs/checks.md#second-person-required), and approving it needs [two different people](/docs/releases.md#two-person-approval). 0 holds every payment for two people. Also used by [`just_under_threshold`](/docs/checks.md#just-under-threshold) and [`split_below_threshold`](/docs/checks.md#split-below-threshold). |
@@ -2593,8 +2747,8 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "sanctions_match",
     "vendor_blocked",
+    "sanctions_match",
     "second_person_required"
   ],
   "defaults": {
@@ -2620,6 +2774,30 @@ Response:
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
     "second_person_required": "hold"
+  },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "second_person_required": "Needs a second person to approve"
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
@@ -2685,8 +2863,8 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "sanctions_match",
     "vendor_blocked",
+    "sanctions_match",
     "second_person_required"
   ],
   "defaults": {
@@ -2712,6 +2890,30 @@ Response:
     "split_below_threshold": "warn",
     "vendor_new_paid_fast": "warn",
     "second_person_required": "hold"
+  },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "second_person_required": "Needs a second person to approve"
   },
   "cooling_days": 14,
   "unusual_multiplier": 3,
@@ -3393,8 +3595,8 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "sanctions_match",
     "vendor_blocked",
+    "sanctions_match",
     "second_person_required"
   ],
   "defaults": {
@@ -3421,6 +3623,30 @@ Response:
     "vendor_new_paid_fast": "warn",
     "second_person_required": "hold"
   },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "second_person_required": "Needs a second person to approve"
+  },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
@@ -3433,14 +3659,15 @@ Response:
 
 `GET /v1/audit_log` (auth: API key)
 
-Every recorded action, oldest first. To page through it, pass the `id` of the last entry you have as `after`.
+Every recorded action, oldest first, or newest first with `order=desc`. To page through it, pass the `id` of the last entry you have as `after`.
 
 **Query parameters**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `after` | string | No | An audit entry id. Returns entries after it. |
+| `after` | string | No | An audit entry id. Returns the entries after it, in the order asked for. |
 | `limit` | integer | No | 1 to 5,000. Default 500. |
+| `order` | string | No | `asc`, oldest first, the default, or `desc`, newest first. |
 
 Request:
 
@@ -4018,7 +4245,7 @@ Response:
 
 ### List the open bills
 
-`GET /v1/integrations/netsuite/bills` (auth: Signed-in admin)
+`GET /v1/integrations/netsuite/bills` (auth: API key, or anyone signed in)
 
 The open bills Quarter follows, newest change first. `status` is `waiting` (not checked yet, or changed since), `held`, `rejected` or `cleared`; `failed` lists the bills with a `check_error` or `write_error`. Decide a held bill at `/v1/payment_runs/{run_id}/items/{item_id}/decision`.
 
@@ -4456,7 +4683,7 @@ Response:
 | Any request | 400 | `request_invalid`, `limit_invalid`, `json_too_deep`. `request_invalid` covers a body that is not valid JSON; `json_too_deep` one nested more than 32 levels. |
 | Any request | 413, 415 | `payload_too_large`, `unsupported_media_type`. Send `application/json`, up to 256 KB, or 10 MB to the payment run and import routes. |
 | Any request | 401 | `api_key_missing`, `api_key_invalid`, `session_invalid`, `session_expired` |
-| Any request | 403 | `role_required`, `session_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`. |
+| Any request | 403 | `role_required`, `session_required`, `passkey_required`, `passkey_check_required`. Deciding, releasing, call-backs, fraud reports, settings and the yearly review need a person signed in; an API key answers `session_required`. Once an organization has live payments, an approver's or admin's session answers `passkey_required` until the person proves their passkey in the console, and `passkey_check_required` on those decisions when the last check is more than 5 minutes old. |
 | Any request | 429 | `rate_limited` |
 | Any request | 500 | `internal` |
 | Any request | 404 | `route_not_found`, `vendor_not_found`, `bank_account_not_found`, `payment_run_not_found`, `payment_item_not_found`, `payment_check_not_found`, `verification_request_not_found`, `webhook_delivery_not_found` |

@@ -163,8 +163,8 @@ Response:
     "second_person_required": "hold"
   },
   "mandatory_checks": [
-    "sanctions_match",
     "vendor_blocked",
+    "sanctions_match",
     "second_person_required"
   ],
   "defaults": {
@@ -191,6 +191,30 @@ Response:
     "vendor_new_paid_fast": "warn",
     "second_person_required": "hold"
   },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "second_person_required": "Needs a second person to approve"
+  },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
@@ -203,14 +227,15 @@ Response:
 
 `GET /v1/audit_log` (auth: API key)
 
-Every recorded action, oldest first. To page through it, pass the `id` of the last entry you have as `after`.
+Every recorded action, oldest first, or newest first with `order=desc`. To page through it, pass the `id` of the last entry you have as `after`.
 
 **Query parameters**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `after` | string | No | An audit entry id. Returns entries after it. |
+| `after` | string | No | An audit entry id. Returns the entries after it, in the order asked for. |
 | `limit` | integer | No | 1 to 5,000. Default 500. |
+| `order` | string | No | `asc`, oldest first, the default, or `desc`, newest first. |
 
 Request:
 
