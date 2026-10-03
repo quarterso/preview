@@ -93,7 +93,7 @@ Each organization's audit log is a hash chain. The database gives every entry it
 
 - An admin checks the whole chain in the console, under Compliance, or with [`GET /v1/audit_log/verify`](/docs/compliance.md#get-v1-audit-log-verify). It names the first entry that was changed or removed.
 - Someone who could rewrite every hash after a change could make the chain look whole again. So once a day Quarter emails the latest hash of each organization's chain to its own staff inbox, outside the database and its host. Pass a hash you kept as `anchor_seq` and `anchor_hash`, and the check also says whether that entry still has it.
-- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Those entries are marked, and the check counts them as `redacted` apart from `content_checked`: their links and their shape are checked, their content cannot be. An entry marked redacted breaks the chain as `redaction_invalid` unless it has the one shape a privacy request leaves and a privacy request is recorded at that moment or after.
+- A [privacy request](/docs/compliance.md#records-and-privacy) replaces a vendor contact's email inside audit entries. Each entry's content hash takes a contact email by the SHA-256 of the entry's id and the email, and the request keeps that hash of the email it replaced, so the check recomputes a redacted entry too: only that email may differ, and anything else changed breaks the chain as `content_changed`. An entry marked redacted breaks the chain as `redaction_invalid` unless it has the one shape a privacy request leaves and a privacy request is recorded at that moment or after. Entries redacted before Quarter kept that hash are checked by their links and shape only, and are left out of `content_checked`.
 - Entries written before the chain existed were chained in order, oldest first, when it was added.
 
 ## Security events
@@ -560,7 +560,7 @@ Response:
 
 `GET /v1/audit_log/verify` (auth: API key or signed-in admin)
 
-Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed`, `hash_changed` or `redaction_invalid`. `content_checked` counts the entries whose content was recomputed and matched; `redacted` ones are counted apart. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
+Recomputes your organization's whole chain and reports the first entry that was changed, removed or reordered. `first_break.reason` is `entry_missing`, `link_broken`, `content_changed`, `hash_changed` or `redaction_invalid`. `content_checked` counts the entries whose content was recomputed and matched, redacted ones included; `redacted` counts the entries a privacy request changed. With an anchor, `intact` is false unless that entry still has the hash you kept; `anchor.matches` is `null` when the check stopped before reaching it. A check reads at most 1,000,000 entries and says `complete: false` when it stops there.
 
 **Query parameters**
 
@@ -1041,7 +1041,8 @@ Some payment fraud starts inside the business: an employee changes a vendor to t
 - Only a signed-in admin can unblock a blocked vendor: `403 unblock_needs_admin`.
 - A person added to the organization after it went live is not one of the two approvers of a payment at or above the two-person threshold for their first 7 days: `403 approver_recently_added`. So an admin cannot add a second account of their own and approve a large payment twice. Rejecting is always allowed.
 - Every admin and [security contact](#records-and-privacy) is emailed when a member is added or removed, a role changes, or the check settings change: who made the change, what changed and when.
-- People are compared by email with the person who added the details, as the audit trail records them. Details added with an API key are recorded against the key, not a person, so these rules cover changes made by people signed in to Quarter.
+- In live mode, a change that loosens the checks, such as a higher two-person threshold, applies only once a second admin [approves it](/docs/checks.md#post-v1-settings-changes-change-approve).
+- People are compared by email with the person who added the details, as the audit trail records them. Details added with an API key are recorded against the admin who created the key, so the same rules apply to them. Only a key with no recorded creator stays unattributed.
 
 ### Employee accounts
 

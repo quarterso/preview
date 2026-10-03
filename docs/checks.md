@@ -94,6 +94,7 @@ Settings decide how payments are checked for your account. Set any check to `hol
 | `unusual_multiplier` | 3 | How many times the usual amount counts as unusual, for [`amount_unusual`](/docs/checks.md#amount-unusual). 1.5 to 100. |
 | `two_person_threshold` | 50000 | In dollars, 0 to 1,000,000,000. Every payment of this amount or more is held as [`second_person_required`](/docs/checks.md#second-person-required), and approving it needs [two different people](/docs/releases.md#two-person-approval). 0 holds every payment for two people. Also used by [`just_under_threshold`](/docs/checks.md#just-under-threshold) and [`split_below_threshold`](/docs/checks.md#split-below-threshold). |
 | `last_reviewed_at`, `last_reviewed_by` | `null` | The last yearly review of the procedure. Set by [`POST /v1/compliance/reviews`](/docs/compliance.md#post-v1-compliance-reviews). |
+| `pending_changes` | `[]` | In live mode, changes that loosen the checks, each waiting for a second admin: `id`, `requested_by`, `requested_at`, `changes` (one line per setting) and `request` (the fields asked for). Read only. |
 
 ### Endpoints
 
@@ -357,7 +358,8 @@ Response:
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
   "last_reviewed_at": null,
-  "last_reviewed_by": null
+  "last_reviewed_by": null,
+  "pending_changes": []
 }
 ```
 
@@ -366,6 +368,8 @@ Response:
 `PUT /v1/settings` (auth: Signed-in admin)
 
 A signed-in admin only; an API key answers `403 session_required`. Changes the fields you send and keeps the rest. Inside `checks`, only the checks you name change. A change applies to runs uploaded after it, not to runs already scanned.
+
+In live mode, a change that loosens the checks waits in `pending_changes` until another admin approves it: a higher `two_person_threshold`, a check moved from `hold` toward `warn` or `off`, a lower `cooling_days`, or a higher `unusual_multiplier`. The rest of the change applies at once. Admins and security contacts are emailed either way. In test mode every change applies at once.
 
 Errors: `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid`, all `400`.
 
@@ -634,7 +638,540 @@ Response:
   "unusual_multiplier": 3,
   "two_person_threshold": 25000,
   "last_reviewed_at": null,
-  "last_reviewed_by": null
+  "last_reviewed_by": null,
+  "pending_changes": []
+}
+```
+
+### Approve a change that loosens the checks
+
+`POST /v1/settings/changes/{change}/approve` (auth: Signed-in admin)
+
+Another admin, not the one who asked, approves a change waiting in `pending_changes`. It applies on top of the settings in force, and admins and security contacts are emailed. For an organization with one admin, Quarter staff approve it after a call.
+
+Errors: `403 settings_change_approve_self`, `404 settings_change_not_found`, `409 settings_change_not_pending` once it was approved or withdrawn.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/settings/changes/{change}/approve" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "settings",
+  "checks": {
+    "unknown_payee": "default",
+    "vendor_blocked": "hold",
+    "unverified_account": "default",
+    "account_changed_recently": "default",
+    "account_not_on_file": "default",
+    "name_mismatch": "default",
+    "first_payment": "default",
+    "amount_unusual": "default",
+    "duplicate_payment": "default",
+    "shared_account": "default",
+    "network_flagged": "default",
+    "sanctions_match": "hold",
+    "routing_invalid": "default",
+    "iban_invalid": "default",
+    "check_number_reused": "default",
+    "payee_name_altered": "default",
+    "just_under_threshold": "default",
+    "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
+    "vendor_dormant_reactivated": "default",
+    "split_below_threshold": "default",
+    "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
+    "second_person_required": "hold"
+  },
+  "mandatory_checks": [
+    "vendor_blocked",
+    "sanctions_match",
+    "payroll_account_unlisted",
+    "second_person_required"
+  ],
+  "defaults": {
+    "unknown_payee": "hold",
+    "vendor_blocked": "hold",
+    "unverified_account": "hold",
+    "account_changed_recently": "hold",
+    "account_not_on_file": "hold",
+    "name_mismatch": "warn",
+    "first_payment": "warn",
+    "amount_unusual": "warn",
+    "duplicate_payment": "hold",
+    "shared_account": "hold",
+    "network_flagged": "warn",
+    "sanctions_match": "hold",
+    "routing_invalid": "hold",
+    "iban_invalid": "hold",
+    "check_number_reused": "hold",
+    "payee_name_altered": "warn",
+    "just_under_threshold": "warn",
+    "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
+    "vendor_dormant_reactivated": "warn",
+    "split_below_threshold": "warn",
+    "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
+    "second_person_required": "hold"
+  },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
+    "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
+        }
+      ]
+    }
+  },
+  "cooling_days": 10,
+  "unusual_multiplier": 3,
+  "two_person_threshold": 250000,
+  "last_reviewed_at": null,
+  "last_reviewed_by": null,
+  "pending_changes": []
+}
+```
+
+### Withdraw a change waiting for approval
+
+`POST /v1/settings/changes/{change}/cancel` (auth: Signed-in admin)
+
+Any admin, including the one who asked. The settings stay as they are. Errors: `404 settings_change_not_found`, `409 settings_change_not_pending`.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/settings/changes/{change}/cancel" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "settings",
+  "checks": {
+    "unknown_payee": "default",
+    "vendor_blocked": "hold",
+    "unverified_account": "default",
+    "account_changed_recently": "default",
+    "account_not_on_file": "default",
+    "name_mismatch": "default",
+    "first_payment": "default",
+    "amount_unusual": "default",
+    "duplicate_payment": "default",
+    "shared_account": "default",
+    "network_flagged": "default",
+    "sanctions_match": "hold",
+    "routing_invalid": "default",
+    "iban_invalid": "default",
+    "check_number_reused": "default",
+    "payee_name_altered": "default",
+    "just_under_threshold": "default",
+    "employee_account_match": "default",
+    "payroll_account_unlisted": "hold",
+    "vendor_dormant_reactivated": "default",
+    "split_below_threshold": "default",
+    "vendor_new_paid_fast": "default",
+    "request_domain_lookalike": "default",
+    "request_domain_new": "default",
+    "request_domain_no_dmarc": "default",
+    "second_person_required": "hold"
+  },
+  "mandatory_checks": [
+    "vendor_blocked",
+    "sanctions_match",
+    "payroll_account_unlisted",
+    "second_person_required"
+  ],
+  "defaults": {
+    "unknown_payee": "hold",
+    "vendor_blocked": "hold",
+    "unverified_account": "hold",
+    "account_changed_recently": "hold",
+    "account_not_on_file": "hold",
+    "name_mismatch": "warn",
+    "first_payment": "warn",
+    "amount_unusual": "warn",
+    "duplicate_payment": "hold",
+    "shared_account": "hold",
+    "network_flagged": "warn",
+    "sanctions_match": "hold",
+    "routing_invalid": "hold",
+    "iban_invalid": "hold",
+    "check_number_reused": "hold",
+    "payee_name_altered": "warn",
+    "just_under_threshold": "warn",
+    "employee_account_match": "hold",
+    "payroll_account_unlisted": "hold",
+    "vendor_dormant_reactivated": "warn",
+    "split_below_threshold": "warn",
+    "vendor_new_paid_fast": "warn",
+    "request_domain_lookalike": "warn",
+    "request_domain_new": "warn",
+    "request_domain_no_dmarc": "warn",
+    "second_person_required": "hold"
+  },
+  "check_names": {
+    "unknown_payee": "Payee is not a vendor",
+    "vendor_blocked": "Vendor is blocked",
+    "unverified_account": "Bank details never confirmed",
+    "account_changed_recently": "Bank details changed recently",
+    "account_not_on_file": "Account is not the one on file",
+    "name_mismatch": "Payee name does not match",
+    "first_payment": "First payment to this vendor",
+    "amount_unusual": "Unusually large amount",
+    "duplicate_payment": "Duplicate payment",
+    "shared_account": "Account shared with another vendor",
+    "network_flagged": "Reported as fraud on Quarter",
+    "sanctions_match": "Resembles a sanctioned party",
+    "routing_invalid": "Invalid routing number",
+    "iban_invalid": "IBAN fails its check digits",
+    "check_number_reused": "Check number already used",
+    "payee_name_altered": "Payee line differs from the vendor name",
+    "just_under_threshold": "Just under the two-person threshold",
+    "employee_account_match": "Account belongs to an employee",
+    "payroll_account_unlisted": "Payroll to an account not on the employee list",
+    "vendor_dormant_reactivated": "Dormant vendor with new bank details",
+    "split_below_threshold": "Split to stay under the two-person threshold",
+    "vendor_new_paid_fast": "New vendor paid by the person who added it",
+    "request_domain_lookalike": "Change request came from a lookalike domain",
+    "request_domain_new": "Change request came from a newly registered domain",
+    "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
+    "second_person_required": "Needs a second person to approve"
+  },
+  "check_points": {
+    "unknown_payee": {
+      "points": 20,
+      "variants": []
+    },
+    "vendor_blocked": {
+      "points": 50,
+      "variants": []
+    },
+    "unverified_account": {
+      "points": 30,
+      "variants": []
+    },
+    "account_changed_recently": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Bank details changed recently, and confirmed",
+          "points": 10
+        }
+      ]
+    },
+    "account_not_on_file": {
+      "points": 40,
+      "variants": []
+    },
+    "name_mismatch": {
+      "points": 15,
+      "variants": []
+    },
+    "first_payment": {
+      "points": 5,
+      "variants": []
+    },
+    "amount_unusual": {
+      "points": 10,
+      "variants": []
+    },
+    "duplicate_payment": {
+      "points": 30,
+      "variants": []
+    },
+    "shared_account": {
+      "points": 30,
+      "variants": []
+    },
+    "network_flagged": {
+      "points": 30,
+      "variants": []
+    },
+    "sanctions_match": {
+      "points": 60,
+      "variants": [
+        {
+          "name": "Sanctions list out of date, so not screened",
+          "points": 0
+        },
+        {
+          "name": "Name in letters the lists cannot be compared with, so not screened",
+          "points": 0
+        }
+      ]
+    },
+    "routing_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "iban_invalid": {
+      "points": 25,
+      "variants": []
+    },
+    "check_number_reused": {
+      "points": 30,
+      "variants": []
+    },
+    "payee_name_altered": {
+      "points": 20,
+      "variants": []
+    },
+    "just_under_threshold": {
+      "points": 10,
+      "variants": []
+    },
+    "employee_account_match": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Payroll to an employee account, employee id not compared",
+          "points": 10
+        }
+      ]
+    },
+    "payroll_account_unlisted": {
+      "points": 30,
+      "variants": [
+        {
+          "name": "Several payroll entries to one account",
+          "points": 30
+        },
+        {
+          "name": "Payroll that could not be compared with an employee list",
+          "points": 10
+        }
+      ]
+    },
+    "vendor_dormant_reactivated": {
+      "points": 20,
+      "variants": []
+    },
+    "split_below_threshold": {
+      "points": 15,
+      "variants": []
+    },
+    "vendor_new_paid_fast": {
+      "points": 15,
+      "variants": []
+    },
+    "request_domain_lookalike": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Change request came from a domain other than the vendor's",
+          "points": 15
+        }
+      ]
+    },
+    "request_domain_new": {
+      "points": 30,
+      "variants": []
+    },
+    "request_domain_no_dmarc": {
+      "points": 5,
+      "variants": []
+    },
+    "second_person_required": {
+      "points": 0,
+      "variants": [
+        {
+          "name": "Paid by the person who changed the bank details",
+          "points": 30
+        },
+        {
+          "name": "Payments to one payee add up to the two-person threshold",
+          "points": 0
+        }
+      ]
+    }
+  },
+  "cooling_days": 10,
+  "unusual_multiplier": 3,
+  "two_person_threshold": 50000,
+  "last_reviewed_at": null,
+  "last_reviewed_by": null,
+  "pending_changes": []
 }
 ```
 
