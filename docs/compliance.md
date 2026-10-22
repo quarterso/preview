@@ -206,13 +206,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -240,7 +248,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -268,7 +282,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -281,7 +301,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -330,6 +355,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -416,15 +449,49 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
+  "trust_network": false,
   "last_reviewed_at": "2026-10-02T16:20:00.000Z",
   "last_reviewed_by": "dana@yourcompany"
 }
 ```
+
+## Nacha fraud monitoring program
+
+Nacha's fraud monitoring rule asks every business that sends ACH payments for written, risk-based processes to find unauthorized payments, reviewed at least once a year. `GET /v1/compliance/nacha_program`, for a signed-in admin, returns them in one document: the written procedure, every check with its mode, a year of payments checked, held, rejected and released by rail, the latest yearly review and whether it is overdue, and a verification of the audit log's chain. A `markdown` field holds the same as text to hand to your bank or auditor.
 
 ### Get the controls and evidence report
 

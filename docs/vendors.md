@@ -25,7 +25,7 @@ Confirm the change with a [verification link](/docs/verification.md) or a [call-
 
 ## How a change arrived, and the sender's domain
 
-Each set of bank details records how the request reached you, in `request.channel`: `email`, `phone`, `portal`, `letter`, `in_person`, `netsuite` for details the [NetSuite sync](/docs/netsuite.md#who-changed) brought in, or `unknown`. The console asks this one question whenever someone records new details. Details recorded before Quarter asked say `unknown`, or `netsuite` when the sync recorded them.
+Each set of bank details records how the request reached you, in `request.channel`: `email`, `phone`, `portal`, `letter`, `in_person`, `erp` for details an accounting system sync brought in, with `request.provider` naming it (`netsuite`, `quickbooks`, `xero`, `intacct` or `businesscentral`), or `unknown`. The console asks this one question whenever someone records new details. Details recorded before Quarter asked say `unknown`, or `erp` when a sync recorded them.
 
 For a request that came by email, send the sender's address as `request_sender`. Quarter keeps it as given, and compares its domain with the vendor's `email_domain`: the vendor's own (that domain or a subdomain of it), a lookalike, or a domain other than the vendor's. Lookalikes are found the way dnstwist finds them: letters swapped for ones that look alike, a letter left out, doubled or swapped, a key next to it, a hyphen, a different ending, or the vendor's name with a word added. Quarter also reads two free public records about the domain: when it was registered, from the RDAP service IANA lists for its ending, and its DMARC policy, from DNS. Only the domain leaves Quarter. The answer is kept in `request.signals`.
 

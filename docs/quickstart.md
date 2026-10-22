@@ -482,7 +482,7 @@ Response:
 ## Next
 
 - [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
-- [Checks](/docs/checks.md): all twenty-six checks and how to set each one.
+- [Checks](/docs/checks.md): all thirty-two checks and how to set each one.
 - [Decisions and release](/docs/releases.md): two-person approval, cancel, and what release guarantees.
 - [Payment checks](/docs/payment-checks.md): one wire or instant payment, checked before it is keyed in.
 - [Webhooks](/docs/webhooks.md): hear about held payments as they happen.

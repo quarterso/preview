@@ -1,8 +1,8 @@
 # Quarter docs
 
-> Check every outgoing vendor payment before it leaves your bank. Hold the suspicious ones for a person, with the reason in plain words.
+> Put every payment your business makes under one set of rules: bank files, wires, cards, stablecoins and AI agents. Hold the risky ones for a person, with the reason in plain words.
 
-Quarter is a payment firewall. It matches each payment to a vendor you know, checks it, and holds anything wrong for a person to approve or reject.
+Quarter is the control layer for business payments. Whatever the payment goes out on, a bank file, a wire, a card, a stablecoin or an AI agent, Quarter matches it to a vendor you know, checks it against your rules, and holds anything wrong for a person to approve or reject. It never holds or moves money.
 
 If you pay bills from NetSuite, you upload nothing. Quarter checks every open, approved vendor bill and holds the suspicious ones with NetSuite's own Payment Hold box, so NetSuite does not pay them until a person decides in Quarter. See [the payment flow](/docs/netsuite.md#payment-flow). It is built and tested against a simulated NetSuite account; not yet run against a real one.
 
@@ -603,7 +603,7 @@ Response:
 ## Next
 
 - [Payment runs](/docs/payment-runs.md): NACHA files, every CSV column name Quarter reads, and JSON items.
-- [Checks](/docs/checks.md): all twenty-six checks and how to set each one.
+- [Checks](/docs/checks.md): all thirty-two checks and how to set each one.
 - [Decisions and release](/docs/releases.md): two-person approval, cancel, and what release guarantees.
 - [Payment checks](/docs/payment-checks.md): one wire or instant payment, checked before it is keyed in.
 - [Webhooks](/docs/webhooks.md): hear about held payments as they happen.
@@ -637,7 +637,7 @@ Confirm the change with a [verification link](/docs/verification.md) or a [call-
 
 ## How a change arrived, and the sender's domain
 
-Each set of bank details records how the request reached you, in `request.channel`: `email`, `phone`, `portal`, `letter`, `in_person`, `netsuite` for details the [NetSuite sync](/docs/netsuite.md#who-changed) brought in, or `unknown`. The console asks this one question whenever someone records new details. Details recorded before Quarter asked say `unknown`, or `netsuite` when the sync recorded them.
+Each set of bank details records how the request reached you, in `request.channel`: `email`, `phone`, `portal`, `letter`, `in_person`, `erp` for details an accounting system sync brought in, with `request.provider` naming it (`netsuite`, `quickbooks`, `xero`, `intacct` or `businesscentral`), or `unknown`. The console asks this one question whenever someone records new details. Details recorded before Quarter asked say `unknown`, or `erp` when a sync recorded them.
 
 For a request that came by email, send the sender's address as `request_sender`. Quarter keeps it as given, and compares its domain with the vendor's `email_domain`: the vendor's own (that domain or a subdomain of it), a lookalike, or a domain other than the vendor's. Lookalikes are found the way dnstwist finds them: letters swapped for ones that look alike, a letter left out, doubled or swapped, a key next to it, a hyphen, a different ending, or the vendor's name with a word added. Quarter also reads two free public records about the domain: when it was registered, from the RDAP service IANA lists for its ending, and its DMARC policy, from DNS. Only the domain leaves Quarter. The answer is kept in `request.signals`.
 
@@ -3393,7 +3393,7 @@ Response:
 
 # Payment checks
 
-> Check one wire, RTP, FedNow, international or ACH payment before someone keys it into the bank portal.
+> Check one wire, RTP, FedNow, international, ACH, stablecoin or card payment before it goes out, by a person or an AI agent.
 
 A payment run checks a file. A payment check checks one payment that has no file: a wire, an instant payment or an international transfer that someone is about to key into the bank portal. It runs the same [checks](/docs/checks.md) as a run. When the payment is clear, or a person approves it, Quarter gives a release code to paste into the wire memo or the bank reference, so the payment carries proof that it was checked.
 
@@ -3411,12 +3411,30 @@ A payment run checks a file. A payment check checks one payment that has no file
 | --- | --- | --- |
 | `ach`, `wire`, `rtp`, `fednow` | `routing_number` (9 digits) and `account_number` (4 to 17 letters or digits) | `USD` only |
 | `international` | `iban` and `bic` (8 or 11 characters) | Any three-letter code |
+| `stablecoin` | `network` (`ethereum`, `base`, `polygon`, `arbitrum` or `solana`) and `address` | `USD` only |
+| `card` | `mcc`, the merchant category code (4 digits) | `USD` only |
 
 The three checks that only apply to paper checks never fire on a payment check. `routing_invalid` applies to the US rails, and `iban_invalid` to international payments.
+
+A stablecoin payment is checked like a bank payment, with the wallet in place of the account: the same address on the same chain is the same wallet, so a repeat is a duplicate. EVM addresses are compared in lower case. Wallets are never on file for a vendor, so a stablecoin payment to a known vendor is held as `account_not_on_file`. A card payment pays a merchant, not an account, so the bank detail checks never run on it, and a duplicate is the same amount to the same merchant name.
 
 > **Warning:** Bank details on file are US routing and account numbers, so an IBAN is never compared with them. An international payment to a known vendor is therefore always held as `account_not_on_file`, with the message that the vendor has no IBAN on file, and a person decides it.
 
 A clear check counts as a payment to the vendor from then on, for [`first_payment`](/docs/checks.md#first-payment) and [`amount_unusual`](/docs/checks.md#amount-unusual). In the list of payment runs, a payment check appears as a run of format `single`.
+
+## AI agents
+
+An agent is software that asks Quarter to check its own payments, with an API key bound to it. A signed-in admin creates it with `POST /v1/agents`, naming a member as `owner`, a `per_payment_limit`, a `daily_limit`, and optionally `allowed_vendor_ids` and, for card payments, `allowed_mccs`. Then `POST /v1/agents/{agent}/api_keys` gives the agent its key, shown once.
+
+- The agent's payments are recorded as requested by its owner, so a person answers for each one. `requested_by` is ignored.
+- A payment over a limit holds as [`agent_over_limit`](/docs/checks.md#agent-over-limit); one to a payee off its lists holds as [`agent_payee_not_allowed`](/docs/checks.md#agent-payee-not-allowed). Both always hold. Every other check runs as usual.
+- The agent's key reaches only `POST /v1/payment_checks` and `GET /v1/payment_checks/{check}`. Any other route answers `403 agent_key_refused`, so an agent can never decide its own held payment.
+- `POST /v1/agents/{agent}/disable` stops the agent and revokes its keys at once. A disabled agent cannot be enabled again.
+- An agent that works over MCP can call Quarter as a tool: `POST /mcp` with its key exposes one tool, `check_payment`, which takes the same fields as `POST /v1/payment_checks` and returns the status, findings and release code.
+
+## Card authorizations
+
+Connect Lithic with `PUT /v1/integrations/lithic` and the project's Auth Stream Access secret, then enroll the `responder_path` it returns as Lithic's AUTH_STREAM_ACCESS responder. Lithic then calls Quarter while each card purchase is authorized. Quarter checks it as a card payment and answers `APPROVED` only when it is clear. A held purchase is declined (`VELOCITY_EXCEEDED` for an agent over its limits, `UNAUTHORIZED_MERCHANT` off its allowed list, `SUSPECTED_FRAUD` otherwise) and closed as rejected, since a card payment cannot wait for a person. A card tagged `quarter_agent` with an agent id is checked as that agent's payment. Anything Quarter cannot check, including a currency other than USD, is declined. On a card payment, a merchant that is not a vendor on file only warns. For another issuer, such as Marqeta, call `POST /v1/payment_checks` from your own endpoint the same way.
 
 ## Endpoints
 
@@ -3426,20 +3444,23 @@ A clear check counts as a payment to the vendor from then on, for [`first_paymen
 
 Checks one payment and returns it with its findings. The account number is sealed at once and never returned; `last4` is the last 4 digits of the account or the IBAN. Fires `payment_run.scanned`, and `payment_item.held` when it is held, or `payment_run.released` when it is clear.
 
-Errors: `400 rail_invalid`, `payee_name_required`, `amount_invalid`, `currency_invalid`, `routing_number_invalid`, `account_number_invalid`, `iban_format_invalid`, `bic_invalid`, `requested_by_not_you`; `409 trial_ended`.
+Errors: `400 rail_invalid`, `payee_name_required`, `amount_invalid`, `currency_invalid`, `routing_number_invalid`, `account_number_invalid`, `iban_format_invalid`, `bic_invalid`, `network_invalid`, `address_invalid`, `mcc_invalid`, `requested_by_not_you`; `409 trial_ended`.
 
 **Body**
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `rail` | string | Yes | `ach`, `wire`, `rtp`, `fednow` or `international`. |
+| `rail` | string | Yes | `ach`, `wire`, `rtp`, `fednow`, `international`, `stablecoin` or `card`. |
 | `payee_name` | string | Yes | Who is paid, 1 to 140 characters. |
 | `amount` | number | Yes | In the payment currency, more than 0 and up to 1,000,000,000. Rounded to cents. |
 | `currency` | string | No | Three letters. `USD` by default, and always `USD` unless the rail is `international`. |
-| `routing_number` | string | No | Required on every rail but `international`. |
-| `account_number` | string | No | Required on every rail but `international`. Sealed at rest; never returned. |
+| `routing_number` | string | No | Required for `ach`, `wire`, `rtp` and `fednow`. |
+| `account_number` | string | No | Required for `ach`, `wire`, `rtp` and `fednow`. Sealed at rest; never returned. |
 | `iban` | string | No | Required for `international`. |
 | `bic` | string | No | Required for `international`: the 8 or 11 character SWIFT code. |
+| `network` | string | No | Required for `stablecoin`: `ethereum`, `base`, `polygon`, `arbitrum` or `solana`. |
+| `address` | string | No | Required for `stablecoin`: 0x and 40 hex digits, or a Solana base58 address. Only its fingerprint and last 4 are kept. |
+| `mcc` | string | No | Required for `card`: the merchant's 4-digit category code. |
 | `vendor_id` | string | No | Quarter's vendor id, or your own id for the vendor (`external_id`). |
 | `reference` | string | No | Your invoice or payment reference, up to 140 characters. |
 | `requested_by` | string | No | Email of the person checking the payment. Defaults to the person signed in, or the API key. |
@@ -3465,6 +3486,8 @@ Response:
   "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
   "routing_number": "263391271",
   "bic": null,
+  "network": null,
+  "mcc": null,
   "last4": "8226",
   "amount": 48250,
   "currency": "USD",
@@ -3499,6 +3522,8 @@ A clear payment:
   "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
   "routing_number": "263391271",
   "bic": null,
+  "network": null,
+  "mcc": null,
   "last4": "8226",
   "amount": 48250,
   "currency": "USD",
@@ -3545,6 +3570,8 @@ Response:
   "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
   "routing_number": "263391271",
   "bic": null,
+  "network": null,
+  "mcc": null,
   "last4": "8226",
   "amount": 48250,
   "currency": "USD",
@@ -3562,9 +3589,620 @@ Response:
 
 ---
 
+# Payouts
+
+> For platforms that pay out to their own users: check each payout before it is sent, and get allow, review or block with the reasons.
+
+> **Note:** The payouts API is built and tested. It has not yet been used by a platform.
+
+A marketplace paying sellers, a gig platform paying workers or a payroll tool calls Quarter before each payout. Quarter answers `allow`, `review` or `block`, with the reasons. Holds, decisions, two-person approval, the audit trail and webhooks are the same as for any [payment run](/docs/payment-runs.md). Quarter never sends the money: you do, once the answer is `allow`.
+
+## The model
+
+- A **connected account** is one of your own users that you pay out for, named by your `external_id`, unique in the project.
+- A **payee** is who a connected account's payouts go to. A payee is a vendor of the project reached only through that account's payouts, so it also appears in `/v1/vendors` and shares the vendors' `external_id` space. A payee is a person by default (`individual: true`).
+- Bank detail changes keep history: new details replace the old ones, which stay on file. A payout within 72 hours of a change holds as `payout_details_changed`.
+- A payout is a [payment run](/docs/payment-runs.md) of format `payout`, or `payout_batch` for up to 1,000. The payout id is the payment item id.
+
+## Decisions
+
+| Decision | Means |
+| --- | --- |
+| `allow` | Clear, or a person approved it. Send it. |
+| `review` | Held until a person decides at `/v1/payment_runs/{run_id}/items/{id}/decision`. `payout.reviewed` says the outcome. |
+| `block` | Do not send it: the payee is blocked, a sanctions match was found (payee, wallet or connected account), or a person rejected it. |
+
+## The checks on a payout
+
+Four checks run only on payouts: [`payout_details_changed`](/docs/checks.md#payout-details-changed), [`payout_new_payee_large`](/docs/checks.md#payout-new-payee-large), [`payout_account_fan_in`](/docs/checks.md#payout-account-fan-in) and [`payout_velocity_spike`](/docs/checks.md#payout-velocity-spike). `sanctions_match` also looks at the connected account's name.
+
+Some vendor checks do not run on payouts, because your payees change their own details in your app and nobody calls them back: `unverified_account`, `account_changed_recently`, `shared_account`, `first_payment`, `vendor_new_paid_fast`, the three `request_domain_*` checks and `just_under_threshold`. A payout must name a payee of that connected account, or it is refused with `404 payee_not_found`, so `unknown_payee` never fires.
+
+## Idempotency
+
+Every check and batch needs an `Idempotency-Key` header of 1 to 255 printable characters, unique to the payout or batch. A retry with the same key and the same body gets the first answer back with `200`. The same key with a different body answers `409 idempotency_key_reused`. Without the header: `400 idempotency_key_required`.
+
+## Outcomes and the network
+
+- Report what became of a payout, such as one that left and was later found to be fraud. An API key may record it.
+- Only a signed-in approver's report reaches the [network](/docs/network.md), and only for a business payee at a US account, from a live project, within 10 fraud reports per organization per day. Payees are people by default, so most payout reports stay with you.
+- When an API key reports fraud, the answer says `network.shared: false` with `reason: needs_signed_in_approver`. A person sends the same outcome again to share it.
+
+## Webhooks
+
+When a person decides a held payout, `payout.reviewed` is sent with `payout_id` (the payout, as `GET /v1/payouts/{payout}` takes it), `run_id` (the check or batch it came in), `item_id` (the same as `payout_id`), `decision` (`allow` or `block`), `reviewed_by` and `reason`. `payment_item.held` and `payment_run.released` fire as for any run. See [webhooks](/docs/webhooks.md).
+
+## Limits
+
+- Each credential may send 600 requests a minute, and a project 30 batches a minute: at most 600 single checks, or 30,000 payouts in batches, per key per minute.
+- Integration keys and approvers signed in may write; viewers may read. Agent keys cannot call these routes.
+- Payee bank details on file are US accounts only: a 9-digit routing number and an account number. An IBAN payout therefore holds as `account_not_on_file`.
+- In live mode, payees count toward `active_vendors` on your plan.
+
+## Endpoints
+
+### Create a connected account
+
+`POST /v1/connected_accounts` (auth: API key)
+
+Errors: `400 external_id_invalid`, `name_invalid`; `409 external_id_taken`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `external_id` | string | Yes | Your id for the account, unique in the project. |
+| `name` | string | Yes | Up to 200 characters. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/connected_accounts" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"external_id":"seller_20931","name":"Bayside Ceramics"}'
+```
+
+Response:
+
+```json
+{
+  "id": "cac_5RkT8mWq2LnB7vXc4HdP",
+  "object": "connected_account",
+  "external_id": "seller_20931",
+  "name": "Bayside Ceramics",
+  "created_at": "2026-10-21T14:02:11.000Z"
+}
+```
+
+### List connected accounts
+
+`GET /v1/connected_accounts` (auth: API key)
+
+Oldest first. `limit` is 1 to 200, 50 by default; pass the last id as `after` for the next page.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+| `after` | string | No | The id of the last account on the previous page. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/connected_accounts" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "cac_5RkT8mWq2LnB7vXc4HdP",
+      "object": "connected_account",
+      "external_id": "seller_20931",
+      "name": "Bayside Ceramics",
+      "created_at": "2026-10-21T14:02:11.000Z"
+    }
+  ]
+}
+```
+
+### Retrieve a connected account
+
+`GET /v1/connected_accounts/{account}` (auth: API key)
+
+Unknown: `404 connected_account_not_found`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `account` | string | Yes | Quarter's id (`cac_`) or your `external_id`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/connected_accounts/seller_20931" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "id": "cac_5RkT8mWq2LnB7vXc4HdP",
+  "object": "connected_account",
+  "external_id": "seller_20931",
+  "name": "Bayside Ceramics",
+  "created_at": "2026-10-21T14:02:11.000Z"
+}
+```
+
+### Create a payee
+
+`POST /v1/connected_accounts/{account}/payees` (auth: API key)
+
+A payee of the connected account, optionally with bank details. The answer is the payee as a [vendor](/docs/vendors.md) with `object: payee` and `connected_account_id`; `bank_accounts` keeps every account it has had.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `account` | string | Yes | Quarter's id (`cac_`) or your `external_id`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | Yes | The payee's name. |
+| `external_id` | string | No | Your id for the payee, unique in the project. |
+| `individual` | boolean | No | True by default for a payee: the network never takes or gives facts about a person. |
+| `routing_number` | string | No | 9 digits. |
+| `account_number` | string | No | 4 to 17 letters or digits. |
+| `holder_name` | string | No | The account holder. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/connected_accounts/seller_20931/payees" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"name":"Maya Chen","external_id":"payee_4471","routing_number":"<routing number>","account_number":"<account number>"}'
+```
+
+Response:
+
+```shell
+The payee, shaped as a vendor with object "payee" and connected_account_id.
+```
+
+### Retrieve a payee
+
+`GET /v1/connected_accounts/{account}/payees/{payee}` (auth: API key)
+
+The payee with its bank detail history. Unknown: `404 payee_not_found`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `account` | string | Yes | Quarter's id (`cac_`) or your `external_id`. |
+| `payee` | string | Yes | Quarter's id (`ven_`) or your `external_id`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/connected_accounts/seller_20931/payees/payee_4471" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```shell
+The payee, shaped as a vendor with object "payee" and connected_account_id.
+```
+
+### Change a payee's bank details
+
+`PUT /v1/connected_accounts/{account}/payees/{payee}/bank_account` (auth: API key)
+
+The old details stay as history. A payout within 72 hours holds as `payout_details_changed`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `account` | string | Yes | Quarter's id (`cac_`) or your `external_id`. |
+| `payee` | string | Yes | Quarter's id (`ven_`) or your `external_id`. |
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `routing_number` | string | Yes | 9 digits. |
+| `account_number` | string | Yes | 4 to 17 letters or digits. |
+| `holder_name` | string | No | The account holder. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/connected_accounts/seller_20931/payees/payee_4471/bank_account" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"routing_number":"<routing number>","account_number":"<account number>"}'
+```
+
+Response:
+
+```shell
+The payee, with the new details first and the old ones marked replaced.
+```
+
+### Check a payout
+
+`POST /v1/payouts/check` (auth: API key)
+
+Checks one payout before it is sent and answers at once. `201` the first time, `200` for a retry under the same key. A payout with nothing held is released at once; a held one waits for a person.
+
+Errors: `400 idempotency_key_required`, `connected_account_required`, `payee_required`, `rail_invalid` and the [payment check](/docs/payment-checks.md) field errors; `404 connected_account_not_found`, `payee_not_found`; `409 idempotency_key_reused`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `connected_account` | string | Yes | Quarter's id or yours for the connected account. |
+| `payee` | string | Yes | Quarter's id or yours for the connected account's payee. |
+| `rail` | string | Yes | `ach`, `wire`, `rtp`, `fednow`, `international` or `stablecoin`. |
+| `amount` | number | Yes | In major units. |
+| `currency` | string | No | Three letters; USD unless the rail is international. |
+| `routing_number` | string | No | 9 digits; ach, wire, rtp and fednow. |
+| `account_number` | string | No | 4 to 17 letters or digits; ach, wire, rtp and fednow. |
+| `iban` | string | No | International only. |
+| `bic` | string | No | International only. |
+| `network` | string | No | Stablecoin only. |
+| `address` | string | No | Stablecoin only: the wallet paid. |
+| `reference` | string | No | Your id for the payout. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payouts/check" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "idempotency-key: po_88213" \
+  -H "content-type: application/json" \
+  -d '{"connected_account":"seller_20931","payee":"payee_4471","rail":"ach","amount":1840,"reference":"po_88213"}'
+```
+
+Response:
+
+```json
+{
+  "id": "itm_7NwQ3kTz9RbM2xLp6VcJ",
+  "object": "payout",
+  "run_id": "run_2HcV8pLw5TqK9nRz3XbM",
+  "decision": "review",
+  "status": "held",
+  "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP",
+  "payee_id": "ven_4LtB9wQm6RzK2pXn8HcF",
+  "payee_name": "Maya Chen",
+  "rail": "ach",
+  "amount": 1840,
+  "currency": "USD",
+  "last4": "5521",
+  "reference": "po_88213",
+  "score": 40,
+  "reasons": [
+    {
+      "code": "payout_details_changed",
+      "severity": "hold",
+      "message": "Maya Chen's bank details changed 3 hours ago, just before this payout",
+      "points": 40
+    }
+  ],
+  "review": null,
+  "outcome": null,
+  "created_at": "2026-10-21T17:40:03.000Z"
+}
+```
+
+### Check a batch of payouts
+
+`POST /v1/payouts/batches` (auth: API key)
+
+Checks 1 to 1,000 payouts under one Idempotency-Key. Earlier payouts in the batch count toward the fan-in and velocity of later ones. 30 batches a minute per project.
+
+Errors: `400 payouts_invalid`, `idempotency_key_required`, and any payout error prefixed with its index, such as `payouts[3]`; `409 idempotency_key_reused`; `429` over the batch limit.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `payouts` | array | Yes | 1 to 1,000 payouts, each with the fields of a single check. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payouts/batches" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "idempotency-key: batch_2026-10-21_17" \
+  -H "content-type: application/json" \
+  -d '{"payouts":[{"connected_account":"seller_20931","payee":"payee_4471","rail":"ach","amount":1840,"reference":"po_88213"}]}'
+```
+
+Response:
+
+```json
+{
+  "id": "run_2HcV8pLw5TqK9nRz3XbM",
+  "object": "payout_batch",
+  "summary": {
+    "payouts": 2,
+    "allow": 1,
+    "review": 1,
+    "block": 0
+  },
+  "payouts": [
+    {
+      "id": "itm_7NwQ3kTz9RbM2xLp6VcJ",
+      "object": "payout",
+      "run_id": "run_2HcV8pLw5TqK9nRz3XbM",
+      "decision": "review",
+      "status": "held",
+      "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP",
+      "payee_id": "ven_4LtB9wQm6RzK2pXn8HcF",
+      "payee_name": "Maya Chen",
+      "rail": "ach",
+      "amount": 1840,
+      "currency": "USD",
+      "last4": "5521",
+      "reference": "po_88213",
+      "score": 40,
+      "reasons": [
+        {
+          "code": "payout_details_changed",
+          "severity": "hold",
+          "message": "Maya Chen's bank details changed 3 hours ago, just before this payout",
+          "points": 40
+        }
+      ],
+      "review": null,
+      "outcome": null,
+      "created_at": "2026-10-21T17:40:03.000Z"
+    },
+    {
+      "id": "itm_1KpR6vTn3WqZ8mLx4BcH",
+      "object": "payout",
+      "run_id": "run_2HcV8pLw5TqK9nRz3XbM",
+      "decision": "allow",
+      "status": "clear",
+      "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP",
+      "payee_id": "ven_8QzM2nRb5TkW7vLp3JcD",
+      "payee_name": "Luis Ortega",
+      "rail": "ach",
+      "amount": 420,
+      "currency": "USD",
+      "last4": "0937",
+      "reference": "po_88214",
+      "score": 0,
+      "reasons": [],
+      "review": null,
+      "outcome": null,
+      "created_at": "2026-10-21T17:40:03.000Z"
+    }
+  ],
+  "created_at": "2026-10-21T17:40:03.000Z"
+}
+```
+
+### Retrieve a batch
+
+`GET /v1/payouts/batches/{batch}` (auth: API key)
+
+The batch with each payout as it stands. Unknown: `404 payout_batch_not_found`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `batch` | string | Yes | The batch id, starting with `run_`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payouts/batches/run_2HcV8pLw5TqK9nRz3XbM" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "id": "run_2HcV8pLw5TqK9nRz3XbM",
+  "object": "payout_batch",
+  "summary": {
+    "payouts": 2,
+    "allow": 1,
+    "review": 1,
+    "block": 0
+  },
+  "payouts": [
+    {
+      "id": "itm_7NwQ3kTz9RbM2xLp6VcJ",
+      "object": "payout",
+      "run_id": "run_2HcV8pLw5TqK9nRz3XbM",
+      "decision": "review",
+      "status": "held",
+      "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP",
+      "payee_id": "ven_4LtB9wQm6RzK2pXn8HcF",
+      "payee_name": "Maya Chen",
+      "rail": "ach",
+      "amount": 1840,
+      "currency": "USD",
+      "last4": "5521",
+      "reference": "po_88213",
+      "score": 40,
+      "reasons": [
+        {
+          "code": "payout_details_changed",
+          "severity": "hold",
+          "message": "Maya Chen's bank details changed 3 hours ago, just before this payout",
+          "points": 40
+        }
+      ],
+      "review": null,
+      "outcome": null,
+      "created_at": "2026-10-21T17:40:03.000Z"
+    },
+    {
+      "id": "itm_1KpR6vTn3WqZ8mLx4BcH",
+      "object": "payout",
+      "run_id": "run_2HcV8pLw5TqK9nRz3XbM",
+      "decision": "allow",
+      "status": "clear",
+      "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP",
+      "payee_id": "ven_8QzM2nRb5TkW7vLp3JcD",
+      "payee_name": "Luis Ortega",
+      "rail": "ach",
+      "amount": 420,
+      "currency": "USD",
+      "last4": "0937",
+      "reference": "po_88214",
+      "score": 0,
+      "reasons": [],
+      "review": null,
+      "outcome": null,
+      "created_at": "2026-10-21T17:40:03.000Z"
+    }
+  ],
+  "created_at": "2026-10-21T17:40:03.000Z"
+}
+```
+
+### Retrieve a payout
+
+`GET /v1/payouts/{payout}` (auth: API key)
+
+Its current decision, and the review once a person made one. Unknown: `404 payout_not_found`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `payout` | string | Yes | The payout id, starting with `itm_`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payouts/itm_7NwQ3kTz9RbM2xLp6VcJ" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "id": "itm_7NwQ3kTz9RbM2xLp6VcJ",
+  "object": "payout",
+  "run_id": "run_2HcV8pLw5TqK9nRz3XbM",
+  "decision": "allow",
+  "status": "approved",
+  "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP",
+  "payee_id": "ven_4LtB9wQm6RzK2pXn8HcF",
+  "payee_name": "Maya Chen",
+  "rail": "ach",
+  "amount": 1840,
+  "currency": "USD",
+  "last4": "5521",
+  "reference": "po_88213",
+  "score": 40,
+  "reasons": [
+    {
+      "code": "payout_details_changed",
+      "severity": "hold",
+      "message": "Maya Chen's bank details changed 3 hours ago, just before this payout",
+      "points": 40
+    }
+  ],
+  "review": {
+    "by": "dana@yourcompany",
+    "at": "2026-10-21T17:52:40.000Z",
+    "reason": "Payee confirmed the change in the app with a passkey.",
+    "second_by": null
+  },
+  "outcome": null,
+  "created_at": "2026-10-21T17:40:03.000Z"
+}
+```
+
+### Report what became of a payout
+
+`POST /v1/payouts/{payout}/outcome` (auth: API key, or a signed-in approver)
+
+Takes the same body as [recording what a payment was](/docs/releases.md#outcomes). An API key records it; a signed-in approver reporting a `fraud_attempt` about a business payee at a US account also reports it to the network, within the daily limit. `network.reason` is `not_fraud`, `needs_signed_in_approver`, `individual_payee`, `not_a_us_account` or `daily_limit` when it was not shared.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `payout` | string | Yes | The payout id, starting with `itm_`. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/payouts/itm_1KpR6vTn3WqZ8mLx4BcH/outcome" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"outcome":"fraud_attempt","reason":"account_takeover","found_on":"2026-10-23","found_how":"bank_notice"}'
+```
+
+Response:
+
+```shell
+The recorded outcome (object "payment_item_outcome", with outcome, caught and missed), and network: { "shared": false, "reason": "needs_signed_in_approver" }
+```
+
+---
+
+# Settlement
+
+> Read a bank or card statement back, and see what settled as approved, what settled differently, and what left without Quarter.
+
+Quarter checks a payment before it goes out. Settlement closes the loop afterwards: send the statement from your bank or card program, and each line of money going out is matched to what Quarter released.
+
+| Result | What it means |
+| --- | --- |
+| `settled` | The line matched a released payment, for the same amount. |
+| `different` | The line matched a released payment, for another amount. `expected_amount` is what was approved. |
+| `unapproved` | Money left that matched nothing Quarter released: a payment made outside Quarter, a fee, or something to look at. |
+| missing | A payment Quarter released 5 to 45 days around the statement that no statement has shown yet. |
+
+## How a line is matched
+
+1. The release code of a payment check, pasted into the wire memo or bank reference.
+2. A check's number, on a check run.
+3. A whole file posted as one debit of its total, as banks often post an ACH file.
+4. The same amount to a payee the line names, or the only released payment of that amount.
+
+Each payment is matched once, across every statement, so the same debit on two statements is never counted twice. Money coming in is left out.
+
+## Formats
+
+- `csv`: a date column, and either one amount column with money out negative, or separate debit and credit columns. A description and a reference column are read when present.
+- `bai2`: the bank format. Type codes 400 to 699 are read as money out. Funds types 0, 1, 2, S, V and Z are read; ask the bank for one of them.
+
+`POST /v1/statements` with `format`, `file` and an optional `name` reads a statement, for an approver. `GET /v1/statements` lists them, and `GET /v1/statements/{statement}` returns one with each line and the payments still missing. The same file twice is refused with `409 duplicate_statement`.
+
+---
+
 # Checks and settings
 
-> The twenty-six checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
+> The thirty-two checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
 
 Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a `code`, a `severity`, a `message` and its `points`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
 
@@ -3587,7 +4225,7 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | --- | --- | --- | --- |
 | [`unknown_payee`](/docs/checks.md#unknown-payee) | Hold | 20 | The payee matches no vendor. |
 | [`vendor_blocked`](/docs/checks.md#vendor-blocked) | Hold (always) | 50 | You blocked this vendor from being paid. |
-| [`unverified_account`](/docs/checks.md#unverified-account) | Hold | 30 | The account is the one on file, but nobody ever confirmed it with the vendor. |
+| [`unverified_account`](/docs/checks.md#unverified-account) | Hold | 30; 10 (bank details never confirmed, but confirmed by other businesses on quarter) | The account is the one on file, but nobody ever confirmed it with the vendor. |
 | [`account_changed_recently`](/docs/checks.md#account-changed-recently) | Hold; warn once confirmed | 40; 10 (bank details changed recently, and confirmed) | The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period. |
 | [`account_not_on_file`](/docs/checks.md#account-not-on-file) | Hold | 40 | The run pays a known vendor at an account other than the one on file. |
 | [`name_mismatch`](/docs/checks.md#name-mismatch) | Warn | 15 | The payee name in the file does not match the vendor. |
@@ -3596,7 +4234,7 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | 30 | The same amount to the same account twice. |
 | [`shared_account`](/docs/checks.md#shared-account) | Hold | 30 | Another of your vendors is paid at this same account. |
 | [`network_flagged`](/docs/checks.md#network-flagged) | Warn | 30 | A business on Quarter reported this account in connection with a payment fraud. |
-| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened) | The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists. |
+| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened); 60 (wallet listed by ofac); 60 (connected account resembles a sanctioned party) | The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists. |
 | [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | 25 | The routing number is not a valid US bank routing number. |
 | [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | 25 | The IBAN on an international payment fails its checksum. |
 | [`check_number_reused`](/docs/checks.md#check-number-reused) | Hold | 30 | A check number already used on the same account. |
@@ -3611,6 +4249,12 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`request_domain_new`](/docs/checks.md#request-domain-new) | Warn | 30 | The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added. |
 | [`request_domain_no_dmarc`](/docs/checks.md#request-domain-no-dmarc) | Warn | 5 | The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name. |
 | [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details); 0 (payments to one payee add up to the two-person threshold) | The payment is at or above the two-person threshold, it is one of several payments to one payee that together reach it, or the person paying changed the vendor's bank details in the last 90 days. |
+| [`agent_over_limit`](/docs/checks.md#agent-over-limit) | Hold (always) | 40; 40 (over the agent's daily limit) | An AI agent asked to pay more than its limit for one payment, or more than its daily limit. |
+| [`agent_payee_not_allowed`](/docs/checks.md#agent-payee-not-allowed) | Hold (always) | 40 | An AI agent asked to pay a vendor or merchant category that is not on its allowed list. |
+| [`payout_details_changed`](/docs/checks.md#payout-details-changed) | Hold | 40 | A platform payout to a payee whose bank details changed in the last 72 hours. |
+| [`payout_new_payee_large`](/docs/checks.md#payout-new-payee-large) | Hold | 30 | The first payout to a payee is $2,500 or more. |
+| [`payout_account_fan_in`](/docs/checks.md#payout-account-fan-in) | Hold | 40 | Three or more connected accounts pay out to the same bank account. |
+| [`payout_velocity_spike`](/docs/checks.md#payout-velocity-spike) | Hold | 25 | A connected account's payouts in the last 24 hours reach $10,000 and are more than 5 times its usual day. |
 
 ## Points and the order of held payments
 
@@ -3706,13 +4350,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -3740,7 +4392,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -3768,7 +4426,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -3781,7 +4445,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -3830,6 +4499,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -3916,11 +4593,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -3933,9 +4640,9 @@ Response:
 
 A signed-in admin only; an API key answers `403 session_required`. Changes the fields you send and keeps the rest. Inside `checks`, only the checks you name change. A change applies to runs uploaded after it, not to runs already scanned.
 
-In live mode, a change that loosens the checks waits in `pending_changes` until another admin approves it: a higher `two_person_threshold`, a check moved from `hold` toward `warn` or `off`, a lower `cooling_days`, or a higher `unusual_multiplier`. The rest of the change applies at once. Admins and security contacts are emailed either way. In test mode every change applies at once.
+In live mode, a change that loosens the checks waits in `pending_changes` until another admin approves it: a higher `two_person_threshold`, a check moved from `hold` toward `warn` or `off`, a lower `cooling_days`, a higher `unusual_multiplier`, or `trust_network` turned on. The rest of the change applies at once. Admins and security contacts are emailed either way. In test mode every change applies at once.
 
-Errors: `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid`, all `400`.
+Errors: `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid`, `trust_network_invalid`, all `400`.
 
 **Body**
 
@@ -3945,6 +4652,7 @@ Errors: `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invali
 | `cooling_days` | integer | No | 0 to 90. |
 | `unusual_multiplier` | number | No | 1.5 to 100. |
 | `two_person_threshold` | number | No | Dollars, 0 to 1,000,000,000. |
+| `trust_network` | boolean | No | True lets other businesses' call-back confirmations stand in for yours on bank details you never confirmed: [`unverified_account`](/docs/checks.md#unverified-account) then warns instead of holding. Off by default. |
 
 Request:
 
@@ -3986,13 +4694,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -4020,7 +4736,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -4048,7 +4770,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -4061,7 +4789,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -4110,6 +4843,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -4196,11 +4937,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 14,
   "unusual_multiplier": 3,
   "two_person_threshold": 25000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -4253,13 +5024,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -4287,7 +5066,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -4315,7 +5100,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -4328,7 +5119,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -4377,6 +5173,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -4463,11 +5267,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 250000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -4518,13 +5352,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -4552,7 +5394,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -4580,7 +5428,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -4593,7 +5447,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -4642,6 +5501,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -4728,11 +5595,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -4769,15 +5666,18 @@ A vendor blocked after a run was scanned is caught at release: Quarter checks ev
 
 ### `unverified_account`
 
-**Default: hold. Points: 30.** The account is the one on file, but nobody ever confirmed it with the vendor.
+**Default: hold. Points: 30; 10 (bank details never confirmed, but confirmed by other businesses on quarter).** The account is the one on file, but nobody ever confirmed it with the vendor.
 
-Message:
+Messages:
 
 ```shell
 these bank details were never confirmed with the vendor
+these bank details were never confirmed with the vendor by you; {count} other businesses on Quarter confirmed this account by a call-back
 ```
 
 Fires for a vendor whose first and only bank details are `unverified`. Confirm them with a [verification link](/docs/verification.md) or a [call-back](/docs/verification.md#callbacks).
+
+With the setting `trust_network` on, bank details another business on Quarter confirmed by a call-back in the last 24 months only warn, with the second message. Only call-backs are shared: a vendor's bank login stays between Quarter, you and the vendor. The setting is off by default, and turning it on waits for a second admin on a live project.
 
 ### `account_changed_recently`
 
@@ -4887,7 +5787,7 @@ The finding gives a count, never who reported. See [fraud reports](/docs/network
 
 ### `sanctions_match`
 
-**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened).** The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists.
+**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened); 60 (wallet listed by ofac); 60 (connected account resembles a sanctioned party).** The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists.
 
 Messages:
 
@@ -4896,6 +5796,7 @@ the payee name resembles a listed party: {listed name}, on {list}
 the vendor's name on file, {vendor name}, resembles a listed party: {listed name}, on {list}
 Quarter's sanctions list is missing or out of date, so this payee could not be screened
 "{name}" is written in letters Quarter cannot compare with the sanctions lists, so it was not screened; check it against the lists yourself
+the wallet paid is listed as belonging to {listed name}, on {list}
 ```
 
 Name screening against OFAC's SDN list and its Consolidated (non-SDN) list, which Quarter loads twice a day, and the Commerce Department's Consolidated Screening List where the deployment loads it. The message names the list. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off.
@@ -4905,6 +5806,8 @@ In a live project, while Quarter's copy of either OFAC list is missing or more t
 The lists are written in Latin letters, and Quarter does not transliterate. So a payee or vendor name in another script, such as Cyrillic or Arabic, cannot be compared with them. It holds a live payment with the fourth message, and warns on a test one. A name under 3 letters is compared by exact match. Latin letters such as ß, ø and ł are read as the lists write them (ss, o, l).
 
 When a list changes, Quarter screens every vendor name again, records each new possible match on the vendor (`sanctions_findings`), and emails your admins and security contacts once, listing them. See [sanctions re-screening](/docs/vendors.md#sanctions-rescreening).
+
+A stablecoin payment's wallet is also compared with the digital currency addresses OFAC lists on SDN entries, and a match holds with the last message. EVM addresses are compared in lower case. OFAC says its address list is not complete.
 
 Name screening compares names. It cannot find a business blocked only because listed parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, because neither is on a list. Quarter never says a payee is cleared.
 
@@ -5099,6 +6002,83 @@ The second holds every payment under the threshold to one account, one vendor or
 The third holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in `uploaded_by` or `requested_by`. Bank details added with an API key count as added by the admin who created the key.
 
 This check always holds and cannot be turned off. The threshold itself is a setting.
+
+### `agent_over_limit`
+
+**Default: hold, cannot be turned off. Points: 40; 40 (over the agent's daily limit).** An AI agent asked to pay more than its limit for one payment, or more than its daily limit.
+
+Messages:
+
+```shell
+{amount} is over {agent}'s limit for one payment
+this would take {agent} over its daily limit
+```
+
+Runs only on a payment an [agent](/docs/payment-checks.md#agents) checks with its own key. The daily limit counts every payment the agent asked for in the last 24 hours that was not rejected, held ones included, so a held payment uses up the day until someone rejects it.
+
+The limits are the agent's own policy, so this check always holds and cannot be turned off. Change the limits by making a new agent.
+
+### `agent_payee_not_allowed`
+
+**Default: hold, cannot be turned off. Points: 40.** An AI agent asked to pay a vendor or merchant category that is not on its allowed list.
+
+Message:
+
+```shell
+{payee} is not on {agent}'s allowed list
+```
+
+For a card payment, an agent with `allowed_mccs` may pay only those merchant categories. For any other payment, an agent with `allowed_vendor_ids` may pay only those vendors. An agent with neither list may pay anyone, and the other checks still run.
+
+This check always holds and cannot be turned off.
+
+### `payout_details_changed`
+
+**Default: hold. Points: 40.** A platform payout to a payee whose bank details changed in the last 72 hours.
+
+Message:
+
+```shell
+the payee's bank details changed {when}
+```
+
+A changed account just before a payout is the usual sign of an account takeover. Runs only on platform payouts.
+
+### `payout_new_payee_large`
+
+**Default: hold. Points: 30.** The first payout to a payee is $2,500 or more.
+
+Message:
+
+```shell
+first payout to {payee} is {amount}
+```
+
+Runs only on platform payouts.
+
+### `payout_account_fan_in`
+
+**Default: hold. Points: 40.** Three or more connected accounts pay out to the same bank account.
+
+Message:
+
+```shell
+{count} connected accounts pay out to this bank account
+```
+
+Many sellers or workers paid into one account usually means one person controls them. Runs only on platform payouts.
+
+### `payout_velocity_spike`
+
+**Default: hold. Points: 25.** A connected account's payouts in the last 24 hours reach $10,000 and are more than 5 times its usual day.
+
+Message:
+
+```shell
+{account} paid out {amount} in 24 hours, more than 5 times its usual day
+```
+
+Runs only on platform payouts.
 
 ---
 
@@ -5538,13 +6518,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -5572,7 +6560,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -5600,7 +6594,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -5613,7 +6613,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -5662,6 +6667,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -5748,15 +6761,49 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
+  "trust_network": false,
   "last_reviewed_at": "2026-10-02T16:20:00.000Z",
   "last_reviewed_by": "dana@yourcompany"
 }
 ```
+
+## Nacha fraud monitoring program
+
+Nacha's fraud monitoring rule asks every business that sends ACH payments for written, risk-based processes to find unauthorized payments, reviewed at least once a year. `GET /v1/compliance/nacha_program`, for a signed-in admin, returns them in one document: the written procedure, every check with its mode, a year of payments checked, held, rejected and released by rail, the latest yearly review and whether it is overdue, and a verification of the audit log's chain. A `markdown` field holds the same as text to hand to your bank or auditor.
 
 ### Get the controls and evidence report
 
@@ -6567,12 +7614,22 @@ Admins and security contacts are emailed 60 days and again 14 days before the ce
 
 These routes take a signed-in admin's session, never an API key: an API key answers `403 session_required`. A test project can connect Quarter's sample account of four vendors with `sandbox: true`. A live project refuses NetSuite sandbox accounts.
 
+## Quarter's SuiteApp
+
+Quarter's SuiteApp closes the minutes between a bank change in NetSuite and Quarter's next sync. When a vendor's primary bank details are added, or their account or routing number changes, it checks the vendor's **Waiting for Quarter** box and puts every open bill to that vendor on Payment Hold at once. While the box is checked, a bill to the vendor, new or edited, keeps Payment Hold even if someone clears it by hand. Quarter clears the box just before it clears a bill to the vendor, which it does only once the new details are verified or a person approved the payment.
+
+1. Deploy the SuiteApp with the SuiteCloud CLI. It needs Electronic Bank Payments, which owns Entity Bank Details.
+2. Add Lists > Vendors: **Edit** to the role mapped to Quarter, so Quarter can clear the box. Bank details stay a separate record that role cannot change.
+3. Turn it on with `PUT /v1/integrations/netsuite/suiteapp` and `{"installed": true}`. Quarter reads the vendor field first and refuses while it is missing.
+
+> **Warning:** The SuiteApp is built and tested outside NetSuite. It has not been deployed to a real NetSuite account yet.
+
 ## The payment flow
 
 A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Payment button is gone, the bill is left off the Pay Bills page, and Electronic Bank Payments does not process it. Oracle's NetSuite help says so on its page Entering a Vendor Bill. Quarter uses that box, so a held bill is stopped by NetSuite itself, before any payment file exists.
 
 1. A workflow you add holds every new bill, with Quarter's field saying `Held by Quarter until checked`. It holds a bill again when its amount or vendor changes.
-2. Every 5 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
+2. Every 5 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `erp`, with `erp_provider` `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
 3. Quarter writes each result to the bill. A clear bill comes off hold, and Quarter's field says it was cleared, with a link to the run. A held bill stays on hold, and the field says why and where to decide.
 4. A person approves or rejects the held payment in Quarter, signed in, never with an API key. Two different people approve at or above your two-person threshold. Quarter then takes the hold off an approved bill and keeps it on a rejected one.
 5. A bill that changes after its check, in amount, vendor or bank details, is checked again in a new run and held again if it needs to be. The first check is closed as rejected, with the reason.
@@ -6581,7 +7638,7 @@ A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Pay
 
 - Someone with edit access to bills in NetSuite can clear Payment Hold and pay at once. Quarter puts the hold back at the next sync and sends `integration.hold_overridden`, but a payment made in between is made. A bill that leaves the open bills while Quarter holds it is recorded in the audit log, since it was paid, voided or deleted in NetSuite.
 - Payments that do not come from a vendor bill: checks written directly, journal entries, and payments keyed in your bank portal.
-- A bank change made on the vendor in NetSuite after a bill was cleared, or a vendor blocked in Quarter after its bill was cleared, holds the bill again at the next sync, at most 5 minutes later. Until then NetSuite can still pay it. Sync now before a payment run to close that gap, or have your NetSuite administrator set Payment Hold on the open bills of a vendor whose bank details change, with a workflow or script on Entity Bank Details.
+- A bank change made on the vendor in NetSuite after a bill was cleared, or a vendor blocked in Quarter after its bill was cleared, holds the bill again at the next sync, at most 5 minutes later. Until then NetSuite can still pay it. Sync now before a payment run to close that gap, or install [the Quarter SuiteApp](#suiteapp), which closes it inside NetSuite.
 - Without the workflow, a new bill can be paid before Quarter first sees it. Quarter counts bills that arrive without a hold and shows the count in the console.
 - A payment file Electronic Bank Payments already generated. Quarter acts on the bill, before the file.
 
@@ -7120,6 +8177,1939 @@ Response:
 
 ---
 
+# QuickBooks Online
+
+> Check every QuickBooks Online bill awaiting payment and get an alert for each one held. QuickBooks Online has no hold Quarter can set, so Quarter alerts and never stops a payment there.
+
+> **Note:** The QuickBooks Online connection is built and tested against a simulated QuickBooks Online company. It has not yet run against a real one.
+
+> **Warning:** Quarter checks QuickBooks Online bills and alerts. It cannot stop one. A held bill can still be paid in QuickBooks Online until someone stops it there or at your bank.
+
+Quarter reads your QuickBooks Online vendors every hour and, with the payment flow on, every bill with a balance every 5 minutes. Quarter never writes to QuickBooks Online.
+
+## What Quarter controls and what it does not
+
+| In QuickBooks Online | Quarter |
+| --- | --- |
+| Vendors | Read every hour, changes only |
+| Vendor bank details | Not read: the QuickBooks Online API does not show them |
+| Who changed bank details | Not known: the API has no change history |
+| Bills awaiting payment | Read: every bill with a balance. QuickBooks Online has no approval step |
+| Hold one bill | Not possible: QuickBooks Online has no hold Quarter can set |
+| Block a vendor | Not done: making a vendor inactive is too blunt and is refused while it has a balance |
+| Quarter's note on the bill | Not written. The private note belongs to you |
+
+Since bank details are not in the API, a QuickBooks Online payment cannot be held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) from a change made there. Record bank changes in Quarter, or check each payment with [payment checks](/docs/payment-checks.md) where it leaves.
+
+## Connecting
+
+Quarter is not yet registered as an Intuit app with its own consent screen. Until it is, you connect with an Intuit app of your own:
+
+1. Create an app in Intuit's developer portal with the `com.intuit.quickbooks.accounting` scope.
+2. Run the app's OAuth 2.0 consent as a QuickBooks Online admin of the company. Intuit returns the company id (realm id) and a refresh token.
+3. Connect with the realm id, the client id and secret, and the refresh token. Quarter tests them before it saves anything, then seals them. They are never returned, logged or put in the audit log, and are wiped on disconnect.
+
+Intuit replaces the refresh token each time it is used. Quarter keeps the newest one, so do not use the same refresh token anywhere else: the copy you hold stops working after Quarter first syncs.
+
+## What a sync does
+
+- Every hour from connect, or every 5 minutes with the payment flow on, Quarter reads the QuickBooks Online vendors changed since the last sync. Each becomes a Quarter vendor whose `external_id` is the QuickBooks Online id.
+- Bank details are taken only where the platform has them, and only US details: a 9-digit routing number and an account number. Anything else is left unread and noted on the vendor, in `notes` on the connection.
+- A bank change becomes new, unverified details with `request.channel` `erp` and `request.provider` `quickbooks`, so the next payment to them is held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) until someone confirms them with the vendor.
+- A project stays with the company its vendors came from. Connect another company to another project: a different one answers `409 account_changed`.
+
+## The payment flow
+
+With the payment flow on, every 5 minutes after the vendor sync, Quarter reads the bills awaiting payment. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `erp`, with `erp_provider` naming the platform. A person decides each held payment in Quarter, signed in. Quarter lifts a hold once the bill is clear or approved and reads the same when read again. A bill that changes after its check, in amount, vendor or bank details, is checked again. A run of bills cannot be cancelled (`409 erp_run`): reject the payments that should not be paid.
+
+- Quarter keeps a record of the holds it set and lifts only those. A hold that was already on when Quarter first wrote is never claimed.
+- A hold Quarter set that someone cleared is set again at the next sync and reported as `integration.hold_overridden`. A write that fails is retried at every sync and reported once as `integration.write_failed`.
+- Turning the payment flow off stops every write and leaves every hold where it is.
+- These routes take a signed-in admin, never an API key: an API key answers `403 session_required`. Only the bill list is open to API keys and anyone signed in.
+
+## What a hold looks like
+
+- Nothing changes in QuickBooks Online. A held bill raises `integration.bill_held` once for each result, with `payment_stopped: false` and `stop_payment` saying where to stop it. See [event types](/docs/webhooks.md#event-types).
+- The bill shows as `held` in Quarter, with `payment_stopped: false`. The payment flow says `stops_payment: false`.
+- Stop the bill yourself in QuickBooks Online, or at your bank, until a person decides it in Quarter.
+- A test project may turn the payment flow on against any QuickBooks Online company, since Quarter writes nothing.
+
+## Endpoints
+
+### Connect QuickBooks Online
+
+`PUT /v1/integrations/quickbooks` (auth: Signed-in admin)
+
+Tests the credentials against QuickBooks Online, saves them sealed and starts the first sync. Nothing is saved when QuickBooks Online refuses them. The answer shows `coverage`: what Quarter reads and controls through this platform.
+
+Errors: `realm_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `refresh_token_invalid`, `sandbox_invalid`, `sandbox_account_in_live`, `quickbooks_unauthorized`, `quickbooks_forbidden`, `quickbooks_query_failed` and `quickbooks_response_too_large`, all `400`; `account_changed`, `409`; `quickbooks_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `realm_id` | string | Yes | The company id Intuit returns with the consent, digits only. |
+| `client_id` | string | Yes | Your Intuit app's client id. |
+| `client_secret` | string | Yes | Your Intuit app's client secret. |
+| `refresh_token` | string | Yes | The refresh token from the consent. Quarter keeps the newest one Intuit returns. |
+| `sandbox` | boolean | No | A QuickBooks Online sandbox company. Test projects only. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/quickbooks" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"realm_id":"<realm id>","client_id":"<client id>","client_secret":"<client secret>","refresh_token":"<refresh token>"}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": null,
+  "next_sync_at": "2026-10-21T15:20:04.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": null,
+  "records": {
+    "active": 0,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Read the connection
+
+`GET /v1/integrations/quickbooks` (auth: Signed-in admin)
+
+The connection, its coverage, its last sync, the vendors that failed to save, `notes` on what a sync left out of a vendor (such as bank details that are not a US account), and the payment flow with its bill counts. Never the credentials.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/quickbooks" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": "2026-10-21T15:20:33.000Z",
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Sync now
+
+`POST /v1/integrations/quickbooks/sync` (auth: Signed-in admin)
+
+Starts a sync now instead of at the next one, which is every hour, or every 5 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/integrations/quickbooks/sync" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:31:10.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Turn the payment flow on or off
+
+`PUT /v1/integrations/quickbooks/payment_flow` (auth: Signed-in admin)
+
+On, Quarter checks open bills every 5 minutes and raises `integration.bill_held` for each one held. QuickBooks Online has no payment hold, so Quarter never stops a payment there. Off, Quarter stops checking.
+
+Errors: `enabled_invalid`, `quickbooks_unauthorized` and `quickbooks_forbidden`, `400`; `not_connected`, `409`; `quickbooks_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `enabled` | boolean | Yes | True to turn the payment flow on, false to turn it off. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/quickbooks/payment_flow" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"enabled":true}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### List the open bills
+
+`GET /v1/integrations/quickbooks/bills` (auth: API key, or anyone signed in)
+
+The open bills Quarter follows, newest change first. `status` is `waiting` (not checked yet, or changed since), `held`, `rejected` or `cleared`; `failed` lists the bills with a `check_error` or `write_error`. Decide a held bill at `/v1/payment_runs/{run_id}/items/{item_id}/decision`.
+
+Errors: `status_invalid` and `limit_invalid`, `400`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `waiting`, `held`, `rejected`, `cleared`, `failed` or `all`, the default. |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/quickbooks/bills?status=held" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "erp_bill",
+      "provider": "quickbooks",
+      "id": "1042",
+      "bill_number": "BILL-2207",
+      "vendor_external_id": "58",
+      "payee_name": "Northwind Logistics",
+      "amount": 18400,
+      "currency": "USD",
+      "due_date": "2026-10-24",
+      "status": "held",
+      "payment_stopped": false,
+      "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+      "run_id": "run_8Hq2LmZx4TbN0cVwYp3R",
+      "item_id": "itm_Qe7Rt2Yu9Io1Pa4Sd6Fg",
+      "check_error": null,
+      "write_error": null,
+      "written_at": "2026-10-21T15:20:33.000Z",
+      "updated_at": "2026-10-21T15:20:33.000Z"
+    }
+  ]
+}
+```
+
+### Disconnect QuickBooks Online
+
+`DELETE /v1/integrations/quickbooks` (auth: Signed-in admin)
+
+Stops the syncs, and the payment flow with them, and wipes the credentials. Vendors already synced, and their history, stay. Holds Quarter set stay where they are in QuickBooks Online.
+
+Request:
+
+```bash
+curl -X DELETE "$QUARTER_API_URL/v1/integrations/quickbooks" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "disconnected",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": null,
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+---
+
+# Xero
+
+> Check every Xero bill awaiting payment, and hold a suspicious one by sending it back to awaiting approval, so it is not paid until a person decides in Quarter.
+
+> **Note:** The Xero connection is built and tested against a simulated Xero organisation. It has not yet run against a real one.
+
+Quarter reads your Xero suppliers every hour and, with the payment flow on, your approved and submitted bills every 5 minutes. Xero has no payment hold, so Quarter uses the approval status: an approved bill can be paid, a bill awaiting approval cannot.
+
+## What Quarter controls and what it does not
+
+| In Xero | Quarter |
+| --- | --- |
+| Suppliers | Read every hour, changes only |
+| Supplier bank details | Read from the one free-text bank line, US routing and account numbers only. A BSB, sort code or IBAN is left unread and noted |
+| Who changed bank details | Partly: the contact's history names the Xero user, without an email |
+| Bills awaiting payment | Read: bills that are approved or awaiting approval, with an amount due |
+| Hold one bill | Yes: sent back to awaiting approval. Refused by Xero once a payment is on the bill |
+| Block a supplier | Not possible through the API |
+| Quarter's note on the bill | Added to the bill's history. Xero cannot read it back, so Quarter keeps what it last wrote |
+
+Xero's history gives a name, not an email, so Quarter cannot match the person to a member of your organization. The change is recorded with that name and a note saying so, and the rules that stop the person who changed details from approving a payment to them cannot apply.
+
+## Connecting
+
+Quarter is not yet registered as a Xero app with its own consent screen. Until it is, you connect with a Xero app of your own:
+
+1. Create an app in Xero's developer portal with the `accounting.contacts`, `accounting.transactions` and `offline_access` scopes. `offline_access` is what gives a refresh token.
+2. Run the app's OAuth 2.0 consent for the organisation, then read its tenant id from the connections endpoint.
+3. Connect with the tenant id, the client id and secret, and the refresh token. Quarter tests them before it saves anything, then seals them. They are never returned, logged or put in the audit log, and are wiped on disconnect.
+
+Xero replaces the refresh token each time it is used. Quarter keeps the newest one, so do not use the same refresh token anywhere else.
+
+## What a sync does
+
+- Every hour from connect, or every 5 minutes with the payment flow on, Quarter reads the Xero vendors changed since the last sync. Each becomes a Quarter vendor whose `external_id` is the Xero id.
+- Bank details are taken only where the platform has them, and only US details: a 9-digit routing number and an account number. Anything else is left unread and noted on the vendor, in `notes` on the connection.
+- A bank change becomes new, unverified details with `request.channel` `erp` and `request.provider` `xero`, so the next payment to them is held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) until someone confirms them with the vendor.
+- A project stays with the company its vendors came from. Connect another company to another project: a different one answers `409 account_changed`.
+
+## The payment flow
+
+With the payment flow on, every 5 minutes after the vendor sync, Quarter reads the bills awaiting payment. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `erp`, with `erp_provider` naming the platform. A person decides each held payment in Quarter, signed in. Quarter lifts a hold once the bill is clear or approved and reads the same when read again. A bill that changes after its check, in amount, vendor or bank details, is checked again. A run of bills cannot be cancelled (`409 erp_run`): reject the payments that should not be paid.
+
+- Quarter keeps a record of the holds it set and lifts only those. A hold that was already on when Quarter first wrote is never claimed.
+- A hold Quarter set that someone cleared is set again at the next sync and reported as `integration.hold_overridden`. A write that fails is retried at every sync and reported once as `integration.write_failed`.
+- Turning the payment flow off stops every write and leaves every hold where it is.
+- These routes take a signed-in admin, never an API key: an API key answers `403 session_required`. Only the bill list is open to API keys and anyone signed in.
+
+## What a hold looks like
+
+- A held bill goes back to **Awaiting Approval**, and Quarter's reason is added to its history. It cannot be paid in Xero while it waits. Once a person approves it in Quarter, or it is clear, Quarter approves it again.
+- A bill with a payment already on it cannot go back to awaiting approval. Xero refuses, Quarter records `xero_hold_refused` on the bill and sends `integration.write_failed`, and the bill shows `payment_stopped: false`. Hold the rest of that payment at your bank.
+- Anyone who can approve bills in Xero can approve a held bill again. Quarter sends it back at the next sync and reports `integration.hold_overridden`, but a payment made in between is made.
+- A test project cannot turn the payment flow on for Xero (`production_account_in_test`): Xero has no sandbox organisation Quarter can tell apart from a real one. Use a live project.
+
+## Endpoints
+
+### Connect Xero
+
+`PUT /v1/integrations/xero` (auth: Signed-in admin)
+
+Tests the credentials against Xero, saves them sealed and starts the first sync. Nothing is saved when Xero refuses them. The answer shows `coverage`: what Quarter reads and controls through this platform.
+
+Errors: `tenant_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `refresh_token_invalid`, `xero_unauthorized`, `xero_forbidden`, `xero_rate_limited`, `xero_query_failed` and `xero_response_too_large`, all `400`; `account_changed`, `409`; `xero_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `tenant_id` | string | Yes | The organisation id from Xero's connections endpoint. |
+| `client_id` | string | Yes | Your Xero app's client id. |
+| `client_secret` | string | Yes | Your Xero app's client secret. |
+| `refresh_token` | string | Yes | The refresh token from the consent. Quarter keeps the newest one Xero returns. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/xero" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"tenant_id":"<tenant id>","client_id":"<client id>","client_secret":"<client secret>","refresh_token":"<refresh token>"}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "xero",
+  "status": "active",
+  "account_id": "4f2c9a1e-7b3d-4e8a-9c61-2d5b8f0e3a47",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "free_text_us_only",
+    "bank_change_author": true,
+    "bills": true,
+    "bill_hold": "approval_status",
+    "vendor_block": "none"
+  },
+  "last_synced_at": null,
+  "next_sync_at": "2026-10-21T15:20:04.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": null,
+  "records": {
+    "active": 0,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Read the connection
+
+`GET /v1/integrations/xero` (auth: Signed-in admin)
+
+The connection, its coverage, its last sync, the vendors that failed to save, `notes` on what a sync left out of a vendor (such as bank details that are not a US account), and the payment flow with its bill counts. Never the credentials.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/xero" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "xero",
+  "status": "active",
+  "account_id": "4f2c9a1e-7b3d-4e8a-9c61-2d5b8f0e3a47",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "free_text_us_only",
+    "bank_change_author": true,
+    "bills": true,
+    "bill_hold": "approval_status",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": "bill",
+    "last_synced_at": "2026-10-21T15:20:33.000Z",
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Sync now
+
+`POST /v1/integrations/xero/sync` (auth: Signed-in admin)
+
+Starts a sync now instead of at the next one, which is every hour, or every 5 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/integrations/xero/sync" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "xero",
+  "status": "active",
+  "account_id": "4f2c9a1e-7b3d-4e8a-9c61-2d5b8f0e3a47",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "free_text_us_only",
+    "bank_change_author": true,
+    "bills": true,
+    "bill_hold": "approval_status",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:31:10.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Turn the payment flow on or off
+
+`PUT /v1/integrations/xero/payment_flow` (auth: Signed-in admin)
+
+On, Quarter checks open bills every 5 minutes, holds one by sending it back to awaiting approval, and approves it again once cleared. Xero refuses this for a bill with a payment on it, and Quarter reports the refusal. Off, Quarter stops writing and every hold stays where it is.
+
+Errors: `enabled_invalid`, `production_account_in_test`, `xero_unauthorized` and `xero_forbidden`, `400`; `not_connected`, `409`; `xero_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `enabled` | boolean | Yes | True to turn the payment flow on, false to turn it off. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/xero/payment_flow" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"enabled":true}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "xero",
+  "status": "active",
+  "account_id": "4f2c9a1e-7b3d-4e8a-9c61-2d5b8f0e3a47",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "free_text_us_only",
+    "bank_change_author": true,
+    "bills": true,
+    "bill_hold": "approval_status",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### List the open bills
+
+`GET /v1/integrations/xero/bills` (auth: API key, or anyone signed in)
+
+The open bills Quarter follows, newest change first. `status` is `waiting` (not checked yet, or changed since), `held`, `rejected` or `cleared`; `failed` lists the bills with a `check_error` or `write_error`. Decide a held bill at `/v1/payment_runs/{run_id}/items/{item_id}/decision`.
+
+Errors: `status_invalid` and `limit_invalid`, `400`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `waiting`, `held`, `rejected`, `cleared`, `failed` or `all`, the default. |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/xero/bills?status=held" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "erp_bill",
+      "provider": "xero",
+      "id": "9b1e4c7a-2f6d-4a3b-8e5c-1d7f0a9b6c24",
+      "bill_number": "INV-0457",
+      "vendor_external_id": "3c8e1f5a-9d2b-4c7e-a1f6-8b4d2e0c7a93",
+      "payee_name": "Northwind Logistics",
+      "amount": 18400,
+      "currency": "USD",
+      "due_date": "2026-10-24",
+      "status": "held",
+      "payment_stopped": true,
+      "run_id": "run_8Hq2LmZx4TbN0cVwYp3R",
+      "item_id": "itm_Qe7Rt2Yu9Io1Pa4Sd6Fg",
+      "check_error": null,
+      "write_error": null,
+      "written_at": "2026-10-21T15:20:33.000Z",
+      "updated_at": "2026-10-21T15:20:33.000Z"
+    }
+  ]
+}
+```
+
+### Disconnect Xero
+
+`DELETE /v1/integrations/xero` (auth: Signed-in admin)
+
+Stops the syncs, and the payment flow with them, and wipes the credentials. Vendors already synced, and their history, stay. Holds Quarter set stay where they are in Xero.
+
+Request:
+
+```bash
+curl -X DELETE "$QUARTER_API_URL/v1/integrations/xero" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "xero",
+  "status": "disconnected",
+  "account_id": "4f2c9a1e-7b3d-4e8a-9c61-2d5b8f0e3a47",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "free_text_us_only",
+    "bank_change_author": true,
+    "bills": true,
+    "bill_hold": "approval_status",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": null,
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+---
+
+# Sage Intacct
+
+> Bring your Sage Intacct vendors and their ACH bank details into Quarter every hour, and hold suspicious bills with Sage Intacct's own On hold box.
+
+> **Note:** The Sage Intacct connection is built and tested against a simulated Sage Intacct company. It has not yet run against a real one.
+
+Sage Intacct is the closest of these platforms to NetSuite: vendors carry ACH bank details, and bills have a real hold. With the payment flow on, Quarter puts suspicious bills on hold and writes why in a custom field you add.
+
+## What Quarter controls and what it does not
+
+| In Sage Intacct | Quarter |
+| --- | --- |
+| Vendors | Read every hour, changes only |
+| Vendor bank details | Read: the ACH routing and account number on the vendor, US only |
+| Who changed bank details | Not known: Sage Intacct records who last changed the vendor, not which field, so Quarter names no one |
+| Bills awaiting payment | Read: posted and partly paid bills with an amount due |
+| Hold one bill | Yes: the bill's On hold box |
+| Block a vendor | Sage Intacct has a vendor hold. Quarter does not use it: it holds bills |
+| Quarter's note on the bill | Yes: the custom field `QUARTER_CHECK`, which you add |
+
+## Connecting
+
+Quarter signs in to the Sage Intacct XML API as a Web Services sender and a Web Services user. Your Sage Intacct administrator does this once:
+
+1. Authorise the sender id under Company > Security > Web Services authorizations. Without it Sage Intacct answers `intacct_sender_unauthorized`.
+2. Create a Web Services user for Quarter, with permission to read Accounts Payable vendors and bills, and to edit bills once you turn the payment flow on.
+3. Add a custom text field on AP bills with the integration name `QUARTER_CHECK`, and give the Web Services user access to it. Quarter writes its result there.
+4. Connect with the sender id and password, the company id, and the user id and password. Quarter tests them before it saves anything, then seals them. They are never returned, logged or put in the audit log, and are wiped on disconnect.
+
+## What a sync does
+
+- Every hour from connect, or every 5 minutes with the payment flow on, Quarter reads the Sage Intacct vendors changed since the last sync. Each becomes a Quarter vendor whose `external_id` is the Sage Intacct id.
+- Bank details are taken only where the platform has them, and only US details: a 9-digit routing number and an account number. Anything else is left unread and noted on the vendor, in `notes` on the connection.
+- A bank change becomes new, unverified details with `request.channel` `erp` and `request.provider` `intacct`, so the next payment to them is held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) until someone confirms them with the vendor.
+- A project stays with the company its vendors came from. Connect another company to another project: a different one answers `409 account_changed`.
+
+## The payment flow
+
+With the payment flow on, every 5 minutes after the vendor sync, Quarter reads the bills awaiting payment. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `erp`, with `erp_provider` naming the platform. A person decides each held payment in Quarter, signed in. Quarter lifts a hold once the bill is clear or approved and reads the same when read again. A bill that changes after its check, in amount, vendor or bank details, is checked again. A run of bills cannot be cancelled (`409 erp_run`): reject the payments that should not be paid.
+
+- Quarter keeps a record of the holds it set and lifts only those. A hold that was already on when Quarter first wrote is never claimed.
+- A hold Quarter set that someone cleared is set again at the next sync and reported as `integration.hold_overridden`. A write that fails is retried at every sync and reported once as `integration.write_failed`.
+- Turning the payment flow off stops every write and leaves every hold where it is.
+- These routes take a signed-in admin, never an API key: an API key answers `403 session_required`. Only the bill list is open to API keys and anyone signed in.
+
+## What a hold looks like
+
+- A held bill is put **On hold**, and `QUARTER_CHECK` says why and where to decide. Once a person approves it in Quarter, or it is clear, Quarter takes the hold off and the field says it was cleared.
+- Sage Intacct needs the due date on every bill update, so Quarter reads it first and sends it back unchanged.
+- Someone who can edit bills can take the hold off by hand. Quarter puts it back at the next sync and reports `integration.hold_overridden`, but a payment made in between is made.
+- A test project may turn the payment flow on only for a company id ending in `-sandbox`.
+
+> **Warning:** Not yet checked against a real Sage Intacct company: whether the ACH account number comes back masked, whether the amount due and the last change time are readable as Quarter expects, and the `-sandbox` naming of test companies.
+
+## Endpoints
+
+### Connect Sage Intacct
+
+`PUT /v1/integrations/intacct` (auth: Signed-in admin)
+
+Tests the credentials against Sage Intacct, saves them sealed and starts the first sync. Nothing is saved when Sage Intacct refuses them. The answer shows `coverage`: what Quarter reads and controls through this platform.
+
+Errors: `sender_id_invalid`, `sender_password_invalid`, `company_id_invalid`, `user_id_invalid`, `user_password_invalid`, `intacct_sender_unauthorized`, `intacct_unauthorized`, `intacct_forbidden`, `intacct_query_failed` and `intacct_response_too_large`, all `400`; `account_changed`, `409`; `intacct_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `sender_id` | string | Yes | The Web Services sender id authorised in the company. |
+| `sender_password` | string | Yes | The sender's password. |
+| `company_id` | string | Yes | Your Sage Intacct company id. |
+| `user_id` | string | Yes | A Web Services user with Accounts Payable vendors and bills. |
+| `user_password` | string | Yes | The Web Services user's password. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/intacct" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"sender_id":"<sender id>","sender_password":"<sender password>","company_id":"<company id>","user_id":"<web services user>","user_password":"<user password>"}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "intacct",
+  "status": "active",
+  "account_id": "lakeshore-fab",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "ach",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "on_hold",
+    "vendor_block": "on_hold"
+  },
+  "last_synced_at": null,
+  "next_sync_at": "2026-10-21T15:20:04.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": null,
+  "records": {
+    "active": 0,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Read the connection
+
+`GET /v1/integrations/intacct` (auth: Signed-in admin)
+
+The connection, its coverage, its last sync, the vendors that failed to save, `notes` on what a sync left out of a vendor (such as bank details that are not a US account), and the payment flow with its bill counts. Never the credentials.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/intacct" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "intacct",
+  "status": "active",
+  "account_id": "lakeshore-fab",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "ach",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "on_hold",
+    "vendor_block": "on_hold"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": "bill",
+    "last_synced_at": "2026-10-21T15:20:33.000Z",
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Sync now
+
+`POST /v1/integrations/intacct/sync` (auth: Signed-in admin)
+
+Starts a sync now instead of at the next one, which is every hour, or every 5 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/integrations/intacct/sync" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "intacct",
+  "status": "active",
+  "account_id": "lakeshore-fab",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "ach",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "on_hold",
+    "vendor_block": "on_hold"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:31:10.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Turn the payment flow on or off
+
+`PUT /v1/integrations/intacct/payment_flow` (auth: Signed-in admin)
+
+On, Quarter checks open bills every 5 minutes and writes each bill's On hold box and Quarter's `QUARTER_CHECK` field. Before turning it on, Quarter reads one bill with both fields. Off, Quarter stops writing and every hold stays where it is.
+
+Errors: `enabled_invalid`, `production_account_in_test`, `intacct_field_missing`, `intacct_unauthorized` and `intacct_forbidden`, `400`; `not_connected`, `409`; `intacct_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `enabled` | boolean | Yes | True to turn the payment flow on, false to turn it off. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/intacct/payment_flow" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"enabled":true}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "intacct",
+  "status": "active",
+  "account_id": "lakeshore-fab",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "ach",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "on_hold",
+    "vendor_block": "on_hold"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### List the open bills
+
+`GET /v1/integrations/intacct/bills` (auth: API key, or anyone signed in)
+
+The open bills Quarter follows, newest change first. `status` is `waiting` (not checked yet, or changed since), `held`, `rejected` or `cleared`; `failed` lists the bills with a `check_error` or `write_error`. Decide a held bill at `/v1/payment_runs/{run_id}/items/{item_id}/decision`.
+
+Errors: `status_invalid` and `limit_invalid`, `400`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `waiting`, `held`, `rejected`, `cleared`, `failed` or `all`, the default. |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/intacct/bills?status=held" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "erp_bill",
+      "provider": "intacct",
+      "id": "48213",
+      "bill_number": "BILL-2207",
+      "vendor_external_id": "V-1187",
+      "payee_name": "Northwind Logistics",
+      "amount": 18400,
+      "currency": "USD",
+      "due_date": "2026-10-24",
+      "status": "held",
+      "payment_stopped": true,
+      "run_id": "run_8Hq2LmZx4TbN0cVwYp3R",
+      "item_id": "itm_Qe7Rt2Yu9Io1Pa4Sd6Fg",
+      "check_error": null,
+      "write_error": null,
+      "written_at": "2026-10-21T15:20:33.000Z",
+      "updated_at": "2026-10-21T15:20:33.000Z"
+    }
+  ]
+}
+```
+
+### Disconnect Sage Intacct
+
+`DELETE /v1/integrations/intacct` (auth: Signed-in admin)
+
+Stops the syncs, and the payment flow with them, and wipes the credentials. Vendors already synced, and their history, stay. Holds Quarter set stay where they are in Sage Intacct.
+
+Request:
+
+```bash
+curl -X DELETE "$QUARTER_API_URL/v1/integrations/intacct" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "intacct",
+  "status": "disconnected",
+  "account_id": "lakeshore-fab",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "ach",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "on_hold",
+    "vendor_block": "on_hold"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": null,
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "bill",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+---
+
+# Business Central
+
+> Check every open purchase invoice in Microsoft Dynamics 365 Business Central, and block payments to a vendor while any of its invoices is held.
+
+> **Note:** The Business Central connection is built and tested against a simulated Business Central company. It has not yet run against a real one.
+
+> **Warning:** Business Central's API has no hold on a single invoice. Quarter's hold blocks every payment to the vendor, not just the held invoice, until no invoice of that vendor is held.
+
+## What Quarter controls and what it does not
+
+| In Business Central | Quarter |
+| --- | --- |
+| Vendors | Read every hour, changes only |
+| Vendor bank details | Not read: API v2.0 does not show them |
+| Who changed bank details | Not known: the API has no change log |
+| Open purchase invoices | Read. The amount is the invoice total: the API shows no amount left after a part payment |
+| Hold one invoice | Not possible through the API |
+| Block a vendor | Yes: the vendor's Blocked field set to Payment |
+| Quarter's note on the invoice | Not written: there is no field for it |
+
+Since bank details are not in the API, a Business Central payment cannot be held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) from a change made there. Record bank changes in Quarter, or check each payment with [payment checks](/docs/payment-checks.md) where it leaves.
+
+## Connecting
+
+Quarter signs in as a Microsoft Entra app with client credentials, as Microsoft's page Using Service to Service Authentication describes. Your administrator does this once:
+
+1. In the Microsoft Entra admin center, register an application. Copy its **Application (client) ID**.
+2. Under **Certificates & secrets**, add a new client secret and copy its value. Entra shows it only once.
+3. Under **API permissions**, add **Dynamics 365 Business Central**, **Application permissions**, **API.ReadWrite.All**, and grant admin consent for your tenant.
+4. In Business Central, open the **Microsoft Entra Applications** page, add a new card with the client id, and set **State** to **Enabled**.
+5. Assign the app permission sets that read vendors and purchase invoices and, for the payment flow, modify vendors. Business Central does not let an app have SUPER.
+6. Connect with the tenant id, environment name, company id, client id and secret. Quarter tests them before it saves anything, then seals them. They are never returned, logged or put in the audit log, and are wiped on disconnect.
+
+## What a sync does
+
+- Every hour from connect, or every 5 minutes with the payment flow on, Quarter reads the Business Central vendors changed since the last sync. Each becomes a Quarter vendor whose `external_id` is the Business Central id.
+- Bank details are taken only where the platform has them, and only US details: a 9-digit routing number and an account number. Anything else is left unread and noted on the vendor, in `notes` on the connection.
+- A bank change becomes new, unverified details with `request.channel` `erp` and `request.provider` `businesscentral`, so the next payment to them is held as [`account_changed_recently`](/docs/checks.md#account-changed-recently) until someone confirms them with the vendor.
+- A project stays with the company its vendors came from. Connect another company to another project: a different one answers `409 account_changed`.
+
+## The payment flow
+
+With the payment flow on, every 5 minutes after the vendor sync, Quarter reads the bills awaiting payment. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `erp`, with `erp_provider` naming the platform. A person decides each held payment in Quarter, signed in. Quarter lifts a hold once the bill is clear or approved and reads the same when read again. A bill that changes after its check, in amount, vendor or bank details, is checked again. A run of bills cannot be cancelled (`409 erp_run`): reject the payments that should not be paid.
+
+- Quarter keeps a record of the holds it set and lifts only those. A hold that was already on when Quarter first wrote is never claimed.
+- A hold Quarter set that someone cleared is set again at the next sync and reported as `integration.hold_overridden`. A write that fails is retried at every sync and reported once as `integration.write_failed`.
+- Turning the payment flow off stops every write and leaves every hold where it is.
+- These routes take a signed-in admin, never an API key: an API key answers `403 session_required`. Only the bill list is open to API keys and anyone signed in.
+
+## What a hold looks like
+
+- While any open invoice of a vendor is held, the vendor's **Blocked** field is **Payment**. No payment to that vendor can be posted, for any invoice.
+- Quarter clears the block only if Quarter set it, once no held invoice of that vendor remains and every one of its invoices still reads as checked. A block someone else set stays, and a vendor blocked for **All** is left alone.
+- Someone who can edit vendors can clear the block by hand. Quarter sets it again at the next sync and reports `integration.hold_overridden`, but a payment made in between is made.
+- A test project may turn the payment flow on for any environment other than `Production`.
+
+Bank details and holds on single ledger entries would need the vendor bank account page (page 426) and the vendor ledger entries published as web services, or a Quarter extension. Neither is built.
+
+## Endpoints
+
+### Connect Business Central
+
+`PUT /v1/integrations/businesscentral` (auth: Signed-in admin)
+
+Tests the credentials against Business Central, saves them sealed and starts the first sync. Nothing is saved when Business Central refuses them. The answer shows `coverage`: what Quarter reads and controls through this platform.
+
+Errors: `tenant_id_invalid`, `environment_invalid`, `company_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `businesscentral_unauthorized`, `businesscentral_forbidden`, `businesscentral_query_failed` and `businesscentral_response_too_large`, all `400`; `account_changed`, `409`; `businesscentral_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `tenant_id` | string | Yes | The Microsoft Entra tenant id. |
+| `environment` | string | Yes | The environment name, such as `Production` or `Sandbox`. |
+| `company_id` | string | Yes | The company id from Business Central's companies endpoint. |
+| `client_id` | string | Yes | The application (client) id of the Entra app. |
+| `client_secret` | string | Yes | A client secret of the Entra app. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/businesscentral" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"tenant_id":"<tenant id>","environment":"Production","company_id":"<company id>","client_id":"<client id>","client_secret":"<client secret>"}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "businesscentral",
+  "status": "active",
+  "account_id": "6b2d9f4e-1a7c-4e3b-9d58-0c3f7a2e8b61/Production/8e4a1c6f-3b9d-4f2a-a7e5-5d0c9b3f1e28",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "blocked_payment"
+  },
+  "last_synced_at": null,
+  "next_sync_at": "2026-10-21T15:20:04.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": null,
+  "records": {
+    "active": 0,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "vendor",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Read the connection
+
+`GET /v1/integrations/businesscentral` (auth: Signed-in admin)
+
+The connection, its coverage, its last sync, the vendors that failed to save, `notes` on what a sync left out of a vendor (such as bank details that are not a US account), and the payment flow with its bill counts. Never the credentials.
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/businesscentral" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "businesscentral",
+  "status": "active",
+  "account_id": "6b2d9f4e-1a7c-4e3b-9d58-0c3f7a2e8b61/Production/8e4a1c6f-3b9d-4f2a-a7e5-5d0c9b3f1e28",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "blocked_payment"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": "vendor",
+    "last_synced_at": "2026-10-21T15:20:33.000Z",
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Sync now
+
+`POST /v1/integrations/businesscentral/sync` (auth: Signed-in admin)
+
+Starts a sync now instead of at the next one, which is every hour, or every 5 minutes with the payment flow on. At most once in 5 minutes: sooner answers `429 sync_rate_limited`. While a sync runs, the answer is `409 sync_in_progress`. Not connected: `409 not_connected`.
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/integrations/businesscentral/sync" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "businesscentral",
+  "status": "active",
+  "account_id": "6b2d9f4e-1a7c-4e3b-9d58-0c3f7a2e8b61/Production/8e4a1c6f-3b9d-4f2a-a7e5-5d0c9b3f1e28",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "blocked_payment"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:31:10.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "vendor",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### Turn the payment flow on or off
+
+`PUT /v1/integrations/businesscentral/payment_flow` (auth: Signed-in admin)
+
+On, Quarter checks open purchase invoices every 5 minutes and blocks payments to a vendor while any of its invoices is held. It clears only a block it set, once none of that vendor's invoices is held. Off, Quarter stops writing and every block stays where it is.
+
+Errors: `enabled_invalid`, `production_account_in_test`, `businesscentral_unauthorized` and `businesscentral_forbidden`, `400`; `not_connected`, `409`; `businesscentral_unreachable`, `503`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `enabled` | boolean | Yes | True to turn the payment flow on, false to turn it off. |
+
+Request:
+
+```bash
+curl -X PUT "$QUARTER_API_URL/v1/integrations/businesscentral/payment_flow" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN" \
+  -H "content-type: application/json" \
+  -d '{"enabled":true}'
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "businesscentral",
+  "status": "active",
+  "account_id": "6b2d9f4e-1a7c-4e3b-9d58-0c3f7a2e8b61/Production/8e4a1c6f-3b9d-4f2a-a7e5-5d0c9b3f1e28",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "blocked_payment"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": "vendor",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+### List the open bills
+
+`GET /v1/integrations/businesscentral/bills` (auth: API key, or anyone signed in)
+
+The open bills Quarter follows, newest change first. `status` is `waiting` (not checked yet, or changed since), `held`, `rejected` or `cleared`; `failed` lists the bills with a `check_error` or `write_error`. Decide a held bill at `/v1/payment_runs/{run_id}/items/{item_id}/decision`.
+
+Errors: `status_invalid` and `limit_invalid`, `400`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `status` | string | No | `waiting`, `held`, `rejected`, `cleared`, `failed` or `all`, the default. |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/integrations/businesscentral/bills?status=held" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "erp_bill",
+      "provider": "businesscentral",
+      "id": "2f7c1a9e-4b6d-4e8f-a3c5-9d1e7b0f6a42",
+      "bill_number": "108204",
+      "vendor_external_id": "5a3e8c1f-7d2b-4f9a-b6e4-1c0d8a7f3e95",
+      "payee_name": "Northwind Logistics",
+      "amount": 18400,
+      "currency": "USD",
+      "due_date": "2026-10-24",
+      "status": "held",
+      "payment_stopped": true,
+      "run_id": "run_8Hq2LmZx4TbN0cVwYp3R",
+      "item_id": "itm_Qe7Rt2Yu9Io1Pa4Sd6Fg",
+      "check_error": null,
+      "write_error": null,
+      "written_at": "2026-10-21T15:20:33.000Z",
+      "updated_at": "2026-10-21T15:20:33.000Z"
+    }
+  ]
+}
+```
+
+### Disconnect Business Central
+
+`DELETE /v1/integrations/businesscentral` (auth: Signed-in admin)
+
+Stops the syncs, and the payment flow with them, and wipes the credentials. Vendors already synced, and their history, stay. Holds Quarter set stay where they are in Business Central.
+
+Request:
+
+```bash
+curl -X DELETE "$QUARTER_API_URL/v1/integrations/businesscentral" \
+  -H "authorization: Bearer $QUARTER_SESSION_TOKEN"
+```
+
+Response:
+
+```json
+{
+  "object": "integration",
+  "provider": "businesscentral",
+  "status": "disconnected",
+  "account_id": "6b2d9f4e-1a7c-4e3b-9d58-0c3f7a2e8b61/Production/8e4a1c6f-3b9d-4f2a-a7e5-5d0c9b3f1e28",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "blocked_payment"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": null,
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": "vendor",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}
+```
+
+---
+
 # Webhooks and events
 
 > Event types, the signed delivery format, how to verify quarter-signature, and how retries work.
@@ -7138,10 +10128,12 @@ Quarter records each change as an event and sends it to your webhook endpoints. 
 | `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes), `score` ([points](/docs/checks.md#points)) |
 | `payment_run.released` | A run was released. | `run_id`, `released_by`, `rejected` (how many payments were left out), and `release_code` for a [payment check](/docs/payment-checks.md) |
 | `fraud_report.created` | You reported an account. | `id`, `routing_number`, `last4` |
-| `integration.synced` | A [NetSuite](/docs/netsuite.md) sync finished. | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed`; with the [payment flow](/docs/netsuite.md#payment-flow) on, `bills` with its own counts |
-| `integration.failed` | A NetSuite sync failed. | `provider`, `error` |
-| `integration.hold_overridden` | Someone cleared Quarter's Payment Hold on a bill in NetSuite. Quarter put it back. | `provider`, `external_id`, `bill_number`, `run_id` |
-| `integration.write_failed` | Quarter could not write its result to a NetSuite bill. Sent once until a write to that bill succeeds. | `provider`, `external_id`, `bill_number`, `error` |
+| `integration.synced` | An accounting system sync finished, such as [NetSuite](/docs/netsuite.md). | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed`; with the [payment flow](/docs/netsuite.md#payment-flow) on, `bills` with its own counts |
+| `integration.failed` | An accounting system sync failed. | `provider`, `error` |
+| `integration.hold_overridden` | Someone cleared a hold Quarter set in the accounting system, such as NetSuite's Payment Hold. Quarter put it back. | `provider`, `external_id`, `bill_number`, `run_id` |
+| `integration.write_failed` | Quarter could not write its result to a bill or vendor in the accounting system, such as `xero_hold_refused`. Sent once until a write succeeds. | `provider`, `external_id`, `bill_number`, `error` |
+| `integration.bill_held` | A [QuickBooks Online](/docs/quickbooks.md) bill was held. Quarter cannot stop it there. Sent once for each result. | `provider`, `external_id`, `bill_number`, `run_id`, `reason`, `payment_stopped` (always false), `stop_payment` |
+| `payout.reviewed` | A person decided a held [payout](/docs/payouts.md). | `payout_id` (the payout), `run_id`, `item_id` (the same as `payout_id`), `decision` (`allow` or `block`), `reviewed_by`, `reason` |
 | `billing.trial_ending` | The free trial ends in 3 days or less. Sent to every project. | `trial_ends_at` |
 | `billing.trial_ended` | The free trial ended without a subscription. Sent to every project. | `trial_ended_at` |
 
@@ -7468,7 +10460,7 @@ Response:
 | [Payment checks](/docs/payment-checks.md) | 400 | `rail_invalid`, `payee_name_required`, `currency_invalid`, `iban_format_invalid`, `bic_invalid` |
 | [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `template_invalid`, `template_does_not_fit` |
 | [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `approver_recently_added`, `releaser_changed_details` |
-| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `payments_held_since_scan`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `payments_held_since_scan`, `released_when_approved`, `erp_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 400 | `description_required`, `report_not_open` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 429 | `fraud_report_limit` |
 | [Settings](/docs/checks.md#settings) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |
@@ -7477,6 +10469,25 @@ Response:
 | [NetSuite](/docs/netsuite.md) | 409 | `netsuite_account_changed`, `not_connected`, `sync_in_progress` |
 | [NetSuite](/docs/netsuite.md) | 429 | `sync_rate_limited` |
 | [NetSuite](/docs/netsuite.md) | 503 | `netsuite_unreachable` |
+| [QuickBooks Online](/docs/quickbooks.md) | 400 | `realm_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `refresh_token_invalid`, `sandbox_invalid`, `sandbox_account_in_live`, `quickbooks_unauthorized`, `quickbooks_forbidden`, `quickbooks_query_failed`, `quickbooks_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [QuickBooks Online](/docs/quickbooks.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [QuickBooks Online](/docs/quickbooks.md) | 429 | `sync_rate_limited` |
+| [QuickBooks Online](/docs/quickbooks.md) | 503 | `quickbooks_unreachable` |
+| [Xero](/docs/xero.md) | 400 | `tenant_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `refresh_token_invalid`, `xero_rate_limited`, `xero_unauthorized`, `xero_forbidden`, `xero_query_failed`, `xero_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [Xero](/docs/xero.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [Xero](/docs/xero.md) | 429 | `sync_rate_limited` |
+| [Xero](/docs/xero.md) | 503 | `xero_unreachable` |
+| [Sage Intacct](/docs/intacct.md) | 400 | `sender_id_invalid`, `sender_password_invalid`, `company_id_invalid`, `user_id_invalid`, `user_password_invalid`, `intacct_sender_unauthorized`, `intacct_field_missing`, `intacct_unauthorized`, `intacct_forbidden`, `intacct_query_failed`, `intacct_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [Sage Intacct](/docs/intacct.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [Sage Intacct](/docs/intacct.md) | 429 | `sync_rate_limited` |
+| [Sage Intacct](/docs/intacct.md) | 503 | `intacct_unreachable` |
+| [Business Central](/docs/business-central.md) | 400 | `tenant_id_invalid`, `environment_invalid`, `company_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `businesscentral_unauthorized`, `businesscentral_forbidden`, `businesscentral_query_failed`, `businesscentral_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [Business Central](/docs/business-central.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [Business Central](/docs/business-central.md) | 429 | `sync_rate_limited` |
+| [Business Central](/docs/business-central.md) | 503 | `businesscentral_unreachable` |
+| [Payouts](/docs/payouts.md) | 400 | `idempotency_key_required`, `connected_account_required`, `payee_required`, `rail_invalid`, `payouts_invalid`, `external_id_invalid`, `name_invalid`, `limit_invalid` |
+| [Payouts](/docs/payouts.md) | 404 | `connected_account_not_found`, `payee_not_found`, `payout_not_found`, `payout_batch_not_found` |
+| [Payouts](/docs/payouts.md) | 409 | `idempotency_key_reused`, `external_id_taken` |
 | [Webhooks](/docs/webhooks.md) | 400 | `url_required`, `url_invalid`, `enabled_events_invalid` |
 
 Sign-in, members, API keys and billing serve the console and have their own codes, listed with those routes in the OpenAPI document at `GET $QUARTER_API_URL/openapi.json`.

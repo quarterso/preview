@@ -34,12 +34,22 @@ Admins and security contacts are emailed 60 days and again 14 days before the ce
 
 These routes take a signed-in admin's session, never an API key: an API key answers `403 session_required`. A test project can connect Quarter's sample account of four vendors with `sandbox: true`. A live project refuses NetSuite sandbox accounts.
 
+## Quarter's SuiteApp
+
+Quarter's SuiteApp closes the minutes between a bank change in NetSuite and Quarter's next sync. When a vendor's primary bank details are added, or their account or routing number changes, it checks the vendor's **Waiting for Quarter** box and puts every open bill to that vendor on Payment Hold at once. While the box is checked, a bill to the vendor, new or edited, keeps Payment Hold even if someone clears it by hand. Quarter clears the box just before it clears a bill to the vendor, which it does only once the new details are verified or a person approved the payment.
+
+1. Deploy the SuiteApp with the SuiteCloud CLI. It needs Electronic Bank Payments, which owns Entity Bank Details.
+2. Add Lists > Vendors: **Edit** to the role mapped to Quarter, so Quarter can clear the box. Bank details stay a separate record that role cannot change.
+3. Turn it on with `PUT /v1/integrations/netsuite/suiteapp` and `{"installed": true}`. Quarter reads the vendor field first and refuses while it is missing.
+
+> **Warning:** The SuiteApp is built and tested outside NetSuite. It has not been deployed to a real NetSuite account yet.
+
 ## The payment flow
 
 A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Payment button is gone, the bill is left off the Pay Bills page, and Electronic Bank Payments does not process it. Oracle's NetSuite help says so on its page Entering a Vendor Bill. Quarter uses that box, so a held bill is stopped by NetSuite itself, before any payment file exists.
 
 1. A workflow you add holds every new bill, with Quarter's field saying `Held by Quarter until checked`. It holds a bill again when its amount or vendor changes.
-2. Every 5 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
+2. Every 5 minutes, after the vendor sync, Quarter reads every open, approved bill with an unpaid amount, with its vendor's primary bank details. Bills that are new or changed since their check are checked as one [payment run](/docs/payment-runs.md) of format `erp`, with `erp_provider` `netsuite`. Each payment carries the bill's internal id as `external_id`, and the bill number as its reference.
 3. Quarter writes each result to the bill. A clear bill comes off hold, and Quarter's field says it was cleared, with a link to the run. A held bill stays on hold, and the field says why and where to decide.
 4. A person approves or rejects the held payment in Quarter, signed in, never with an API key. Two different people approve at or above your two-person threshold. Quarter then takes the hold off an approved bill and keeps it on a rejected one.
 5. A bill that changes after its check, in amount, vendor or bank details, is checked again in a new run and held again if it needs to be. The first check is closed as rejected, with the reason.
@@ -48,7 +58,7 @@ A vendor bill with Payment Hold checked cannot be paid in NetSuite: the Make Pay
 
 - Someone with edit access to bills in NetSuite can clear Payment Hold and pay at once. Quarter puts the hold back at the next sync and sends `integration.hold_overridden`, but a payment made in between is made. A bill that leaves the open bills while Quarter holds it is recorded in the audit log, since it was paid, voided or deleted in NetSuite.
 - Payments that do not come from a vendor bill: checks written directly, journal entries, and payments keyed in your bank portal.
-- A bank change made on the vendor in NetSuite after a bill was cleared, or a vendor blocked in Quarter after its bill was cleared, holds the bill again at the next sync, at most 5 minutes later. Until then NetSuite can still pay it. Sync now before a payment run to close that gap, or have your NetSuite administrator set Payment Hold on the open bills of a vendor whose bank details change, with a workflow or script on Entity Bank Details.
+- A bank change made on the vendor in NetSuite after a bill was cleared, or a vendor blocked in Quarter after its bill was cleared, holds the bill again at the next sync, at most 5 minutes later. Until then NetSuite can still pay it. Sync now before a payment run to close that gap, or install [the Quarter SuiteApp](#suiteapp), which closes it inside NetSuite.
 - Without the workflow, a new bill can be paid before Quarter first sees it. Quarter counts bills that arrive without a hold and shows the count in the console.
 - A payment file Electronic Bank Payments already generated. Quarter acts on the bill, before the file.
 

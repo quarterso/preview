@@ -1,1 +1,0 @@
-self.__SSG_MANIFEST=new Set(["\u002Fdocs-md\u002F[slug]","\u002Fdocs\u002F[slug]","\u002Flegal\u002F[doc]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()

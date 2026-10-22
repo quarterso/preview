@@ -16,10 +16,12 @@ Quarter records each change as an event and sends it to your webhook endpoints. 
 | `payment_item.held` | A payment in a run was held. | `run_id`, `item_id`, `payee_name`, `amount`, `findings` (the check codes), `score` ([points](/docs/checks.md#points)) |
 | `payment_run.released` | A run was released. | `run_id`, `released_by`, `rejected` (how many payments were left out), and `release_code` for a [payment check](/docs/payment-checks.md) |
 | `fraud_report.created` | You reported an account. | `id`, `routing_number`, `last4` |
-| `integration.synced` | A [NetSuite](/docs/netsuite.md) sync finished. | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed`; with the [payment flow](/docs/netsuite.md#payment-flow) on, `bills` with its own counts |
-| `integration.failed` | A NetSuite sync failed. | `provider`, `error` |
-| `integration.hold_overridden` | Someone cleared Quarter's Payment Hold on a bill in NetSuite. Quarter put it back. | `provider`, `external_id`, `bill_number`, `run_id` |
-| `integration.write_failed` | Quarter could not write its result to a NetSuite bill. Sent once until a write to that bill succeeds. | `provider`, `external_id`, `bill_number`, `error` |
+| `integration.synced` | An accounting system sync finished, such as [NetSuite](/docs/netsuite.md). | `provider`, and the counts `created`, `updated`, `bank_changed`, `inactive`, `unchanged`, `deleted`, `failed`; with the [payment flow](/docs/netsuite.md#payment-flow) on, `bills` with its own counts |
+| `integration.failed` | An accounting system sync failed. | `provider`, `error` |
+| `integration.hold_overridden` | Someone cleared a hold Quarter set in the accounting system, such as NetSuite's Payment Hold. Quarter put it back. | `provider`, `external_id`, `bill_number`, `run_id` |
+| `integration.write_failed` | Quarter could not write its result to a bill or vendor in the accounting system, such as `xero_hold_refused`. Sent once until a write succeeds. | `provider`, `external_id`, `bill_number`, `error` |
+| `integration.bill_held` | A [QuickBooks Online](/docs/quickbooks.md) bill was held. Quarter cannot stop it there. Sent once for each result. | `provider`, `external_id`, `bill_number`, `run_id`, `reason`, `payment_stopped` (always false), `stop_payment` |
+| `payout.reviewed` | A person decided a held [payout](/docs/payouts.md). | `payout_id` (the payout), `run_id`, `item_id` (the same as `payout_id`), `decision` (`allow` or `block`), `reviewed_by`, `reason` |
 | `billing.trial_ending` | The free trial ends in 3 days or less. Sent to every project. | `trial_ends_at` |
 | `billing.trial_ended` | The free trial ended without a subscription. Sent to every project. | `trial_ended_at` |
 

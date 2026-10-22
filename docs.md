@@ -1,8 +1,8 @@
 # Quarter docs
 
-> Check every outgoing vendor payment before it leaves your bank. Hold the suspicious ones for a person, with the reason in plain words.
+> Put every payment your business makes under one set of rules: bank files, wires, cards, stablecoins and AI agents. Hold the risky ones for a person, with the reason in plain words.
 
-Quarter is a payment firewall. It matches each payment to a vendor you know, checks it, and holds anything wrong for a person to approve or reject.
+Quarter is the control layer for business payments. Whatever the payment goes out on, a bank file, a wire, a card, a stablecoin or an AI agent, Quarter matches it to a vendor you know, checks it against your rules, and holds anything wrong for a person to approve or reject. It never holds or moves money.
 
 If you pay bills from NetSuite, you upload nothing. Quarter checks every open, approved vendor bill and holds the suspicious ones with NetSuite's own Payment Hold box, so NetSuite does not pay them until a person decides in Quarter. See [the payment flow](/docs/netsuite.md#payment-flow). It is built and tested against a simulated NetSuite account; not yet run against a real one.
 

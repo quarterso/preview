@@ -57,7 +57,7 @@ Response:
 | [Payment checks](/docs/payment-checks.md) | 400 | `rail_invalid`, `payee_name_required`, `currency_invalid`, `iban_format_invalid`, `bic_invalid` |
 | [Decisions and release](/docs/releases.md) | 400 | `decision_invalid`, `reason_required`, `template_invalid`, `template_does_not_fit` |
 | [Decisions and release](/docs/releases.md) | 403 | `approver_changed_details`, `approver_recently_added`, `releaser_changed_details` |
-| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `payments_held_since_scan`, `released_when_approved`, `netsuite_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
+| [Decisions and release](/docs/releases.md) | 409 | `item_not_held`, `run_closed`, `second_approver_required`, `payments_still_held`, `payments_held_since_scan`, `released_when_approved`, `erp_run`, `not_a_check_run`, `run_not_released`, `file_deleted`, `no_payment_file` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 400 | `description_required`, `report_not_open` |
 | [Fraud reports](/docs/network.md#fraud-reports) | 429 | `fraud_report_limit` |
 | [Settings](/docs/checks.md#settings) | 400 | `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid` |
@@ -66,6 +66,25 @@ Response:
 | [NetSuite](/docs/netsuite.md) | 409 | `netsuite_account_changed`, `not_connected`, `sync_in_progress` |
 | [NetSuite](/docs/netsuite.md) | 429 | `sync_rate_limited` |
 | [NetSuite](/docs/netsuite.md) | 503 | `netsuite_unreachable` |
+| [QuickBooks Online](/docs/quickbooks.md) | 400 | `realm_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `refresh_token_invalid`, `sandbox_invalid`, `sandbox_account_in_live`, `quickbooks_unauthorized`, `quickbooks_forbidden`, `quickbooks_query_failed`, `quickbooks_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [QuickBooks Online](/docs/quickbooks.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [QuickBooks Online](/docs/quickbooks.md) | 429 | `sync_rate_limited` |
+| [QuickBooks Online](/docs/quickbooks.md) | 503 | `quickbooks_unreachable` |
+| [Xero](/docs/xero.md) | 400 | `tenant_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `refresh_token_invalid`, `xero_rate_limited`, `xero_unauthorized`, `xero_forbidden`, `xero_query_failed`, `xero_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [Xero](/docs/xero.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [Xero](/docs/xero.md) | 429 | `sync_rate_limited` |
+| [Xero](/docs/xero.md) | 503 | `xero_unreachable` |
+| [Sage Intacct](/docs/intacct.md) | 400 | `sender_id_invalid`, `sender_password_invalid`, `company_id_invalid`, `user_id_invalid`, `user_password_invalid`, `intacct_sender_unauthorized`, `intacct_field_missing`, `intacct_unauthorized`, `intacct_forbidden`, `intacct_query_failed`, `intacct_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [Sage Intacct](/docs/intacct.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [Sage Intacct](/docs/intacct.md) | 429 | `sync_rate_limited` |
+| [Sage Intacct](/docs/intacct.md) | 503 | `intacct_unreachable` |
+| [Business Central](/docs/business-central.md) | 400 | `tenant_id_invalid`, `environment_invalid`, `company_id_invalid`, `client_id_invalid`, `client_secret_invalid`, `businesscentral_unauthorized`, `businesscentral_forbidden`, `businesscentral_query_failed`, `businesscentral_response_too_large`, `enabled_invalid`, `production_account_in_test`, `status_invalid`, `limit_invalid` |
+| [Business Central](/docs/business-central.md) | 409 | `account_changed`, `not_connected`, `sync_in_progress` |
+| [Business Central](/docs/business-central.md) | 429 | `sync_rate_limited` |
+| [Business Central](/docs/business-central.md) | 503 | `businesscentral_unreachable` |
+| [Payouts](/docs/payouts.md) | 400 | `idempotency_key_required`, `connected_account_required`, `payee_required`, `rail_invalid`, `payouts_invalid`, `external_id_invalid`, `name_invalid`, `limit_invalid` |
+| [Payouts](/docs/payouts.md) | 404 | `connected_account_not_found`, `payee_not_found`, `payout_not_found`, `payout_batch_not_found` |
+| [Payouts](/docs/payouts.md) | 409 | `idempotency_key_reused`, `external_id_taken` |
 | [Webhooks](/docs/webhooks.md) | 400 | `url_required`, `url_invalid`, `enabled_events_invalid` |
 
 Sign-in, members, API keys and billing serve the console and have their own codes, listed with those routes in the OpenAPI document at `GET $QUARTER_API_URL/openapi.json`.

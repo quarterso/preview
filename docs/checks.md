@@ -1,6 +1,6 @@
 # Checks and settings
 
-> The twenty-six checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
+> The thirty-two checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
 
 Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a `code`, a `severity`, a `message` and its `points`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
 
@@ -23,7 +23,7 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | --- | --- | --- | --- |
 | [`unknown_payee`](/docs/checks.md#unknown-payee) | Hold | 20 | The payee matches no vendor. |
 | [`vendor_blocked`](/docs/checks.md#vendor-blocked) | Hold (always) | 50 | You blocked this vendor from being paid. |
-| [`unverified_account`](/docs/checks.md#unverified-account) | Hold | 30 | The account is the one on file, but nobody ever confirmed it with the vendor. |
+| [`unverified_account`](/docs/checks.md#unverified-account) | Hold | 30; 10 (bank details never confirmed, but confirmed by other businesses on quarter) | The account is the one on file, but nobody ever confirmed it with the vendor. |
 | [`account_changed_recently`](/docs/checks.md#account-changed-recently) | Hold; warn once confirmed | 40; 10 (bank details changed recently, and confirmed) | The vendor changed its bank details, and the new details are not confirmed, or were confirmed within the cooling period. |
 | [`account_not_on_file`](/docs/checks.md#account-not-on-file) | Hold | 40 | The run pays a known vendor at an account other than the one on file. |
 | [`name_mismatch`](/docs/checks.md#name-mismatch) | Warn | 15 | The payee name in the file does not match the vendor. |
@@ -32,7 +32,7 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`duplicate_payment`](/docs/checks.md#duplicate-payment) | Hold | 30 | The same amount to the same account twice. |
 | [`shared_account`](/docs/checks.md#shared-account) | Hold | 30 | Another of your vendors is paid at this same account. |
 | [`network_flagged`](/docs/checks.md#network-flagged) | Warn | 30 | A business on Quarter reported this account in connection with a payment fraud. |
-| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened) | The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists. |
+| [`sanctions_match`](/docs/checks.md#sanctions-match) | Hold (always) | 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened); 60 (wallet listed by ofac); 60 (connected account resembles a sanctioned party) | The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists. |
 | [`routing_invalid`](/docs/checks.md#routing-invalid) | Hold | 25 | The routing number is not a valid US bank routing number. |
 | [`iban_invalid`](/docs/checks.md#iban-invalid) | Hold | 25 | The IBAN on an international payment fails its checksum. |
 | [`check_number_reused`](/docs/checks.md#check-number-reused) | Hold | 30 | A check number already used on the same account. |
@@ -47,6 +47,12 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`request_domain_new`](/docs/checks.md#request-domain-new) | Warn | 30 | The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added. |
 | [`request_domain_no_dmarc`](/docs/checks.md#request-domain-no-dmarc) | Warn | 5 | The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name. |
 | [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details); 0 (payments to one payee add up to the two-person threshold) | The payment is at or above the two-person threshold, it is one of several payments to one payee that together reach it, or the person paying changed the vendor's bank details in the last 90 days. |
+| [`agent_over_limit`](/docs/checks.md#agent-over-limit) | Hold (always) | 40; 40 (over the agent's daily limit) | An AI agent asked to pay more than its limit for one payment, or more than its daily limit. |
+| [`agent_payee_not_allowed`](/docs/checks.md#agent-payee-not-allowed) | Hold (always) | 40 | An AI agent asked to pay a vendor or merchant category that is not on its allowed list. |
+| [`payout_details_changed`](/docs/checks.md#payout-details-changed) | Hold | 40 | A platform payout to a payee whose bank details changed in the last 72 hours. |
+| [`payout_new_payee_large`](/docs/checks.md#payout-new-payee-large) | Hold | 30 | The first payout to a payee is $2,500 or more. |
+| [`payout_account_fan_in`](/docs/checks.md#payout-account-fan-in) | Hold | 40 | Three or more connected accounts pay out to the same bank account. |
+| [`payout_velocity_spike`](/docs/checks.md#payout-velocity-spike) | Hold | 25 | A connected account's payouts in the last 24 hours reach $10,000 and are more than 5 times its usual day. |
 
 ## Points and the order of held payments
 
@@ -142,13 +148,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -176,7 +190,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -204,7 +224,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -217,7 +243,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -266,6 +297,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -352,11 +391,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -369,9 +438,9 @@ Response:
 
 A signed-in admin only; an API key answers `403 session_required`. Changes the fields you send and keeps the rest. Inside `checks`, only the checks you name change. A change applies to runs uploaded after it, not to runs already scanned.
 
-In live mode, a change that loosens the checks waits in `pending_changes` until another admin approves it: a higher `two_person_threshold`, a check moved from `hold` toward `warn` or `off`, a lower `cooling_days`, or a higher `unusual_multiplier`. The rest of the change applies at once. Admins and security contacts are emailed either way. In test mode every change applies at once.
+In live mode, a change that loosens the checks waits in `pending_changes` until another admin approves it: a higher `two_person_threshold`, a check moved from `hold` toward `warn` or `off`, a lower `cooling_days`, a higher `unusual_multiplier`, or `trust_network` turned on. The rest of the change applies at once. Admins and security contacts are emailed either way. In test mode every change applies at once.
 
-Errors: `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid`, all `400`.
+Errors: `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invalid`, `cooling_days_invalid`, `unusual_multiplier_invalid`, `two_person_threshold_invalid`, `trust_network_invalid`, all `400`.
 
 **Body**
 
@@ -381,6 +450,7 @@ Errors: `checks_invalid`, `check_unknown`, `check_mandatory`, `check_mode_invali
 | `cooling_days` | integer | No | 0 to 90. |
 | `unusual_multiplier` | number | No | 1.5 to 100. |
 | `two_person_threshold` | number | No | Dollars, 0 to 1,000,000,000. |
+| `trust_network` | boolean | No | True lets other businesses' call-back confirmations stand in for yours on bank details you never confirmed: [`unverified_account`](/docs/checks.md#unverified-account) then warns instead of holding. Off by default. |
 
 Request:
 
@@ -422,13 +492,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -456,7 +534,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -484,7 +568,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -497,7 +587,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -546,6 +641,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -632,11 +735,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 14,
   "unusual_multiplier": 3,
   "two_person_threshold": 25000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -689,13 +822,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -723,7 +864,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -751,7 +898,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -764,7 +917,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -813,6 +971,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -899,11 +1065,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 250000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -954,13 +1150,21 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "default",
+    "payout_new_payee_large": "default",
+    "payout_account_fan_in": "default",
+    "payout_velocity_spike": "default"
   },
   "mandatory_checks": [
     "vendor_blocked",
     "sanctions_match",
     "payroll_account_unlisted",
-    "second_person_required"
+    "second_person_required",
+    "agent_over_limit",
+    "agent_payee_not_allowed"
   ],
   "defaults": {
     "unknown_payee": "hold",
@@ -988,7 +1192,13 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
-    "second_person_required": "hold"
+    "second_person_required": "hold",
+    "agent_over_limit": "hold",
+    "agent_payee_not_allowed": "hold",
+    "payout_details_changed": "hold",
+    "payout_new_payee_large": "hold",
+    "payout_account_fan_in": "hold",
+    "payout_velocity_spike": "hold"
   },
   "check_names": {
     "unknown_payee": "Payee is not a vendor",
@@ -1016,7 +1226,13 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
-    "second_person_required": "Needs a second person to approve"
+    "second_person_required": "Needs a second person to approve",
+    "agent_over_limit": "Over the agent's limit",
+    "agent_payee_not_allowed": "Payee not on the agent's allowed list",
+    "payout_details_changed": "Payee bank details changed just before a payout",
+    "payout_new_payee_large": "Large first payout to a payee",
+    "payout_account_fan_in": "Bank account paid by many connected accounts",
+    "payout_velocity_spike": "Payout velocity spike for a connected account"
   },
   "check_points": {
     "unknown_payee": {
@@ -1029,7 +1245,12 @@ Response:
     },
     "unverified_account": {
       "points": 30,
-      "variants": []
+      "variants": [
+        {
+          "name": "Bank details never confirmed, but confirmed by other businesses on Quarter",
+          "points": 10
+        }
+      ]
     },
     "account_changed_recently": {
       "points": 40,
@@ -1078,6 +1299,14 @@ Response:
         {
           "name": "Name in letters the lists cannot be compared with, so not screened",
           "points": 0
+        },
+        {
+          "name": "Wallet listed by OFAC",
+          "points": 60
+        },
+        {
+          "name": "Connected account resembles a sanctioned party",
+          "points": 60
         }
       ]
     },
@@ -1164,11 +1393,41 @@ Response:
           "points": 0
         }
       ]
+    },
+    "agent_over_limit": {
+      "points": 40,
+      "variants": [
+        {
+          "name": "Over the agent's daily limit",
+          "points": 40
+        }
+      ]
+    },
+    "agent_payee_not_allowed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_details_changed": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_new_payee_large": {
+      "points": 30,
+      "variants": []
+    },
+    "payout_account_fan_in": {
+      "points": 40,
+      "variants": []
+    },
+    "payout_velocity_spike": {
+      "points": 25,
+      "variants": []
     }
   },
   "cooling_days": 10,
   "unusual_multiplier": 3,
   "two_person_threshold": 50000,
+  "trust_network": false,
   "last_reviewed_at": null,
   "last_reviewed_by": null,
   "pending_changes": []
@@ -1205,15 +1464,18 @@ A vendor blocked after a run was scanned is caught at release: Quarter checks ev
 
 ### `unverified_account`
 
-**Default: hold. Points: 30.** The account is the one on file, but nobody ever confirmed it with the vendor.
+**Default: hold. Points: 30; 10 (bank details never confirmed, but confirmed by other businesses on quarter).** The account is the one on file, but nobody ever confirmed it with the vendor.
 
-Message:
+Messages:
 
 ```shell
 these bank details were never confirmed with the vendor
+these bank details were never confirmed with the vendor by you; {count} other businesses on Quarter confirmed this account by a call-back
 ```
 
 Fires for a vendor whose first and only bank details are `unverified`. Confirm them with a [verification link](/docs/verification.md) or a [call-back](/docs/verification.md#callbacks).
+
+With the setting `trust_network` on, bank details another business on Quarter confirmed by a call-back in the last 24 months only warn, with the second message. Only call-backs are shared: a vendor's bank login stays between Quarter, you and the vendor. The setting is off by default, and turning it on waits for a second admin on a live project.
 
 ### `account_changed_recently`
 
@@ -1323,7 +1585,7 @@ The finding gives a count, never who reported. See [fraud reports](/docs/network
 
 ### `sanctions_match`
 
-**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened).** The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists.
+**Default: hold, cannot be turned off. Points: 60; 0 (sanctions list out of date, so not screened); 0 (name in letters the lists cannot be compared with, so not screened); 60 (wallet listed by ofac); 60 (connected account resembles a sanctioned party).** The payee name, or the name of the vendor on file it was matched to, resembles a name on OFAC's SDN or Consolidated lists.
 
 Messages:
 
@@ -1332,6 +1594,7 @@ the payee name resembles a listed party: {listed name}, on {list}
 the vendor's name on file, {vendor name}, resembles a listed party: {listed name}, on {list}
 Quarter's sanctions list is missing or out of date, so this payee could not be screened
 "{name}" is written in letters Quarter cannot compare with the sanctions lists, so it was not screened; check it against the lists yourself
+the wallet paid is listed as belonging to {listed name}, on {list}
 ```
 
 Name screening against OFAC's SDN list and its Consolidated (non-SDN) list, which Quarter loads twice a day, and the Commerce Department's Consolidated Screening List where the deployment loads it. The message names the list. A name at least 0.85 alike fires, and so does a name of 20 or more characters that is the start of a listed name, because NACHA cuts names at 22 characters. A resemblance is not a finding of fact: a person looks and decides. This check always holds and cannot be turned off.
@@ -1341,6 +1604,8 @@ In a live project, while Quarter's copy of either OFAC list is missing or more t
 The lists are written in Latin letters, and Quarter does not transliterate. So a payee or vendor name in another script, such as Cyrillic or Arabic, cannot be compared with them. It holds a live payment with the fourth message, and warns on a test one. A name under 3 letters is compared by exact match. Latin letters such as ß, ø and ł are read as the lists write them (ss, o, l).
 
 When a list changes, Quarter screens every vendor name again, records each new possible match on the vendor (`sanctions_findings`), and emails your admins and security contacts once, listing them. See [sanctions re-screening](/docs/vendors.md#sanctions-rescreening).
+
+A stablecoin payment's wallet is also compared with the digital currency addresses OFAC lists on SDN entries, and a match holds with the last message. EVM addresses are compared in lower case. OFAC says its address list is not complete.
 
 Name screening compares names. It cannot find a business blocked only because listed parties own 50% or more of it (OFAC's 50 percent rule), or an affiliate covered by the Commerce Department's Affiliates Rule, because neither is on a list. Quarter never says a payee is cleared.
 
@@ -1535,3 +1800,80 @@ The second holds every payment under the threshold to one account, one vendor or
 The third holds a payment made by a person who added bank details for the vendor in the last 90 days. That person may not approve it. The person paying is the one signed in, or the one named in `uploaded_by` or `requested_by`. Bank details added with an API key count as added by the admin who created the key.
 
 This check always holds and cannot be turned off. The threshold itself is a setting.
+
+### `agent_over_limit`
+
+**Default: hold, cannot be turned off. Points: 40; 40 (over the agent's daily limit).** An AI agent asked to pay more than its limit for one payment, or more than its daily limit.
+
+Messages:
+
+```shell
+{amount} is over {agent}'s limit for one payment
+this would take {agent} over its daily limit
+```
+
+Runs only on a payment an [agent](/docs/payment-checks.md#agents) checks with its own key. The daily limit counts every payment the agent asked for in the last 24 hours that was not rejected, held ones included, so a held payment uses up the day until someone rejects it.
+
+The limits are the agent's own policy, so this check always holds and cannot be turned off. Change the limits by making a new agent.
+
+### `agent_payee_not_allowed`
+
+**Default: hold, cannot be turned off. Points: 40.** An AI agent asked to pay a vendor or merchant category that is not on its allowed list.
+
+Message:
+
+```shell
+{payee} is not on {agent}'s allowed list
+```
+
+For a card payment, an agent with `allowed_mccs` may pay only those merchant categories. For any other payment, an agent with `allowed_vendor_ids` may pay only those vendors. An agent with neither list may pay anyone, and the other checks still run.
+
+This check always holds and cannot be turned off.
+
+### `payout_details_changed`
+
+**Default: hold. Points: 40.** A platform payout to a payee whose bank details changed in the last 72 hours.
+
+Message:
+
+```shell
+the payee's bank details changed {when}
+```
+
+A changed account just before a payout is the usual sign of an account takeover. Runs only on platform payouts.
+
+### `payout_new_payee_large`
+
+**Default: hold. Points: 30.** The first payout to a payee is $2,500 or more.
+
+Message:
+
+```shell
+first payout to {payee} is {amount}
+```
+
+Runs only on platform payouts.
+
+### `payout_account_fan_in`
+
+**Default: hold. Points: 40.** Three or more connected accounts pay out to the same bank account.
+
+Message:
+
+```shell
+{count} connected accounts pay out to this bank account
+```
+
+Many sellers or workers paid into one account usually means one person controls them. Runs only on platform payouts.
+
+### `payout_velocity_spike`
+
+**Default: hold. Points: 25.** A connected account's payouts in the last 24 hours reach $10,000 and are more than 5 times its usual day.
+
+Message:
+
+```shell
+{account} paid out {amount} in 24 hours, more than 5 times its usual day
+```
+
+Runs only on platform payouts.

@@ -1,0 +1,339 @@
+1:"$Sreact.fragment"
+2:I[56448,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],""]
+39:X
+3e:X
+3e:C
+0:{"buildId":"581y9kfN66bsm1xahXCT9","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Accounting systems"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"QuickBooks Online"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Check every QuickBooks Online bill awaiting payment and get an alert for each one held. QuickBooks Online has no hold Quarter can set, so Quarter alerts and never stops a payment there."]}],["$","a",null,{"href":"/preview/docs/quickbooks.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","aside","0",{"className":"docs-module__RdmBMa__note","data-tone":"info","children":["The QuickBooks Online connection is built and tested against a simulated QuickBooks Online company. It has not yet run against a real one."]}],["$","aside","1",{"className":"docs-module__RdmBMa__note","data-tone":"warn","children":["Quarter checks QuickBooks Online bills and alerts. It cannot stop one. A held bill can still be paid in QuickBooks Online until someone stops it there or at your bank."]}],["$","p","2",{"children":["Quarter reads your QuickBooks Online vendors every hour and, with the payment flow on, every bill with a balance every 5 minutes. Quarter never writes to QuickBooks Online."]}],["$","h2","3",{"id":"coverage","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#coverage","className":"docs-module__RdmBMa__anchor","children":["What Quarter controls and what it does not"]}]}],["$","div","4",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","In QuickBooks Online",{"scope":"col","children":["In QuickBooks Online"]}],["$","th","Quarter",{"scope":"col","children":["Quarter"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":["Vendors"]}],["$","td","1",{"children":["Read every hour, changes only"]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":["Vendor bank details"]}],["$","td","1",{"children":["Not read: the QuickBooks Online API does not show them"]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":["Who changed bank details"]}],["$","td","1",{"children":["Not known: the API has no change history"]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":["Bills awaiting payment"]}],["$","td","1",{"children":["Read: every bill with a balance. QuickBooks Online has no approval step"]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":["Hold one bill"]}],["$","td","1",{"children":["Not possible: QuickBooks Online has no hold Quarter can set"]}]]}],["$","tr","5",{"children":[["$","td","0",{"children":["Block a vendor"]}],["$","td","1",{"children":["Not done: making a vendor inactive is too blunt and is refused while it has a balance"]}]]}],["$","tr","6",{"children":[["$","td","0",{"children":["Quarter's note on the bill"]}],["$","td","1",{"children":["Not written. The private note belongs to you"]}]]}]]}]]}]}],["$","p","5",{"children":["Since bank details are not in the API, a QuickBooks Online payment cannot be held as ",["$","$L2","85",{"href":"/docs/checks#account-changed-recently","children":[["$","code","0",{"children":"account_changed_recently"}]]}]," from a change made there. Record bank changes in Quarter, or check each payment with ",["$","$L2","238",{"href":"/docs/payment-checks","children":["payment checks"]}]," where it leaves."]}],["$","h2","6",{"id":"connecting","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#connecting","className":"docs-module__RdmBMa__anchor","children":["Connecting"]}]}],["$","p","7",{"children":["Quarter is not yet registered as an Intuit app with its own consent screen. Until it is, you connect with an Intuit app of your own:"]}],"$L3","$L4","$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33"]}],"$L34"]}],"$L35"]}],["$L36"],"$L37"]}],"isPartial":"$@38","staleTime":"$39","varyParams":null},{"rsc":"$L3a","isPartial":"$@3b","staleTime":"$39","varyParams":null},{"rsc":"$L3c","isPartial":"$@3d","staleTime":"$39","varyParams":"$3e"},{"rsc":"$L3f","isPartial":"$@40","staleTime":"$39","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@41","rootVaryParams":null,"needsRuntimeRequest":"$@42"}
+43:I[56123,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"CodeBlock"]
+49:I[20795,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
+4a:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+4b:"$Sreact.suspense"
+4d:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+4e:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+4f:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+50:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+51:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+52:I[71948,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js"],"DocSidebar"]
+:HL["/preview/art/band-grey.svg","image"]
+3:["$","ol","8",{"children":[["$","li","0",{"children":["Create an app in Intuit's developer portal with the ",["$","code","52",{"children":"com.intuit.quickbooks.accounting"}]," scope."]}],["$","li","1",{"children":["Run the app's OAuth 2.0 consent as a QuickBooks Online admin of the company. Intuit returns the company id (realm id) and a refresh token."]}],["$","li","2",{"children":["Connect with the realm id, the client id and secret, and the refresh token. Quarter tests them before it saves anything, then seals them. They are never returned, logged or put in the audit log, and are wiped on disconnect."]}]]}]
+4:["$","p","9",{"children":["Intuit replaces the refresh token each time it is used. Quarter keeps the newest one, so do not use the same refresh token anywhere else: the copy you hold stops working after Quarter first syncs."]}]
+5:["$","h2","10",{"id":"sync","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#sync","className":"docs-module__RdmBMa__anchor","children":["What a sync does"]}]}]
+6:["$","ul","11",{"children":[["$","li","0",{"children":["Every hour from connect, or every 5 minutes with the payment flow on, Quarter reads the QuickBooks Online vendors changed since the last sync. Each becomes a Quarter vendor whose ",["$","code","179",{"children":"external_id"}]," is the QuickBooks Online id."]}],["$","li","1",{"children":["Bank details are taken only where the platform has them, and only US details: a 9-digit routing number and an account number. Anything else is left unread and noted on the vendor, in ",["$","code","183",{"children":"notes"}]," on the connection."]}],["$","li","2",{"children":["A bank change becomes new, unverified details with ",["$","code","51",{"children":"request.channel"}]," ",["$","code","69",{"children":"erp"}]," and ",["$","code","79",{"children":"request.provider"}]," ",["$","code","98",{"children":"quickbooks"}],", so the next payment to them is held as ",["$","$L2","151",{"href":"/docs/checks#account-changed-recently","children":[["$","code","0",{"children":"account_changed_recently"}]]}]," until someone confirms them with the vendor."]}],["$","li","3",{"children":["A project stays with the company its vendors came from. Connect another company to another project: a different one answers ",["$","code","124",{"children":"409 account_changed"}],"."]}]]}]
+7:["$","h2","12",{"id":"payment-flow","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#payment-flow","className":"docs-module__RdmBMa__anchor","children":["The payment flow"]}]}]
+8:["$","p","13",{"children":["With the payment flow on, every 5 minutes after the vendor sync, Quarter reads the bills awaiting payment. Bills that are new or changed since their check are checked as one ",["$","$L2","174",{"href":"/docs/payment-runs","children":["payment run"]}]," of format ",["$","code","218",{"children":"erp"}],", with ",["$","code","230",{"children":"erp_provider"}]," naming the platform. A person decides each held payment in Quarter, signed in. Quarter lifts a hold once the bill is clear or approved and reads the same when read again. A bill that changes after its check, in amount, vendor or bank details, is checked again. A run of bills cannot be cancelled (",["$","code","542",{"children":"409 erp_run"}],"): reject the payments that should not be paid."]}]
+9:["$","ul","14",{"children":[["$","li","0",{"children":["Quarter keeps a record of the holds it set and lifts only those. A hold that was already on when Quarter first wrote is never claimed."]}],["$","li","1",{"children":["A hold Quarter set that someone cleared is set again at the next sync and reported as ",["$","code","86",{"children":"integration.hold_overridden"}],". A write that fails is retried at every sync and reported once as ",["$","code","182",{"children":"integration.write_failed"}],"."]}],["$","li","2",{"children":["Turning the payment flow off stops every write and leaves every hold where it is."]}],["$","li","3",{"children":["These routes take a signed-in admin, never an API key: an API key answers ",["$","code","74",{"children":"403 session_required"}],". Only the bill list is open to API keys and anyone signed in."]}]]}]
+a:["$","h2","15",{"id":"hold","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#hold","className":"docs-module__RdmBMa__anchor","children":["What a hold looks like"]}]}]
+b:["$","ul","16",{"children":[["$","li","0",{"children":["Nothing changes in QuickBooks Online. A held bill raises ",["$","code","57",{"children":"integration.bill_held"}]," once for each result, with ",["$","code","108",{"children":"payment_stopped: false"}]," and ",["$","code","137",{"children":"stop_payment"}]," saying where to stop it. See ",["$","$L2","181",{"href":"/docs/webhooks#event-types","children":["event types"]}],"."]}],["$","li","1",{"children":["The bill shows as ",["$","code","18",{"children":"held"}]," in Quarter, with ",["$","code","42",{"children":"payment_stopped: false"}],". The payment flow says ",["$","code","90",{"children":"stops_payment: false"}],"."]}],["$","li","2",{"children":["Stop the bill yourself in QuickBooks Online, or at your bank, until a person decides it in Quarter."]}],["$","li","3",{"children":["A test project may turn the payment flow on against any QuickBooks Online company, since Quarter writes nothing."]}]]}]
+c:["$","h2","17",{"id":"endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
+d:["$","h3","18",{"id":"put-v1-integrations-quickbooks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#put-v1-integrations-quickbooks","className":"docs-module__RdmBMa__anchor","children":["Connect QuickBooks Online"]}]}]
+e:["$","p","19",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"PUT","children":"PUT"}],["$","code",null,{"children":"/v1/integrations/quickbooks"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
+f:["$","p","20",{"children":["Tests the credentials against QuickBooks Online, saves them sealed and starts the first sync. Nothing is saved when QuickBooks Online refuses them. The answer shows ",["$","code","165",{"children":"coverage"}],": what Quarter reads and controls through this platform."]}]
+10:["$","p","21",{"children":["Errors: ",["$","code","8",{"children":"realm_id_invalid"}],", ",["$","code","28",{"children":"client_id_invalid"}],", ",["$","code","49",{"children":"client_secret_invalid"}],", ",["$","code","74",{"children":"refresh_token_invalid"}],", ",["$","code","99",{"children":"sandbox_invalid"}],", ",["$","code","118",{"children":"sandbox_account_in_live"}],", ",["$","code","145",{"children":"quickbooks_unauthorized"}],", ",["$","code","172",{"children":"quickbooks_forbidden"}],", ",["$","code","196",{"children":"quickbooks_query_failed"}]," and ",["$","code","226",{"children":"quickbooks_response_too_large"}],", all ",["$","code","263",{"children":"400"}],"; ",["$","code","270",{"children":"account_changed"}],", ",["$","code","289",{"children":"409"}],"; ",["$","code","296",{"children":"quickbooks_unreachable"}],", ",["$","code","322",{"children":"503"}],"."]}]
+11:["$","p","22",{"children":[["$","strong","0",{"children":"Body"}]]}]
+12:["$","div","23",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"realm_id"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The company id Intuit returns with the consent, digits only."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"client_id"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["Your Intuit app's client id."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"client_secret"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["Your Intuit app's client secret."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"refresh_token"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The refresh token from the consent. Quarter keeps the newest one Intuit returns."]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"sandbox"}]]}],["$","td","1",{"children":["boolean"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["A QuickBooks Online sandbox company. Test projects only."]}]]}]]}]]}]}]
+13:["$","$L43","24",{"tabs":[{"label":"curl","language":"bash","code":"curl -X PUT \"$QUARTER_API_URL/v1/integrations/quickbooks\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"realm_id\":\"<realm id>\",\"client_id\":\"<client id>\",\"client_secret\":\"<client secret>\",\"refresh_token\":\"<refresh token>\"}'"}],"title":"Request"}]
+44:T45a,{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": null,
+  "next_sync_at": "2026-10-21T15:20:04.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": null,
+  "records": {
+    "active": 0,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}14:["$","$L43","25",{"tabs":[{"label":"200","language":"json","code":"$44"}],"title":"Response"}]
+15:["$","h3","26",{"id":"get-v1-integrations-quickbooks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-integrations-quickbooks","className":"docs-module__RdmBMa__anchor","children":["Read the connection"]}]}]
+16:["$","p","27",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/integrations/quickbooks"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
+17:["$","p","28",{"children":["The connection, its coverage, its last sync, the vendors that failed to save, ",["$","code","78",{"children":"notes"}]," on what a sync left out of a vendor (such as bank details that are not a US account), and the payment flow with its bill counts. Never the credentials."]}]
+18:["$","$L43","29",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/integrations/quickbooks\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\""}],"title":"Request"}]
+45:T50c,{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": "2026-10-21T15:20:33.000Z",
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}19:["$","$L43","30",{"tabs":[{"label":"200","language":"json","code":"$45"}],"title":"Response"}]
+1a:["$","h3","31",{"id":"post-v1-integrations-quickbooks-sync","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-integrations-quickbooks-sync","className":"docs-module__RdmBMa__anchor","children":["Sync now"]}]}]
+1b:["$","p","32",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/integrations/quickbooks/sync"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
+1c:["$","p","33",{"children":["Starts a sync now instead of at the next one, which is every hour, or every 5 minutes with the payment flow on. At most once in 5 minutes: sooner answers ",["$","code","154",{"children":"429 sync_rate_limited"}],". While a sync runs, the answer is ",["$","code","212",{"children":"409 sync_in_progress"}],". Not connected: ",["$","code","251",{"children":"409 not_connected"}],"."]}]
+1d:["$","$L43","34",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/integrations/quickbooks/sync\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\""}],"title":"Request"}]
+46:T4f7,{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:31:10.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}1e:["$","$L43","35",{"tabs":[{"label":"202","language":"json","code":"$46"}],"title":"Response"}]
+1f:["$","h3","36",{"id":"put-v1-integrations-quickbooks-payment-flow","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#put-v1-integrations-quickbooks-payment-flow","className":"docs-module__RdmBMa__anchor","children":["Turn the payment flow on or off"]}]}]
+20:["$","p","37",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"PUT","children":"PUT"}],["$","code",null,{"children":"/v1/integrations/quickbooks/payment_flow"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
+21:["$","p","38",{"children":["On, Quarter checks open bills every 5 minutes and raises ",["$","code","57",{"children":"integration.bill_held"}]," for each one held. QuickBooks Online has no payment hold, so Quarter never stops a payment there. Off, Quarter stops checking."]}]
+22:["$","p","39",{"children":["Errors: ",["$","code","8",{"children":"enabled_invalid"}],", ",["$","code","27",{"children":"quickbooks_unauthorized"}]," and ",["$","code","57",{"children":"quickbooks_forbidden"}],", ",["$","code","81",{"children":"400"}],"; ",["$","code","88",{"children":"not_connected"}],", ",["$","code","105",{"children":"409"}],"; ",["$","code","112",{"children":"quickbooks_unreachable"}],", ",["$","code","138",{"children":"503"}],"."]}]
+23:["$","p","40",{"children":[["$","strong","0",{"children":"Body"}]]}]
+24:["$","div","41",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"enabled"}]]}],["$","td","1",{"children":["boolean"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["True to turn the payment flow on, false to turn it off."]}]]}]]}]]}]}]
+25:["$","$L43","42",{"tabs":[{"label":"curl","language":"bash","code":"curl -X PUT \"$QUARTER_API_URL/v1/integrations/quickbooks/payment_flow\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"enabled\":true}'"}],"title":"Request"}]
+47:T4f6,{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "active",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": "2026-10-21T15:35:31.000Z",
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": true,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 3,
+      "waiting": 0,
+      "held": 1,
+      "rejected": 0,
+      "cleared": 2,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}26:["$","$L43","43",{"tabs":[{"label":"200","language":"json","code":"$47"}],"title":"Response"}]
+27:["$","h3","44",{"id":"get-v1-integrations-quickbooks-bills","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-integrations-quickbooks-bills","className":"docs-module__RdmBMa__anchor","children":["List the open bills"]}]}]
+28:["$","p","45",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/integrations/quickbooks/bills"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key, or anyone signed in"]}]]}]
+29:["$","p","46",{"children":["The open bills Quarter follows, newest change first. ",["$","code","53",{"children":"status"}]," is ",["$","code","65",{"children":"waiting"}]," (not checked yet, or changed since), ",["$","code","112",{"children":"held"}],", ",["$","code","120",{"children":"rejected"}]," or ",["$","code","134",{"children":"cleared"}],"; ",["$","code","145",{"children":"failed"}]," lists the bills with a ",["$","code","177",{"children":"check_error"}]," or ",["$","code","194",{"children":"write_error"}],". Decide a held bill at ",["$","code","231",{"children":"/v1/payment_runs/{run_id}/items/{item_id}/decision"}],"."]}]
+2a:["$","p","47",{"children":["Errors: ",["$","code","8",{"children":"status_invalid"}]," and ",["$","code","29",{"children":"limit_invalid"}],", ",["$","code","46",{"children":"400"}],"."]}]
+2b:["$","p","48",{"children":[["$","strong","0",{"children":"Query parameters"}]]}]
+2c:["$","div","49",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"status"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"waiting"}],", ",["$","code","11",{"children":"held"}],", ",["$","code","19",{"children":"rejected"}],", ",["$","code","31",{"children":"cleared"}],", ",["$","code","42",{"children":"failed"}]," or ",["$","code","54",{"children":"all"}],", the default."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"limit"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1 to 200, 50 by default."]}]]}]]}]]}]}]
+2d:["$","$L43","50",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/integrations/quickbooks/bills?status=held\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\""}],"title":"Request"}]
+2e:["$","$L43","51",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"list\",\n  \"data\": [\n    {\n      \"object\": \"erp_bill\",\n      \"provider\": \"quickbooks\",\n      \"id\": \"1042\",\n      \"bill_number\": \"BILL-2207\",\n      \"vendor_external_id\": \"58\",\n      \"payee_name\": \"Northwind Logistics\",\n      \"amount\": 18400,\n      \"currency\": \"USD\",\n      \"due_date\": \"2026-10-24\",\n      \"status\": \"held\",\n      \"payment_stopped\": false,\n      \"stop_payment\": \"QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided\",\n      \"run_id\": \"run_8Hq2LmZx4TbN0cVwYp3R\",\n      \"item_id\": \"itm_Qe7Rt2Yu9Io1Pa4Sd6Fg\",\n      \"check_error\": null,\n      \"write_error\": null,\n      \"written_at\": \"2026-10-21T15:20:33.000Z\",\n      \"updated_at\": \"2026-10-21T15:20:33.000Z\"\n    }\n  ]\n}"}],"title":"Response"}]
+2f:["$","h3","52",{"id":"delete-v1-integrations-quickbooks","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#delete-v1-integrations-quickbooks","className":"docs-module__RdmBMa__anchor","children":["Disconnect QuickBooks Online"]}]}]
+30:["$","p","53",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"DELETE","children":"DELETE"}],["$","code",null,{"children":"/v1/integrations/quickbooks"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
+31:["$","p","54",{"children":["Stops the syncs, and the payment flow with them, and wipes the credentials. Vendors already synced, and their history, stay. Holds Quarter set stay where they are in QuickBooks Online."]}]
+32:["$","$L43","55",{"tabs":[{"label":"curl","language":"bash","code":"curl -X DELETE \"$QUARTER_API_URL/v1/integrations/quickbooks\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\""}],"title":"Request"}]
+48:T4e7,{
+  "object": "integration",
+  "provider": "quickbooks",
+  "status": "disconnected",
+  "account_id": "9130356781234567",
+  "connected_by": "dana@yourcompany",
+  "connected_at": "2026-10-21T15:20:04.000Z",
+  "coverage": {
+    "vendors": true,
+    "bank_details": "none",
+    "bank_change_author": false,
+    "bills": true,
+    "bill_hold": "none",
+    "vendor_block": "none"
+  },
+  "last_synced_at": "2026-10-21T15:20:31.000Z",
+  "next_sync_at": null,
+  "syncing": false,
+  "last_error": null,
+  "last_sync": {
+    "created": 42,
+    "updated": 0,
+    "bank_changed": 0,
+    "inactive": 0,
+    "unchanged": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "records": {
+    "active": 42,
+    "inactive": 0,
+    "deleted": 0,
+    "failed": 0
+  },
+  "failures": [],
+  "notes": [],
+  "payment_flow": {
+    "enabled": false,
+    "stops_payment": false,
+    "stop_payment": "QuickBooks Online has no payment hold, so Quarter has not stopped this payment: stop it in QuickBooks Online or at your bank until it is decided",
+    "last_synced_at": null,
+    "last_error": null,
+    "last_sync": null,
+    "bills": {
+      "open": 0,
+      "waiting": 0,
+      "held": 0,
+      "rejected": 0,
+      "cleared": 0,
+      "check_failed": 0,
+      "write_failed": 0
+    }
+  }
+}33:["$","$L43","56",{"tabs":[{"label":"200","language":"json","code":"$48"}],"title":"Response"}]
+34:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L2",null,{"href":"/docs/netsuite","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"NetSuite"]}],["$","$L2",null,{"href":"/docs/xero","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Xero"]}]]}]
+35:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L49",null,{"entries":[{"id":"coverage","text":"What Quarter controls and what it does not","depth":2},{"id":"connecting","text":"Connecting","depth":2},{"id":"sync","text":"What a sync does","depth":2},{"id":"payment-flow","text":"The payment flow","depth":2},{"id":"hold","text":"What a hold looks like","depth":2},{"id":"endpoints","text":"Endpoints","depth":2},{"id":"put-v1-integrations-quickbooks","text":"Connect QuickBooks Online","depth":3},{"id":"get-v1-integrations-quickbooks","text":"Read the connection","depth":3},{"id":"post-v1-integrations-quickbooks-sync","text":"Sync now","depth":3},{"id":"put-v1-integrations-quickbooks-payment-flow","text":"Turn the payment flow on or off","depth":3},{"id":"get-v1-integrations-quickbooks-bills","text":"List the open bills","depth":3},{"id":"delete-v1-integrations-quickbooks","text":"Disconnect QuickBooks Online","depth":3}]}]}]
+36:["$","script","script-0",{"src":"/preview/_next/static/chunks/2qz4fsakclogy.js","async":true}]
+37:["$","$L4a",null,{"children":["$","$4b",null,{"name":"Next.MetadataOutlet","children":"$@4c"}]}]
+3a:["$","$1","h",{"children":[null,["$","$L4d",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#000000"}]]}],["$","div",null,{"hidden":true,"children":["$","$L4e",null,{"children":["$","$4b",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"QuickBooks Online | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"Check every QuickBooks Online bill awaiting payment and get an alert for each one held. QuickBooks Online has no hold Quarter can set, so Quarter alerts and never stops a payment there."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","link","3",{"rel":"manifest","href":"/preview/manifest.webmanifest"}],["$","link","4",{"rel":"canonical","href":"https://quarterso.github.io/preview/docs/quickbooks/"}],["$","link","5",{"rel":"alternate","type":"text/markdown","href":"https://quarterso.github.io/preview/docs/quickbooks.md"}],["$","meta","6",{"property":"og:title","content":"QuickBooks Online | Docs | Quarter"}],["$","meta","7",{"property":"og:description","content":"Check every QuickBooks Online bill awaiting payment and get an alert for each one held. QuickBooks Online has no hold Quarter can set, so Quarter alerts and never stops a payment there."}],["$","meta","8",{"property":"og:url","content":"https://quarterso.github.io/preview/docs/quickbooks/"}],["$","meta","9",{"property":"og:site_name","content":"Quarter"}],["$","meta","10",{"property":"og:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","11",{"property":"og:image:type","content":"image/png"}],["$","meta","12",{"property":"og:image:width","content":"1200"}],["$","meta","13",{"property":"og:image:height","content":"630"}],["$","meta","14",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","15",{"property":"og:type","content":"website"}],["$","meta","16",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","17",{"name":"twitter:title","content":"QuickBooks Online | Docs | Quarter"}],["$","meta","18",{"name":"twitter:description","content":"Check every QuickBooks Online bill awaiting payment and get an alert for each one held. QuickBooks Online has no hold Quarter can set, so Quarter alerts and never stops a payment there."}],["$","meta","19",{"name":"twitter:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","20",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","21",{"name":"twitter:image:type","content":"image/png"}],["$","meta","22",{"name":"twitter:image:width","content":"1200"}],["$","meta","23",{"name":"twitter:image:height","content":"630"}],["$","link","24",{"rel":"icon","href":"/preview/favicon.ico?favicon.35vvcuqux69e0.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","25",{"rel":"icon","href":"/preview/icon.svg?icon.3orkf5rm_o5pp.svg","sizes":"any","type":"image/svg+xml"}],["$","link","26",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.1oo_8h6q51r4t.png","sizes":"180x180","type":"image/png"}],["$","$L4f","27",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+3c:["$","$1","c",{"children":[null,["$","$L50",null,{"parallelRouterKey":"children","template":["$","$L51",null,{}]}]]}]
+3f:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/0fih63132z5xw.js","async":true}]],[["$","div",null,{"className":"section-dark docs-module__RdmBMa__band","children":["$","img",null,{"src":"/preview/art/band-grey.svg","alt":"","className":"etch ","decoding":"async"}]}],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$L52",null,{"nav":[{"title":"Start here","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Guides","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Confirming bank details"},{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/releases","label":"Decisions and release"},{"href":"/docs/payment-checks","label":"Payment checks"},{"href":"/docs/payouts","label":"Payouts"},{"href":"/docs/settlement","label":"Settlement"},{"href":"/docs/checks","label":"Checks and settings"},{"href":"/docs/network","label":"Account checks and fraud reports"},{"href":"/docs/compliance","label":"Compliance and insider controls"}]},{"title":"Accounting systems","items":[{"href":"/docs/netsuite","label":"NetSuite"},{"href":"/docs/quickbooks","label":"QuickBooks Online"},{"href":"/docs/xero","label":"Xero"},{"href":"/docs/intacct","label":"Sage Intacct"},{"href":"/docs/business-central","label":"Business Central"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L50",null,{"parallelRouterKey":"children","template":["$","$L51",null,{}]}]}]]}]]]}]
+42:true
+4c:null
+39:300
+39:C
+41:0
+3b:"$undefined"
+3d:"$undefined"
+40:"$undefined"
+38:"$undefined"
