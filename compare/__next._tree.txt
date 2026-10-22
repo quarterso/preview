@@ -6,4 +6,4 @@
 :HL["/preview/_next/static/chunks/0gae2u29jjfb2.css","style"]
 :HL["/preview/art/band-grey.svg","image"]
 :HL["/preview/art/rosette-grey.svg","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"compare","param":null,"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"V8im5We-_wSH1d3EjXpjv"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"compare","param":null,"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"il6THcsIGUWbgasOF-HTz"}

@@ -126,7 +126,7 @@ Response:
 
 `GET /v1/connected_accounts/{account}` (auth: API key)
 
-Unknown: `404 connected_account_not_found`.
+With `velocity`, the pace [`payout_velocity_spike`](/docs/checks.md#payout-velocity-spike) weighs: `last_24h` is the payouts of the last 24 hours, and `usual_day` the payouts of the 30 days before those divided by 30. Rejected payouts and cancelled runs do not count. Unknown: `404 connected_account_not_found`.
 
 **Path parameters**
 
@@ -149,7 +149,11 @@ Response:
   "object": "connected_account",
   "external_id": "seller_20931",
   "name": "Bayside Ceramics",
-  "created_at": "2026-10-21T14:02:11.000Z"
+  "created_at": "2026-10-21T14:02:11.000Z",
+  "velocity": {
+    "last_24h": 2260,
+    "usual_day": 612.4
+  }
 }
 ```
 
@@ -189,6 +193,60 @@ Response:
 
 ```shell
 The payee, shaped as a vendor with object "payee" and connected_account_id.
+```
+
+### List payees
+
+`GET /v1/connected_accounts/{account}/payees` (auth: API key)
+
+The connected account's payees by name, each with the bank account in use. `bank_account.changed` is true when it replaced earlier details. Unknown account: `404 connected_account_not_found`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `account` | string | Yes | Quarter's id (`cac_`) or your `external_id`. |
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+| `after` | string | No | The id of the last payee on the previous page. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/connected_accounts/seller_20931/payees" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "ven_4LtB9wQm6RzK2pXn8HcF",
+      "object": "payee",
+      "name": "Maya Chen",
+      "email_domain": null,
+      "external_id": "payee_4471",
+      "status": "unverified",
+      "individual": true,
+      "last_paid_on": null,
+      "bank_account": {
+        "last4": "5521",
+        "status": "unverified",
+        "added_at": "2026-10-21T14:38:52.000Z",
+        "changed": true
+      },
+      "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP"
+    }
+  ]
+}
 ```
 
 ### Retrieve a payee
@@ -406,6 +464,70 @@ Response:
     }
   ],
   "created_at": "2026-10-21T17:40:03.000Z"
+}
+```
+
+### List payouts
+
+`GET /v1/payouts` (auth: API key)
+
+Newest first, across single payouts and batches, each as `GET /v1/payouts/{payout}` answers it. Pass the last id as `after` for the next page.
+
+Errors: `400 decision_invalid`, `status_invalid`, `since_invalid`, `limit_invalid`; `404 connected_account_not_found`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `connected_account` | string | No | Only this connected account's payouts: Quarter's id or your `external_id`. |
+| `decision` | string | No | `allow`, `review` or `block`. |
+| `status` | string | No | `clear`, `held`, `approved` or `rejected`. |
+| `since` | string | No | Only payouts checked at or after this time, such as `2026-10-01`. |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+| `after` | string | No | The id of the last payout on the previous page. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/payouts?connected_account=seller_20931&decision=review" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "itm_7NwQ3kTz9RbM2xLp6VcJ",
+      "object": "payout",
+      "run_id": "run_2HcV8pLw5TqK9nRz3XbM",
+      "decision": "review",
+      "status": "held",
+      "connected_account_id": "cac_5RkT8mWq2LnB7vXc4HdP",
+      "payee_id": "ven_4LtB9wQm6RzK2pXn8HcF",
+      "payee_name": "Maya Chen",
+      "rail": "ach",
+      "amount": 1840,
+      "currency": "USD",
+      "last4": "5521",
+      "reference": "po_88213",
+      "score": 40,
+      "reasons": [
+        {
+          "code": "payout_details_changed",
+          "severity": "hold",
+          "message": "Maya Chen's bank details changed 3 hours ago, just before this payout",
+          "points": 40
+        }
+      ],
+      "review": null,
+      "outcome": null,
+      "created_at": "2026-10-21T17:40:03.000Z"
+    }
+  ]
 }
 ```
 
