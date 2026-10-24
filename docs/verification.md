@@ -378,6 +378,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,

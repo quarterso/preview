@@ -74,6 +74,7 @@ An `external_id` already used by another of your vendors answers `409 external_i
 | --- | --- | --- | --- |
 | `name` | string | Yes | The vendor name, up to 200 characters. Legal suffixes, case and punctuation are ignored when matching. |
 | `email_domain` | string | No | The domain the vendor emails from, such as `harborpoint.example`. A verification code sent anywhere else is recorded as a failed check. |
+| `phone` | string | No | The vendor's own number from your records, 7 to 30 digits, spaces, dots, dashes or brackets. It is the number a [case brief](/docs/case-briefs.md) puts in its call-back script. Never take it from a change request. Otherwise `400 phone_invalid`. |
 | `external_id` | string | No | Your own id for the vendor, unique among your vendors. A CSV run can match payments by it. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
@@ -89,7 +90,7 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/vendors" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
+  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","phone":"+1 312 555 0148","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
 ```
 
 Response:
@@ -100,6 +101,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
@@ -227,6 +229,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
@@ -280,7 +283,7 @@ Response:
 
 `PATCH /v1/vendors/{vendor}` (auth: API key)
 
-Changes the name, the email domain, whether the vendor is a person, the last payment date, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
+Changes the name, the email domain, the phone number, whether the vendor is a person, the last payment date, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
 
 **Path parameters**
 
@@ -294,6 +297,7 @@ Changes the name, the email domain, whether the vendor is a person, the last pay
 | --- | --- | --- | --- |
 | `name` | string | No | The new name. |
 | `email_domain` | string | No | The new email domain. |
+| `phone` | string | No | The vendor's own number from your records. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
 | `status` | string | No | `blocked`, or `unverified` to lift a block. Only a signed-in admin can lift a block; anyone else, and any API key, answers `403 unblock_needs_admin`. |
@@ -315,6 +319,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpointlogistics.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
@@ -378,7 +383,7 @@ A test project holds up to 5,000 vendors, so you can import your whole vendor ma
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `last_paid_on`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
+| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `phone`, `external_id`, `individual`, `last_paid_on`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
 
 Request:
 
@@ -440,6 +445,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,

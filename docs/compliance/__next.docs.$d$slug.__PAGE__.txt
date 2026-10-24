@@ -65,16 +65,16 @@ Sanctions screening compares names. It cannot find a business blocked only becau
 This procedure is reviewed at least once a year. Last reviewed on 2026-10-02 by dana@yourcompany. Next review due by 2027-10-02.98:X
 9d:X
 9d:C
-0:{"buildId":"cKfKXhgSxByIYUbN7cosE","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Compliance and insider controls"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."]}],["$","a",null,{"href":"/preview/docs/compliance.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["Nacha's rules ask every business that sends ACH payments to have a risk-based process to find payments authorized under false pretenses, such as a vendor impersonated by email, and to review it at least once a year. For businesses below the first phase's volume threshold, the rule applies from June 19, 2026. That day is a federal holiday, so in practice it applies from June 22, 2026."]}],["$","p","1",{"children":["Quarter does not make you compliant, and no tool can. It gives you a documented, risk-based process and the evidence that you followed it, which helps you meet Nacha's fraud-monitoring rule. Your bank and your auditor decide whether your process is enough."]}],["$","h2","2",{"id":"written-procedure","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#written-procedure","className":"docs-module__RdmBMa__anchor","children":["The written procedure"]}]}],["$","p","3",{"children":["Quarter writes the procedure from your ",["$","$L2","39",{"href":"/docs/checks#settings","children":["settings"]}]," each time you ask for it, so the document always describes the controls actually in force. It lists every check that is on and what it does, names the checks you turned off as your own decision, and states the cooling period, the two-person threshold and the last review. It comes back as Markdown, ready to print, sign or hand to your bank."]}],["$","$L3","4",{"tabs":[{"label":"Markdown","language":"shell","code":"$4"}],"title":"markdown"}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38","$L39","$L3a","$L3b","$L3c","$L3d","$L3e","$L3f","$L40","$L41","$L42","$L43","$L44","$L45","$L46","$L47","$L48","$L49","$L4a","$L4b","$L4c","$L4d","$L4e","$L4f","$L50","$L51","$L52","$L53","$L54","$L55","$L56","$L57","$L58","$L59","$L5a","$L5b","$L5c","$L5d","$L5e","$L5f","$L60","$L61","$L62","$L63","$L64","$L65","$L66","$L67","$L68","$L69","$L6a","$L6b","$L6c","$L6d","$L6e","$L6f","$L70","$L71","$L72","$L73","$L74","$L75","$L76","$L77","$L78","$L79","$L7a","$L7b","$L7c","$L7d","$L7e","$L7f","$L80","$L81","$L82","$L83","$L84","$L85","$L86","$L87","$L88","$L89","$L8a","$L8b","$L8c","$L8d","$L8e","$L8f","$L90","$L91","$L92"]}],"$L93"]}],"$L94"]}],["$L95"],"$L96"]}],"isPartial":"$@97","staleTime":"$98","varyParams":null},{"rsc":"$L99","isPartial":"$@9a","staleTime":"$98","varyParams":null},{"rsc":"$L9b","isPartial":"$@9c","staleTime":"$98","varyParams":"$9d"},{"rsc":"$L9e","isPartial":"$@9f","staleTime":"$98","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@a0","rootVaryParams":null,"needsRuntimeRequest":"$@a1"}
-a7:I[20795,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
-a8:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
-a9:"$Sreact.suspense"
-ab:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
-ac:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
-ad:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
-ae:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
-af:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
-b0:I[71948,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js"],"DocSidebar"]
+0:{"buildId":"-wjU_ApxW5x0Y2zqXTxx4","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Compliance and insider controls"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."]}],["$","a",null,{"href":"/preview/docs/compliance.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","p","0",{"children":["Nacha's rules ask every business that sends ACH payments to have a risk-based process to find payments authorized under false pretenses, such as a vendor impersonated by email, and to review it at least once a year. For businesses below the first phase's volume threshold, the rule applies from June 19, 2026. That day is a federal holiday, so in practice it applies from June 22, 2026."]}],["$","p","1",{"children":["Quarter does not make you compliant, and no tool can. It gives you a documented, risk-based process and the evidence that you followed it, which helps you meet Nacha's fraud-monitoring rule. Your bank and your auditor decide whether your process is enough."]}],["$","h2","2",{"id":"written-procedure","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#written-procedure","className":"docs-module__RdmBMa__anchor","children":["The written procedure"]}]}],["$","p","3",{"children":["Quarter writes the procedure from your ",["$","$L2","39",{"href":"/docs/checks#settings","children":["settings"]}]," each time you ask for it, so the document always describes the controls actually in force. It lists every check that is on and what it does, names the checks you turned off as your own decision, and states the cooling period, the two-person threshold and the last review. It comes back as Markdown, ready to print, sign or hand to your bank."]}],["$","$L3","4",{"tabs":[{"label":"Markdown","language":"shell","code":"$4"}],"title":"markdown"}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28","$L29","$L2a","$L2b","$L2c","$L2d","$L2e","$L2f","$L30","$L31","$L32","$L33","$L34","$L35","$L36","$L37","$L38","$L39","$L3a","$L3b","$L3c","$L3d","$L3e","$L3f","$L40","$L41","$L42","$L43","$L44","$L45","$L46","$L47","$L48","$L49","$L4a","$L4b","$L4c","$L4d","$L4e","$L4f","$L50","$L51","$L52","$L53","$L54","$L55","$L56","$L57","$L58","$L59","$L5a","$L5b","$L5c","$L5d","$L5e","$L5f","$L60","$L61","$L62","$L63","$L64","$L65","$L66","$L67","$L68","$L69","$L6a","$L6b","$L6c","$L6d","$L6e","$L6f","$L70","$L71","$L72","$L73","$L74","$L75","$L76","$L77","$L78","$L79","$L7a","$L7b","$L7c","$L7d","$L7e","$L7f","$L80","$L81","$L82","$L83","$L84","$L85","$L86","$L87","$L88","$L89","$L8a","$L8b","$L8c","$L8d","$L8e","$L8f","$L90","$L91","$L92"]}],"$L93"]}],"$L94"]}],["$L95"],"$L96"]}],"isPartial":"$@97","staleTime":"$98","varyParams":null},{"rsc":"$L99","isPartial":"$@9a","staleTime":"$98","varyParams":null},{"rsc":"$L9b","isPartial":"$@9c","staleTime":"$98","varyParams":"$9d"},{"rsc":"$L9e","isPartial":"$@9f","staleTime":"$98","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@a0","rootVaryParams":null,"needsRuntimeRequest":"$@a1"}
+a9:I[20795,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
+aa:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+ab:"$Sreact.suspense"
+ad:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+ae:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+af:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+b0:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+b1:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+b2:I[71948,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js"],"DocSidebar"]
 :HL["/preview/art/band-grey.svg","image"]
 5:["$","h2","5",{"id":"yearly-review","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#yearly-review","className":"docs-module__RdmBMa__anchor","children":["The yearly review"]}]}]
 6:["$","p","6",{"children":["Once a year, someone responsible reads the procedure, checks it still fits the business, and records the review, signed in to the console as an admin. The procedure then shows the date and the person, and ",["$","code","205",{"children":"next_review_due"}]," moves a year on. Before the first review, ",["$","code","265",{"children":"next_review_due"}]," is today."]}]
@@ -621,16 +621,148 @@ a5:Tc77,{
 50:["$","p","80",{"children":["Payment evidence (runs, payments, decisions, call-backs, verifications and the audit log) is kept while the account is open, and for 7 years after it closes unless you choose longer. When an account that sent live payments is erased, Quarter first keeps a sealed copy of its records for that period, which only Quarter staff can open to hand back to you. Uploaded payment files are deleted 90 days after they are scanned or released."]}]
 51:["$","h3","81",{"id":"get-v1-organization","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-organization","className":"docs-module__RdmBMa__anchor","children":["Read retention and security contacts"]}]}]
 52:["$","p","82",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/organization"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
-53:["$","p","83",{"children":["How long each kind of record is kept, and who Quarter tells first about a security incident, besides your admins."]}]
+53:["$","p","83",{"children":["How long each kind of record is kept, who Quarter tells first about a security incident, besides your admins, and whether ",["$","$L2","122",{"href":"/docs/case-briefs","children":["case briefs"]}]," are on, with the exact fields they send to Anthropic."]}]
 54:["$","$L3","84",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/organization\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\""}],"title":"Request"}]
-55:["$","$L3","85",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"organization\",\n  \"id\": \"org_7TqW2nLp9VkR4mXb8HcZ\",\n  \"name\": \"Lakeshore Fabrication Inc.\",\n  \"retention\": {\n    \"evidence_years\": 7,\n    \"payment_files_days\": 90,\n    \"erase_after_closing_days\": 30\n  },\n  \"security_contacts\": [\n    {\n      \"name\": \"Sam Rivera\",\n      \"email\": \"sam@yourcompany\",\n      \"phone\": \"+1 312 555 0110\"\n    }\n  ]\n}"}],"title":"Response"}]
-56:["$","h3","86",{"id":"patch-v1-organization","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#patch-v1-organization","className":"docs-module__RdmBMa__anchor","children":["Change retention or security contacts"]}]}]
+a6:T764,{
+  "object": "organization",
+  "id": "org_7TqW2nLp9VkR4mXb8HcZ",
+  "name": "Lakeshore Fabrication Inc.",
+  "retention": {
+    "evidence_years": 7,
+    "payment_files_days": 90,
+    "erase_after_closing_days": 30
+  },
+  "security_contacts": [
+    {
+      "name": "Sam Rivera",
+      "email": "sam@yourcompany",
+      "phone": "+1 312 555 0110"
+    }
+  ],
+  "ai_briefs": {
+    "enabled": false,
+    "fields_sent": {
+      "payment_item": [
+        "payment.payee_name",
+        "payment.amount",
+        "payment.currency",
+        "payment.rail",
+        "payment.last4",
+        "payment.findings",
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ],
+      "bank_change_email": [
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ]
+    },
+    "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it."
+  }
+}55:["$","$L3","85",{"tabs":[{"label":"200","language":"json","code":"$a6"}],"title":"Response"}]
+56:["$","h3","86",{"id":"patch-v1-organization","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#patch-v1-organization","className":"docs-module__RdmBMa__anchor","children":["Change retention, security contacts or case briefs"]}]}]
 57:["$","p","87",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"PATCH","children":"PATCH"}],["$","code",null,{"children":"/v1/organization"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
 58:["$","p","88",{"children":["Fields you leave out are kept. The audit log records which fields changed, never the contacts themselves. An API key answers ",["$","code","125",{"children":"403 session_required"}],"."]}]
 59:["$","p","89",{"children":[["$","strong","0",{"children":"Body"}]]}]
-5a:["$","div","90",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"evidence_retention_years"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["7 to 30. How long payment evidence is kept, including after the account closes."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"security_contacts"}]]}],["$","td","1",{"children":["object[]"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Up to 5 people, each with ",["$","code","26",{"children":"email"}]," and optionally ",["$","code","49",{"children":"name"}]," and ",["$","code","60",{"children":"phone"}],". An empty list leaves only your admins."]}]]}]]}]]}]}]
+5a:["$","div","90",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"evidence_retention_years"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["7 to 30. How long payment evidence is kept, including after the account closes."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"security_contacts"}]]}],["$","td","1",{"children":["object[]"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Up to 5 people, each with ",["$","code","26",{"children":"email"}]," and optionally ",["$","code","49",{"children":"name"}]," and ",["$","code","60",{"children":"phone"}],". An empty list leaves only your admins."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"ai_briefs"}]]}],["$","td","1",{"children":["boolean"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"true"}]," turns ",["$","$L2","13",{"href":"/docs/case-briefs","children":["case briefs"]}]," on, which sends the fields in ",["$","code","76",{"children":"ai_briefs.fields_sent"}]," to Anthropic when someone asks for a brief; ",["$","code","144",{"children":"false"}]," turns them off. Applies at once. Otherwise ",["$","code","195",{"children":"400 ai_briefs_invalid"}],"."]}]]}]]}]]}]}]
 5b:["$","$L3","91",{"tabs":[{"label":"curl","language":"bash","code":"curl -X PATCH \"$QUARTER_API_URL/v1/organization\" \\\n  -H \"authorization: Bearer $QUARTER_SESSION_TOKEN\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"evidence_retention_years\":10,\"security_contacts\":[{\"name\":\"Sam Rivera\",\"email\":\"sam@yourcompany\",\"phone\":\"+1 312 555 0110\"}]}'"}],"title":"Request"}]
-5c:["$","$L3","92",{"tabs":[{"label":"200","language":"json","code":"{\n  \"object\": \"organization\",\n  \"id\": \"org_7TqW2nLp9VkR4mXb8HcZ\",\n  \"name\": \"Lakeshore Fabrication Inc.\",\n  \"retention\": {\n    \"evidence_years\": 10,\n    \"payment_files_days\": 90,\n    \"erase_after_closing_days\": 30\n  },\n  \"security_contacts\": [\n    {\n      \"name\": \"Sam Rivera\",\n      \"email\": \"sam@yourcompany\",\n      \"phone\": \"+1 312 555 0110\"\n    }\n  ]\n}"}],"title":"Response"}]
+a7:T765,{
+  "object": "organization",
+  "id": "org_7TqW2nLp9VkR4mXb8HcZ",
+  "name": "Lakeshore Fabrication Inc.",
+  "retention": {
+    "evidence_years": 10,
+    "payment_files_days": 90,
+    "erase_after_closing_days": 30
+  },
+  "security_contacts": [
+    {
+      "name": "Sam Rivera",
+      "email": "sam@yourcompany",
+      "phone": "+1 312 555 0110"
+    }
+  ],
+  "ai_briefs": {
+    "enabled": false,
+    "fields_sent": {
+      "payment_item": [
+        "payment.payee_name",
+        "payment.amount",
+        "payment.currency",
+        "payment.rail",
+        "payment.last4",
+        "payment.findings",
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ],
+      "bank_change_email": [
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ]
+    },
+    "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it."
+  }
+}5c:["$","$L3","92",{"tabs":[{"label":"200","language":"json","code":"$a7"}],"title":"Response"}]
 5d:["$","p","93",{"children":["A vendor contact may ask what your business holds about them, or ask for it to be deleted or corrected. These routes find a contact's email, phone number or name in vendor links, verification evidence, call-back notes and the audit log. Erasing replaces it with a pseudonym and keeps every record, so the evidence of each check survives; an email keeps the vendor's domain. A correction never rewrites that evidence. Payments, vendor names and bank details are payment records you keep for your retention period: they are listed as ",["$","code","532",{"children":"retained"}]," and never changed. A vendor's own name is corrected on the vendor. Each request is in the audit log by kind and count, never by value. Send exactly one of ",["$","code","698",{"children":"email"}],", ",["$","code","707",{"children":"phone"}]," or ",["$","code","718",{"children":"name"}],"."]}]
 5e:["$","h3","94",{"id":"post-v1-personal-data-search","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-personal-data-search","className":"docs-module__RdmBMa__anchor","children":["Find a contact's personal data"]}]}]
 5f:["$","p","95",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/personal_data/search"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","Signed-in admin"]}]]}]
@@ -684,7 +816,7 @@ a5:Tc77,{
 8f:["$","p","143",{"children":[["$","strong","0",{"children":"Query parameters"}]]}]
 90:["$","div","144",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"from"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"YYYY-MM-DD"}],". Default 90 days before ",["$","code","37",{"children":"to"}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"to"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":[["$","code","0",{"children":"YYYY-MM-DD"}],", included. Default today."]}]]}]]}]]}]}]
 91:["$","$L3","145",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/reports/vendor_changes?from=2026-07-08&to=2026-10-06\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
-a6:T4e1,{
+a8:T4e1,{
   "object": "vendor_change_report",
   "from": "2026-07-08",
   "to": "2026-10-06",
@@ -733,16 +865,16 @@ a6:T4e1,{
       "verified_by": null
     }
   ]
-}92:["$","$L3","146",{"tabs":[{"label":"200","language":"json","code":"$a6"}],"title":"Response"}]
+}92:["$","$L3","146",{"tabs":[{"label":"200","language":"json","code":"$a8"}],"title":"Response"}]
 93:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L2",null,{"href":"/docs/network","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Account checks and fraud reports"]}],["$","$L2",null,{"href":"/docs/netsuite","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"NetSuite"]}]]}]
-94:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$La7",null,{"entries":[{"id":"written-procedure","text":"The written procedure","depth":2},{"id":"yearly-review","text":"The yearly review","depth":2},{"id":"audit-log","text":"The audit log","depth":2},{"id":"audit-chain","text":"Proof that no entry was changed","depth":3},{"id":"security-events","text":"Security events","depth":2},{"id":"claim-file","text":"The claim file","depth":2},{"id":"endpoints","text":"Endpoints","depth":2},{"id":"get-v1-compliance-procedure","text":"Get the procedure","depth":3},{"id":"post-v1-compliance-reviews","text":"Record the yearly review","depth":3},{"id":"nacha-program","text":"Nacha fraud monitoring program","depth":2},{"id":"get-v1-compliance-controls-report","text":"Get the controls and evidence report","depth":3},{"id":"get-v1-audit-log","text":"Export the audit log","depth":3},{"id":"get-v1-audit-log-verify","text":"Check the audit log was not altered","depth":3},{"id":"get-v1-security-events","text":"List security events","depth":3},{"id":"get-v1-security-events-verify","text":"Check the security events were not altered","depth":3},{"id":"get-v1-vendors-vendor-claim-file","text":"Download a vendor's claim file","depth":3},{"id":"records-and-privacy","text":"Records and privacy requests","depth":2},{"id":"get-v1-organization","text":"Read retention and security contacts","depth":3},{"id":"patch-v1-organization","text":"Change retention or security contacts","depth":3},{"id":"post-v1-personal-data-search","text":"Find a contact's personal data","depth":3},{"id":"post-v1-personal-data-erase","text":"Erase a contact's personal data","depth":3},{"id":"post-v1-personal-data-correct","text":"Answer a request to correct a contact's personal data","depth":3},{"id":"insider-controls","text":"Insider controls","depth":2},{"id":"segregation-of-duties","text":"Segregation of duties","depth":3},{"id":"employee-accounts","text":"Employee accounts","depth":3},{"id":"insider-checks","text":"Other insider checks","depth":3},{"id":"insider-control-endpoints","text":"Endpoints","depth":3},{"id":"post-v1-employee-accounts-import","text":"Import the employee account list","depth":3},{"id":"get-v1-employee-accounts","text":"Read the employee account list","depth":3},{"id":"get-v1-reports-vendor-changes","text":"Report vendor changes","depth":3}]}]}]
+94:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$La9",null,{"entries":[{"id":"written-procedure","text":"The written procedure","depth":2},{"id":"yearly-review","text":"The yearly review","depth":2},{"id":"audit-log","text":"The audit log","depth":2},{"id":"audit-chain","text":"Proof that no entry was changed","depth":3},{"id":"security-events","text":"Security events","depth":2},{"id":"claim-file","text":"The claim file","depth":2},{"id":"endpoints","text":"Endpoints","depth":2},{"id":"get-v1-compliance-procedure","text":"Get the procedure","depth":3},{"id":"post-v1-compliance-reviews","text":"Record the yearly review","depth":3},{"id":"nacha-program","text":"Nacha fraud monitoring program","depth":2},{"id":"get-v1-compliance-controls-report","text":"Get the controls and evidence report","depth":3},{"id":"get-v1-audit-log","text":"Export the audit log","depth":3},{"id":"get-v1-audit-log-verify","text":"Check the audit log was not altered","depth":3},{"id":"get-v1-security-events","text":"List security events","depth":3},{"id":"get-v1-security-events-verify","text":"Check the security events were not altered","depth":3},{"id":"get-v1-vendors-vendor-claim-file","text":"Download a vendor's claim file","depth":3},{"id":"records-and-privacy","text":"Records and privacy requests","depth":2},{"id":"get-v1-organization","text":"Read retention and security contacts","depth":3},{"id":"patch-v1-organization","text":"Change retention, security contacts or case briefs","depth":3},{"id":"post-v1-personal-data-search","text":"Find a contact's personal data","depth":3},{"id":"post-v1-personal-data-erase","text":"Erase a contact's personal data","depth":3},{"id":"post-v1-personal-data-correct","text":"Answer a request to correct a contact's personal data","depth":3},{"id":"insider-controls","text":"Insider controls","depth":2},{"id":"segregation-of-duties","text":"Segregation of duties","depth":3},{"id":"employee-accounts","text":"Employee accounts","depth":3},{"id":"insider-checks","text":"Other insider checks","depth":3},{"id":"insider-control-endpoints","text":"Endpoints","depth":3},{"id":"post-v1-employee-accounts-import","text":"Import the employee account list","depth":3},{"id":"get-v1-employee-accounts","text":"Read the employee account list","depth":3},{"id":"get-v1-reports-vendor-changes","text":"Report vendor changes","depth":3}]}]}]
 95:["$","script","script-0",{"src":"/preview/_next/static/chunks/2qz4fsakclogy.js","async":true}]
-96:["$","$La8",null,{"children":["$","$a9",null,{"name":"Next.MetadataOutlet","children":"$@aa"}]}]
-99:["$","$1","h",{"children":[null,["$","$Lab",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#000000"}]]}],["$","div",null,{"hidden":true,"children":["$","$Lac",null,{"children":["$","$a9",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Compliance and insider controls | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","link","3",{"rel":"manifest","href":"/preview/manifest.webmanifest"}],["$","link","4",{"rel":"canonical","href":"https://quarterso.github.io/preview/docs/compliance/"}],["$","link","5",{"rel":"alternate","type":"text/markdown","href":"https://quarterso.github.io/preview/docs/compliance.md"}],["$","meta","6",{"property":"og:title","content":"Compliance and insider controls | Docs | Quarter"}],["$","meta","7",{"property":"og:description","content":"The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."}],["$","meta","8",{"property":"og:url","content":"https://quarterso.github.io/preview/docs/compliance/"}],["$","meta","9",{"property":"og:site_name","content":"Quarter"}],["$","meta","10",{"property":"og:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","11",{"property":"og:image:type","content":"image/png"}],["$","meta","12",{"property":"og:image:width","content":"1200"}],["$","meta","13",{"property":"og:image:height","content":"630"}],["$","meta","14",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","15",{"property":"og:type","content":"website"}],["$","meta","16",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","17",{"name":"twitter:title","content":"Compliance and insider controls | Docs | Quarter"}],["$","meta","18",{"name":"twitter:description","content":"The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."}],["$","meta","19",{"name":"twitter:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","20",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","21",{"name":"twitter:image:type","content":"image/png"}],["$","meta","22",{"name":"twitter:image:width","content":"1200"}],["$","meta","23",{"name":"twitter:image:height","content":"630"}],["$","link","24",{"rel":"icon","href":"/preview/favicon.ico?favicon.35vvcuqux69e0.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","25",{"rel":"icon","href":"/preview/icon.svg?icon.3orkf5rm_o5pp.svg","sizes":"any","type":"image/svg+xml"}],["$","link","26",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.1oo_8h6q51r4t.png","sizes":"180x180","type":"image/png"}],["$","$Lad","27",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
-9b:["$","$1","c",{"children":[null,["$","$Lae",null,{"parallelRouterKey":"children","template":["$","$Laf",null,{}]}]]}]
-9e:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/0fih63132z5xw.js","async":true}]],[["$","div",null,{"className":"section-dark docs-module__RdmBMa__band","children":["$","img",null,{"src":"/preview/art/band-grey.svg","alt":"","className":"etch ","decoding":"async"}]}],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$Lb0",null,{"nav":[{"title":"Start here","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Guides","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Confirming bank details"},{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/releases","label":"Decisions and release"},{"href":"/docs/payment-checks","label":"Payment checks"},{"href":"/docs/payouts","label":"Payouts"},{"href":"/docs/settlement","label":"Settlement"},{"href":"/docs/checks","label":"Checks and settings"},{"href":"/docs/network","label":"Account checks and fraud reports"},{"href":"/docs/compliance","label":"Compliance and insider controls"}]},{"title":"Accounting systems","items":[{"href":"/docs/netsuite","label":"NetSuite"},{"href":"/docs/quickbooks","label":"QuickBooks Online"},{"href":"/docs/xero","label":"Xero"},{"href":"/docs/intacct","label":"Sage Intacct"},{"href":"/docs/business-central","label":"Business Central"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$Lae",null,{"parallelRouterKey":"children","template":["$","$Laf",null,{}]}]}]]}]]]}]
+96:["$","$Laa",null,{"children":["$","$ab",null,{"name":"Next.MetadataOutlet","children":"$@ac"}]}]
+99:["$","$1","h",{"children":[null,["$","$Lad",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#000000"}]]}],["$","div",null,{"hidden":true,"children":["$","$Lae",null,{"children":["$","$ab",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Compliance and insider controls | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","link","3",{"rel":"manifest","href":"/preview/manifest.webmanifest"}],["$","link","4",{"rel":"canonical","href":"https://quarterso.github.io/preview/docs/compliance/"}],["$","link","5",{"rel":"alternate","type":"text/markdown","href":"https://quarterso.github.io/preview/docs/compliance.md"}],["$","meta","6",{"property":"og:title","content":"Compliance and insider controls | Docs | Quarter"}],["$","meta","7",{"property":"og:description","content":"The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."}],["$","meta","8",{"property":"og:url","content":"https://quarterso.github.io/preview/docs/compliance/"}],["$","meta","9",{"property":"og:site_name","content":"Quarter"}],["$","meta","10",{"property":"og:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","11",{"property":"og:image:type","content":"image/png"}],["$","meta","12",{"property":"og:image:width","content":"1200"}],["$","meta","13",{"property":"og:image:height","content":"630"}],["$","meta","14",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","15",{"property":"og:type","content":"website"}],["$","meta","16",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","17",{"name":"twitter:title","content":"Compliance and insider controls | Docs | Quarter"}],["$","meta","18",{"name":"twitter:description","content":"The written procedure, its yearly review, the audit log, and the controls against payments steered by someone inside."}],["$","meta","19",{"name":"twitter:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","20",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","21",{"name":"twitter:image:type","content":"image/png"}],["$","meta","22",{"name":"twitter:image:width","content":"1200"}],["$","meta","23",{"name":"twitter:image:height","content":"630"}],["$","link","24",{"rel":"icon","href":"/preview/favicon.ico?favicon.35vvcuqux69e0.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","25",{"rel":"icon","href":"/preview/icon.svg?icon.3orkf5rm_o5pp.svg","sizes":"any","type":"image/svg+xml"}],["$","link","26",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.1oo_8h6q51r4t.png","sizes":"180x180","type":"image/png"}],["$","$Laf","27",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+9b:["$","$1","c",{"children":[null,["$","$Lb0",null,{"parallelRouterKey":"children","template":["$","$Lb1",null,{}]}]]}]
+9e:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/0fih63132z5xw.js","async":true}]],[["$","div",null,{"className":"section-dark docs-module__RdmBMa__band","children":["$","img",null,{"src":"/preview/art/band-grey.svg","alt":"","className":"etch ","decoding":"async"}]}],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$Lb2",null,{"nav":[{"title":"Start here","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Guides","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Confirming bank details"},{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/releases","label":"Decisions and release"},{"href":"/docs/payment-checks","label":"Payment checks"},{"href":"/docs/payouts","label":"Payouts"},{"href":"/docs/settlement","label":"Settlement"},{"href":"/docs/checks","label":"Checks and settings"},{"href":"/docs/bank-change-emails","label":"Bank change emails"},{"href":"/docs/case-briefs","label":"Case briefs"},{"href":"/docs/network","label":"Account checks and fraud reports"},{"href":"/docs/compliance","label":"Compliance and insider controls"}]},{"title":"Accounting systems","items":[{"href":"/docs/netsuite","label":"NetSuite"},{"href":"/docs/quickbooks","label":"QuickBooks Online"},{"href":"/docs/xero","label":"Xero"},{"href":"/docs/intacct","label":"Sage Intacct"},{"href":"/docs/business-central","label":"Business Central"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$Lb0",null,{"parallelRouterKey":"children","template":["$","$Lb1",null,{}]}]}]]}]]]}]
 a1:true
-aa:null
+ac:null
 98:300
 98:C
 a0:0

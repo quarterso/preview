@@ -1,0 +1,307 @@
+1:"$Sreact.fragment"
+2:I[56448,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],""]
+2e:X
+33:X
+33:C
+0:{"buildId":"-wjU_ApxW5x0Y2zqXTxx4","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"docs-module__RdmBMa__page","children":[["$","article",null,{"className":"docs-module__RdmBMa__article","children":[["$","header",null,{"className":"docs-module__RdmBMa__header","children":[["$","p",null,{"className":"docs-module__RdmBMa__eyebrow","children":"Guides"}],["$","h1",null,{"className":"docs-module__RdmBMa__title","children":"Bank change emails"}],["$","p",null,{"className":"docs-module__RdmBMa__lead","children":["Forward a vendor's email asking to change bank details. Quarter checks who really sent it and holds payments to the new details when it fails."]}],["$","a",null,{"href":"/preview/docs/bank-change-emails.md","className":"docs-module__RdmBMa__mdLink","children":"View as Markdown"}]]}],["$","div",null,{"className":"docs-module__RdmBMa__prose","children":[["$","aside","0",{"className":"docs-module__RdmBMa__note","data-tone":"info","children":["Bank change email checks are built and tested. They have not yet been used by a customer. There is no inbound email address yet: send the email through the API."]}],["$","p","1",{"children":["Most vendor payment fraud starts with an email that asks you to pay a new account. Save that email from your mail client as a ",["$","code","126",{"children":".eml"}]," file, headers and all, and send it to Quarter with the vendor it claims to come from. Quarter checks the sender, the email's authentication results, its wording and the bank details in it, and returns every finding."]}],["$","aside","2",{"className":"docs-module__RdmBMa__note","data-tone":"warn","children":["An email never confirms bank details, however clean it looks. Uploading one can hold payments, never release them. Confirm a change with a ",["$","$L2","139",{"href":"/docs/verification","children":["verification link"]}]," or a ",["$","$L2","184",{"href":"/docs/verification#callbacks","children":["call-back"]}]," to the number in your vendor record."]}],["$","h2","3",{"id":"findings","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#findings","className":"docs-module__RdmBMa__anchor","children":["What Quarter checks"]}]}],["$","p","4",{"children":["Each finding has a ",["$","code","19",{"children":"severity"}],". A ",["$","code","33",{"children":"hold"}]," finding sets ",["$","code","53",{"children":"flagged: true"}],", and payments to the bank details the email asked for are then held. A ",["$","code","140",{"children":"note"}]," is shown to the reviewer and holds nothing."]}],["$","div","5",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Code",{"scope":"col","children":["Code"]}],["$","th","Severity",{"scope":"col","children":["Severity"]}],["$","th","When",{"scope":"col","children":["When"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"sender_lookalike"}]]}],["$","td","1",{"children":["hold"]}],["$","td","2",{"children":["The sender's domain imitates the vendor's ",["$","code","42",{"children":"email_domain"}],", found the same way as for ",["$","$L2","84",{"href":"/docs/vendors#sender-domain","children":["the sender's domain"]}],"."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"sender_other_domain"}]]}],["$","td","1",{"children":["hold"]}],["$","td","2",{"children":["The sender's domain is not the vendor's ",["$","code","40",{"children":"email_domain"}],"."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"reply_to_elsewhere"}]]}],["$","td","1",{"children":["hold"]}],["$","td","2",{"children":["Replies go to a different domain from the sender's."]}]]}],["$","tr","3",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"dmarc_failed"}]]}],["$","td","1",{"children":["hold"]}],["$","td","2",{"children":["DMARC failed."]}]]}],["$","tr","4",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"spf_failed"}]]}],["$","td","1",{"children":["hold"]}],["$","td","2",{"children":["SPF failed."]}]]}],["$","tr","5",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"return_path_elsewhere"}]]}],"$L3","$L4"]}],"$L5","$L6","$L7","$L8","$L9","$La","$Lb","$Lc"]}]]}]}],"$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22","$L23","$L24","$L25","$L26","$L27","$L28"]}],"$L29"]}],"$L2a"]}],["$L2b"],"$L2c"]}],"isPartial":"$@2d","staleTime":"$2e","varyParams":null},{"rsc":"$L2f","isPartial":"$@30","staleTime":"$2e","varyParams":null},{"rsc":"$L31","isPartial":"$@32","staleTime":"$2e","varyParams":"$33"},{"rsc":"$L34","isPartial":"$@35","staleTime":"$2e","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@36","rootVaryParams":null,"needsRuntimeRequest":"$@37"}
+38:I[56123,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"CodeBlock"]
+3c:I[20795,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js","/preview/_next/static/chunks/2qz4fsakclogy.js"],"DocToc"]
+3d:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"OutletBoundary"]
+3e:"$Sreact.suspense"
+40:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"ViewportBoundary"]
+41:I[48367,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"MetadataBoundary"]
+42:I[92493,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"IconMark"]
+43:I[11474,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+44:I[39897,["/preview/_next/static/chunks/1aqx8pw69k2jf.js"],"default"]
+45:I[71948,["/preview/_next/static/chunks/3g584fiv7qwup.js","/preview/_next/static/chunks/0fih63132z5xw.js"],"DocSidebar"]
+:HL["/preview/art/band-grey.svg","image"]
+3:["$","td","1",{"children":["note"]}]
+4:["$","td","2",{"children":["Bounces go to a different domain from the sender's. Mailing services do this too."]}]
+5:["$","tr","6",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"first_time_sender"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["The first email from this address uploaded to Quarter for the business."]}]]}]
+6:["$","tr","7",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"authentication_missing"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["No Authentication-Results header, so whether the sender is who it claims is unknown."]}]]}]
+7:["$","tr","8",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"spf_weak"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["SPF result ",["$","code","11",{"children":"softfail"}],", ",["$","code","23",{"children":"none"}]," or ",["$","code","33",{"children":"permerror"}],"."]}]]}]
+8:["$","tr","9",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"dkim_failed"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["DKIM result other than ",["$","code","23",{"children":"pass"}],"."]}]]}]
+9:["$","tr","10",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"urgency"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["Wording that presses for speed, such as ",["$","code","40",{"children":"urgent"}],", ",["$","code","50",{"children":"immediately"}]," or ",["$","code","67",{"children":"final notice"}],"."]}]]}]
+a:["$","tr","11",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"secrecy"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["Wording that asks for secrecy or to avoid a call, such as ",["$","code","58",{"children":"confidential"}],", ",["$","code","74",{"children":"do not call"}]," or an old account said to be closed."]}]]}]
+b:["$","tr","12",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"bank_details_differ"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["The bank details in the email differ from the ones on file."]}]]}]
+c:["$","tr","13",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"account_new"}]]}],["$","td","1",{"children":["note"]}],["$","td","2",{"children":["The account in the email has never been on file for any vendor of the business."]}]]}]
+d:["$","p","6",{"children":["The domain checks need the vendor's ",["$","code","36",{"children":"email_domain"}],". SPF, DKIM and DMARC come from the first Authentication-Results header, the one your own mail server added when the email arrived. Bank details are read from the body only when it gives a valid 9-digit routing number with an account number of 4 to 17 digits."]}]
+e:["$","h2","7",{"id":"hold","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#hold","className":"docs-module__RdmBMa__anchor","children":["The hold on payments"]}]}]
+f:["$","p","8",{"children":["Quarter links the email to the bank change it asked for: the ",["$","code","61",{"children":"bank_account_id"}]," you send, or else the vendor's bank details with the account the email gives. While those details are unconfirmed, a payment to them holds as ",["$","$L2","221",{"href":"/docs/checks#request-email-suspicious","children":[["$","code","0",{"children":"request_email_suspicious"}]]}],", with each hold finding in the message. Once the vendor confirms the details by a verification link or a call-back, the check stops firing."]}]
+10:["$","h2","9",{"id":"stored","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#stored","className":"docs-module__RdmBMa__anchor","children":["What is stored and what is not"]}]}]
+11:["$","ul","10",{"children":[["$","li","0",{"children":["Kept: the headers (up to 200, each up to 2,000 characters), the sender, Reply-To and Return-Path addresses, subject, Message-ID, date, authentication results and the findings."]}],["$","li","1",{"children":["Never kept: the body. Quarter reads it once to find the phrases and bank details, then keeps only the phrases it matched in ",["$","code","124",{"children":"matched_phrases"}],"."]}],["$","li","2",{"children":["Bank details in the body are kept as the routing number, the last 4 digits and a fingerprint to compare with other accounts, never the full account number."]}],["$","li","3",{"children":["Each upload is recorded in the audit log with the email, the bank change and the finding codes."]}],["$","li","4",{"children":["The list of emails leaves out the headers; retrieve one email to read them."]}]]}]
+12:["$","h2","11",{"id":"endpoints","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#endpoints","className":"docs-module__RdmBMa__anchor","children":["Endpoints"]}]}]
+13:["$","h3","12",{"id":"post-v1-bank-change-emails","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#post-v1-bank-change-emails","className":"docs-module__RdmBMa__anchor","children":["Upload a bank change email"]}]}]
+14:["$","p","13",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"POST","children":"POST"}],["$","code",null,{"children":"/v1/bank_change_emails"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+15:["$","p","14",{"children":["Checks the email and keeps it as evidence on the vendor. An agent's key answers ",["$","code","80",{"children":"403 agent_key_refused"}],"."]}]
+16:["$","p","15",{"children":["Errors: ",["$","code","8",{"children":"400 vendor_id_required"}],", ",["$","code","34",{"children":"eml_required"}],", ",["$","code","50",{"children":"eml_too_large"}],", ",["$","code","67",{"children":"eml_invalid"}]," (no From header: upload the original, not a forward), ",["$","code","135",{"children":"bank_account_invalid"}],"; ",["$","code","159",{"children":"404 vendor_not_found"}],"."]}]
+17:["$","p","16",{"children":[["$","strong","0",{"children":"Body"}]]}]
+18:["$","div","17",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"vendor_id"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The vendor the email claims to be from."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"eml"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The raw message as your mail client saves it, headers and all. At most 2 MB."]}]]}],["$","tr","2",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"bank_account_id"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["The bank change the email asked for, one of this vendor's bank details."]}]]}]]}]]}]}]
+19:["$","$L38","18",{"tabs":[{"label":"curl","language":"bash","code":"curl -X POST \"$QUARTER_API_URL/v1/bank_change_emails\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"vendor_id\":\"ven_7Qm2KxR9pLwT4nVb8YcD\",\"eml\":\"<the raw .eml file>\",\"bank_account_id\":\"ba_6NcW1rLp8TkQ3vXm9HzB\"}'"}],"title":"Request"}]
+39:T919,{
+  "id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+  "object": "bank_change_email",
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "bank_account_id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+  "from": "ar@harb0rpoint.example",
+  "reply_to": "payments.harborpoint@mailbox.example",
+  "return_path": "ar@harb0rpoint.example",
+  "subject": "Updated bank details for October invoices",
+  "message_id": "<7f3a9c21@harb0rpoint.example>",
+  "sent_at": "2026-10-22T15:04:11.000Z",
+  "authentication": {
+    "server": "mx.yourcompany.example",
+    "spf": "pass",
+    "dkim": "pass",
+    "dmarc": "pass"
+  },
+  "matched_phrases": [
+    "urgent",
+    "do not call"
+  ],
+  "bank_details": {
+    "routing_number": "<routing number>",
+    "last4": "5508"
+  },
+  "flagged": true,
+  "findings": [
+    {
+      "code": "sender_lookalike",
+      "severity": "hold",
+      "message": "sent from harb0rpoint.example, which looks like harborpoint.example, the vendor's domain: letters swapped for ones that look the same"
+    },
+    {
+      "code": "reply_to_elsewhere",
+      "severity": "hold",
+      "message": "replies go to mailbox.example, not to the sender's harb0rpoint.example"
+    },
+    {
+      "code": "first_time_sender",
+      "severity": "note",
+      "message": "the first email from ar@harb0rpoint.example uploaded to Quarter for this business"
+    },
+    {
+      "code": "urgency",
+      "severity": "note",
+      "message": "presses for speed: urgent"
+    },
+    {
+      "code": "secrecy",
+      "severity": "note",
+      "message": "asks for secrecy or to avoid a call: do not call"
+    },
+    {
+      "code": "bank_details_differ",
+      "severity": "note",
+      "message": "the bank details in the email differ from the ones on file"
+    },
+    {
+      "code": "account_new",
+      "severity": "note",
+      "message": "the account in the email has never been on file for any vendor of this business"
+    }
+  ],
+  "received_by": "dana@yourcompany",
+  "created_at": "2026-10-22T15:20:37.000Z",
+  "headers": [
+    [
+      "authentication-results",
+      "mx.yourcompany.example; spf=pass dkim=pass dmarc=pass"
+    ],
+    [
+      "from",
+      "Harbor Point Accounts <ar@harb0rpoint.example>"
+    ],
+    [
+      "reply-to",
+      "payments.harborpoint@mailbox.example"
+    ],
+    [
+      "subject",
+      "Updated bank details for October invoices"
+    ]
+  ]
+}1a:["$","$L38","19",{"tabs":[{"label":"201","language":"json","code":"$39"}],"title":"Response"}]
+1b:["$","h3","20",{"id":"get-v1-bank-change-emails","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-bank-change-emails","className":"docs-module__RdmBMa__anchor","children":["List bank change emails"]}]}]
+1c:["$","p","21",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/bank_change_emails"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+1d:["$","p","22",{"children":["Newest first, without their headers. Errors: ",["$","code","45",{"children":"400 limit_invalid"}],"."]}]
+1e:["$","p","23",{"children":[["$","strong","0",{"children":"Query parameters"}]]}]
+1f:["$","div","24",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"vendor_id"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["Only this vendor's emails."]}]]}],["$","tr","1",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"limit"}]]}],["$","td","1",{"children":["integer"]}],["$","td","2",{"children":["No"]}],["$","td","3",{"children":["1 to 200, 50 by default."]}]]}]]}]]}]}]
+20:["$","$L38","25",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/bank_change_emails?vendor_id=ven_7Qm2KxR9pLwT4nVb8YcD\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+3a:T8dd,{
+  "object": "list",
+  "data": [
+    {
+      "id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+      "object": "bank_change_email",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "bank_account_id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+      "from": "ar@harb0rpoint.example",
+      "reply_to": "payments.harborpoint@mailbox.example",
+      "return_path": "ar@harb0rpoint.example",
+      "subject": "Updated bank details for October invoices",
+      "message_id": "<7f3a9c21@harb0rpoint.example>",
+      "sent_at": "2026-10-22T15:04:11.000Z",
+      "authentication": {
+        "server": "mx.yourcompany.example",
+        "spf": "pass",
+        "dkim": "pass",
+        "dmarc": "pass"
+      },
+      "matched_phrases": [
+        "urgent",
+        "do not call"
+      ],
+      "bank_details": {
+        "routing_number": "<routing number>",
+        "last4": "5508"
+      },
+      "flagged": true,
+      "findings": [
+        {
+          "code": "sender_lookalike",
+          "severity": "hold",
+          "message": "sent from harb0rpoint.example, which looks like harborpoint.example, the vendor's domain: letters swapped for ones that look the same"
+        },
+        {
+          "code": "reply_to_elsewhere",
+          "severity": "hold",
+          "message": "replies go to mailbox.example, not to the sender's harb0rpoint.example"
+        },
+        {
+          "code": "first_time_sender",
+          "severity": "note",
+          "message": "the first email from ar@harb0rpoint.example uploaded to Quarter for this business"
+        },
+        {
+          "code": "urgency",
+          "severity": "note",
+          "message": "presses for speed: urgent"
+        },
+        {
+          "code": "secrecy",
+          "severity": "note",
+          "message": "asks for secrecy or to avoid a call: do not call"
+        },
+        {
+          "code": "bank_details_differ",
+          "severity": "note",
+          "message": "the bank details in the email differ from the ones on file"
+        },
+        {
+          "code": "account_new",
+          "severity": "note",
+          "message": "the account in the email has never been on file for any vendor of this business"
+        }
+      ],
+      "received_by": "dana@yourcompany",
+      "created_at": "2026-10-22T15:20:37.000Z"
+    }
+  ]
+}21:["$","$L38","26",{"tabs":[{"label":"200","language":"json","code":"$3a"}],"title":"Response"}]
+22:["$","h3","27",{"id":"get-v1-bank-change-emails-email","className":"docs-module__RdmBMa__heading","children":["$","a",null,{"href":"#get-v1-bank-change-emails-email","className":"docs-module__RdmBMa__anchor","children":["Retrieve a bank change email"]}]}]
+23:["$","p","28",{"className":"docs-module__RdmBMa__endpoint","children":[["$","span",null,{"className":"docs-module__RdmBMa__method","data-method":"GET","children":"GET"}],["$","code",null,{"children":"/v1/bank_change_emails/{email}"}],["$","span",null,{"className":"docs-module__RdmBMa__auth","children":["Auth: ","API key"]}]]}]
+24:["$","p","29",{"children":["The email with its headers and findings. Unknown: ",["$","code","50",{"children":"404 bank_change_email_not_found"}],"."]}]
+25:["$","p","30",{"children":[["$","strong","0",{"children":"Path parameters"}]]}]
+26:["$","div","31",{"className":"table-wrap docs-module__RdmBMa__tableWrap","children":["$","table",null,{"className":"table","children":[["$","thead",null,{"children":["$","tr",null,{"children":[["$","th","Field",{"scope":"col","children":["Field"]}],["$","th","Type",{"scope":"col","children":["Type"]}],["$","th","Required",{"scope":"col","children":["Required"]}],["$","th","Description",{"scope":"col","children":["Description"]}]]}]}],["$","tbody",null,{"children":[["$","tr","0",{"children":[["$","td","0",{"children":[["$","code","0",{"children":"email"}]]}],["$","td","1",{"children":["string"]}],["$","td","2",{"children":["Yes"]}],["$","td","3",{"children":["The email id, starting with ",["$","code","28",{"children":"bce_"}],"."]}]]}]]}]]}]}]
+27:["$","$L38","32",{"tabs":[{"label":"curl","language":"bash","code":"curl \"$QUARTER_API_URL/v1/bank_change_emails/bce_4RkW9nTq2LpX7vMb3HcZ\" \\\n  -H \"authorization: Bearer $QUARTER_API_KEY\""}],"title":"Request"}]
+3b:T919,{
+  "id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+  "object": "bank_change_email",
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "bank_account_id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+  "from": "ar@harb0rpoint.example",
+  "reply_to": "payments.harborpoint@mailbox.example",
+  "return_path": "ar@harb0rpoint.example",
+  "subject": "Updated bank details for October invoices",
+  "message_id": "<7f3a9c21@harb0rpoint.example>",
+  "sent_at": "2026-10-22T15:04:11.000Z",
+  "authentication": {
+    "server": "mx.yourcompany.example",
+    "spf": "pass",
+    "dkim": "pass",
+    "dmarc": "pass"
+  },
+  "matched_phrases": [
+    "urgent",
+    "do not call"
+  ],
+  "bank_details": {
+    "routing_number": "<routing number>",
+    "last4": "5508"
+  },
+  "flagged": true,
+  "findings": [
+    {
+      "code": "sender_lookalike",
+      "severity": "hold",
+      "message": "sent from harb0rpoint.example, which looks like harborpoint.example, the vendor's domain: letters swapped for ones that look the same"
+    },
+    {
+      "code": "reply_to_elsewhere",
+      "severity": "hold",
+      "message": "replies go to mailbox.example, not to the sender's harb0rpoint.example"
+    },
+    {
+      "code": "first_time_sender",
+      "severity": "note",
+      "message": "the first email from ar@harb0rpoint.example uploaded to Quarter for this business"
+    },
+    {
+      "code": "urgency",
+      "severity": "note",
+      "message": "presses for speed: urgent"
+    },
+    {
+      "code": "secrecy",
+      "severity": "note",
+      "message": "asks for secrecy or to avoid a call: do not call"
+    },
+    {
+      "code": "bank_details_differ",
+      "severity": "note",
+      "message": "the bank details in the email differ from the ones on file"
+    },
+    {
+      "code": "account_new",
+      "severity": "note",
+      "message": "the account in the email has never been on file for any vendor of this business"
+    }
+  ],
+  "received_by": "dana@yourcompany",
+  "created_at": "2026-10-22T15:20:37.000Z",
+  "headers": [
+    [
+      "authentication-results",
+      "mx.yourcompany.example; spf=pass dkim=pass dmarc=pass"
+    ],
+    [
+      "from",
+      "Harbor Point Accounts <ar@harb0rpoint.example>"
+    ],
+    [
+      "reply-to",
+      "payments.harborpoint@mailbox.example"
+    ],
+    [
+      "subject",
+      "Updated bank details for October invoices"
+    ]
+  ]
+}28:["$","$L38","33",{"tabs":[{"label":"200","language":"json","code":"$3b"}],"title":"Response"}]
+29:["$","nav",null,{"className":"docs-module__RdmBMa__pager","aria-label":"Previous and next page","children":[["$","$L2",null,{"href":"/docs/checks","className":"docs-module__RdmBMa__pagerLink","children":[["$","span",null,{"children":"Previous"}],"Checks and settings"]}],["$","$L2",null,{"href":"/docs/case-briefs","className":"docs-module__RdmBMa__pagerLink","data-next":true,"children":[["$","span",null,{"children":"Next"}],"Case briefs"]}]]}]
+2a:["$","aside",null,{"className":"docs-module__RdmBMa__tocColumn","children":["$","$L3c",null,{"entries":[{"id":"findings","text":"What Quarter checks","depth":2},{"id":"hold","text":"The hold on payments","depth":2},{"id":"stored","text":"What is stored and what is not","depth":2},{"id":"endpoints","text":"Endpoints","depth":2},{"id":"post-v1-bank-change-emails","text":"Upload a bank change email","depth":3},{"id":"get-v1-bank-change-emails","text":"List bank change emails","depth":3},{"id":"get-v1-bank-change-emails-email","text":"Retrieve a bank change email","depth":3}]}]}]
+2b:["$","script","script-0",{"src":"/preview/_next/static/chunks/2qz4fsakclogy.js","async":true}]
+2c:["$","$L3d",null,{"children":["$","$3e",null,{"name":"Next.MetadataOutlet","children":"$@3f"}]}]
+2f:["$","$1","h",{"children":[null,["$","$L40",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#000000"}]]}],["$","div",null,{"hidden":true,"children":["$","$L41",null,{"children":["$","$3e",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Bank change emails | Docs | Quarter"}],["$","meta","1",{"name":"description","content":"Forward a vendor's email asking to change bank details. Quarter checks who really sent it and holds payments to the new details when it fails."}],["$","meta","2",{"name":"application-name","content":"Quarter"}],["$","link","3",{"rel":"manifest","href":"/preview/manifest.webmanifest"}],["$","link","4",{"rel":"canonical","href":"https://quarterso.github.io/preview/docs/bank-change-emails/"}],["$","link","5",{"rel":"alternate","type":"text/markdown","href":"https://quarterso.github.io/preview/docs/bank-change-emails.md"}],["$","meta","6",{"property":"og:title","content":"Bank change emails | Docs | Quarter"}],["$","meta","7",{"property":"og:description","content":"Forward a vendor's email asking to change bank details. Quarter checks who really sent it and holds payments to the new details when it fails."}],["$","meta","8",{"property":"og:url","content":"https://quarterso.github.io/preview/docs/bank-change-emails/"}],["$","meta","9",{"property":"og:site_name","content":"Quarter"}],["$","meta","10",{"property":"og:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","11",{"property":"og:image:type","content":"image/png"}],["$","meta","12",{"property":"og:image:width","content":"1200"}],["$","meta","13",{"property":"og:image:height","content":"630"}],["$","meta","14",{"property":"og:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","15",{"property":"og:type","content":"website"}],["$","meta","16",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","17",{"name":"twitter:title","content":"Bank change emails | Docs | Quarter"}],["$","meta","18",{"name":"twitter:description","content":"Forward a vendor's email asking to change bank details. Quarter checks who really sent it and holds payments to the new details when it fails."}],["$","meta","19",{"name":"twitter:image","content":"https://quarterso.github.io/preview/opengraph-image.png"}],["$","meta","20",{"name":"twitter:image:alt","content":"The Quarter mark on the cobalt to violet brand gradient"}],["$","meta","21",{"name":"twitter:image:type","content":"image/png"}],["$","meta","22",{"name":"twitter:image:width","content":"1200"}],["$","meta","23",{"name":"twitter:image:height","content":"630"}],["$","link","24",{"rel":"icon","href":"/preview/favicon.ico?favicon.35vvcuqux69e0.ico","sizes":"48x48","type":"image/x-icon"}],["$","link","25",{"rel":"icon","href":"/preview/icon.svg?icon.3orkf5rm_o5pp.svg","sizes":"any","type":"image/svg+xml"}],["$","link","26",{"rel":"apple-touch-icon","href":"/preview/apple-icon.png?apple-icon.1oo_8h6q51r4t.png","sizes":"180x180","type":"image/png"}],["$","$L42","27",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}]
+31:["$","$1","c",{"children":[null,["$","$L43",null,{"parallelRouterKey":"children","template":["$","$L44",null,{}]}]]}]
+34:["$","$1","c",{"children":[[["$","script","script-0",{"src":"/preview/_next/static/chunks/0fih63132z5xw.js","async":true}]],[["$","div",null,{"className":"section-dark docs-module__RdmBMa__band","children":["$","img",null,{"src":"/preview/art/band-grey.svg","alt":"","className":"etch ","decoding":"async"}]}],["$","div",null,{"className":"container docs-module__RdmBMa__shell","children":[["$","$L45",null,{"nav":[{"title":"Start here","items":[{"href":"/docs","label":"Overview"},{"href":"/docs/quickstart","label":"Quickstart"}]},{"title":"Guides","items":[{"href":"/docs/vendors","label":"Vendors and bank details"},{"href":"/docs/verification","label":"Confirming bank details"},{"href":"/docs/payment-runs","label":"Payment runs"},{"href":"/docs/releases","label":"Decisions and release"},{"href":"/docs/payment-checks","label":"Payment checks"},{"href":"/docs/payouts","label":"Payouts"},{"href":"/docs/settlement","label":"Settlement"},{"href":"/docs/checks","label":"Checks and settings"},{"href":"/docs/bank-change-emails","label":"Bank change emails"},{"href":"/docs/case-briefs","label":"Case briefs"},{"href":"/docs/network","label":"Account checks and fraud reports"},{"href":"/docs/compliance","label":"Compliance and insider controls"}]},{"title":"Accounting systems","items":[{"href":"/docs/netsuite","label":"NetSuite"},{"href":"/docs/quickbooks","label":"QuickBooks Online"},{"href":"/docs/xero","label":"Xero"},{"href":"/docs/intacct","label":"Sage Intacct"},{"href":"/docs/business-central","label":"Business Central"}]},{"title":"Reference","items":[{"href":"/docs/webhooks","label":"Webhooks and events"},{"href":"/docs/errors","label":"Errors"}]}]}],["$","div",null,{"className":"docs-module__RdmBMa__main","children":["$","$L43",null,{"parallelRouterKey":"children","template":["$","$L44",null,{}]}]}]]}]]]}]
+37:true
+3f:null
+2e:300
+2e:C
+36:0
+30:"$undefined"
+32:"$undefined"
+35:"$undefined"
+2d:"$undefined"

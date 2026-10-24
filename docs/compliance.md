@@ -897,7 +897,7 @@ Payment evidence (runs, payments, decisions, call-backs, verifications and the a
 
 `GET /v1/organization` (auth: Signed-in admin)
 
-How long each kind of record is kept, and who Quarter tells first about a security incident, besides your admins.
+How long each kind of record is kept, who Quarter tells first about a security incident, besides your admins, and whether [case briefs](/docs/case-briefs.md) are on, with the exact fields they send to Anthropic.
 
 Request:
 
@@ -924,11 +924,61 @@ Response:
       "email": "sam@yourcompany",
       "phone": "+1 312 555 0110"
     }
-  ]
+  ],
+  "ai_briefs": {
+    "enabled": false,
+    "fields_sent": {
+      "payment_item": [
+        "payment.payee_name",
+        "payment.amount",
+        "payment.currency",
+        "payment.rail",
+        "payment.last4",
+        "payment.findings",
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ],
+      "bank_change_email": [
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ]
+    },
+    "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it."
+  }
 }
 ```
 
-### Change retention or security contacts
+### Change retention, security contacts or case briefs
 
 `PATCH /v1/organization` (auth: Signed-in admin)
 
@@ -940,6 +990,7 @@ Fields you leave out are kept. The audit log records which fields changed, never
 | --- | --- | --- | --- |
 | `evidence_retention_years` | integer | No | 7 to 30. How long payment evidence is kept, including after the account closes. |
 | `security_contacts` | object[] | No | Up to 5 people, each with `email` and optionally `name` and `phone`. An empty list leaves only your admins. |
+| `ai_briefs` | boolean | No | `true` turns [case briefs](/docs/case-briefs.md) on, which sends the fields in `ai_briefs.fields_sent` to Anthropic when someone asks for a brief; `false` turns them off. Applies at once. Otherwise `400 ai_briefs_invalid`. |
 
 Request:
 
@@ -968,7 +1019,57 @@ Response:
       "email": "sam@yourcompany",
       "phone": "+1 312 555 0110"
     }
-  ]
+  ],
+  "ai_briefs": {
+    "enabled": false,
+    "fields_sent": {
+      "payment_item": [
+        "payment.payee_name",
+        "payment.amount",
+        "payment.currency",
+        "payment.rail",
+        "payment.last4",
+        "payment.findings",
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ],
+      "bank_change_email": [
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ]
+    },
+    "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it."
+  }
 }
 ```
 

@@ -38,6 +38,7 @@ An agent is software that asks Quarter to check its own payments, with an API ke
 - The agent's key reaches only `POST /v1/payment_checks` and `GET /v1/payment_checks/{check}`. Any other route answers `403 agent_key_refused`, so an agent can never decide its own held payment.
 - `POST /v1/agents/{agent}/disable` stops the agent and revokes its keys at once. A disabled agent cannot be enabled again.
 - An agent that works over MCP can call Quarter as a tool: `POST /mcp` with its key exposes one tool, `check_payment`, which takes the same fields as `POST /v1/payment_checks` and returns the status, findings and release code.
+- A key that acts for the business, not an agent's key, also gets two read-only tools over MCP for an approver's own assistant: `list_held` (held payments waiting for a person, highest score first; `limit` 1 to 50, 20 by default, and `after`) and `get_held_payment_brief` (one held payment's findings, the vendor's call-back number from the vendor record, the [bank change emails](/docs/bank-change-emails.md) behind it, and the latest [case brief](/docs/case-briefs.md) if one exists; takes `payment_item_id`). Neither writes a brief, decides or releases anything. An agent's key still sees only `check_payment`.
 
 ## Card authorizations
 

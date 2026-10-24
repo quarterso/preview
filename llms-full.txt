@@ -144,7 +144,7 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/vendors" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
+  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","phone":"+1 312 555 0148","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
 ```
 
 Response:
@@ -155,6 +155,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
@@ -214,6 +215,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
@@ -686,6 +688,7 @@ An `external_id` already used by another of your vendors answers `409 external_i
 | --- | --- | --- | --- |
 | `name` | string | Yes | The vendor name, up to 200 characters. Legal suffixes, case and punctuation are ignored when matching. |
 | `email_domain` | string | No | The domain the vendor emails from, such as `harborpoint.example`. A verification code sent anywhere else is recorded as a failed check. |
+| `phone` | string | No | The vendor's own number from your records, 7 to 30 digits, spaces, dots, dashes or brackets. It is the number a [case brief](/docs/case-briefs.md) puts in its call-back script. Never take it from a change request. Otherwise `400 phone_invalid`. |
 | `external_id` | string | No | Your own id for the vendor, unique among your vendors. A CSV run can match payments by it. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
@@ -701,7 +704,7 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/vendors" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
+  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","phone":"+1 312 555 0148","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
 ```
 
 Response:
@@ -712,6 +715,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
@@ -839,6 +843,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
@@ -892,7 +897,7 @@ Response:
 
 `PATCH /v1/vendors/{vendor}` (auth: API key)
 
-Changes the name, the email domain, whether the vendor is a person, the last payment date, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
+Changes the name, the email domain, the phone number, whether the vendor is a person, the last payment date, or the status. Fields you leave out are kept. Marking a vendor as a person takes back what your business told the network about its accounts. Bank details change only through the bank details route below.
 
 **Path parameters**
 
@@ -906,6 +911,7 @@ Changes the name, the email domain, whether the vendor is a person, the last pay
 | --- | --- | --- | --- |
 | `name` | string | No | The new name. |
 | `email_domain` | string | No | The new email domain. |
+| `phone` | string | No | The vendor's own number from your records. |
 | `individual` | boolean | No | `true` for a person or sole proprietor rather than a business. Default `false`. The network never takes or gives facts about a person's accounts, so a report about one cannot become a consumer report. |
 | `last_paid_on` | string | No | `YYYY-MM-DD`, not after today: the last time you paid the vendor, from your own system. The [vendor health report](/docs/vendors.md#vendor-health) uses it to find vendors not paid in 12 months. A bad date answers `400 last_paid_on_invalid`. |
 | `status` | string | No | `blocked`, or `unverified` to lift a block. Only a signed-in admin can lift a block; anyone else, and any API key, answers `403 unblock_needs_admin`. |
@@ -927,6 +933,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpointlogistics.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
@@ -990,7 +997,7 @@ A test project holds up to 5,000 vendors, so you can import your whole vendor ma
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `external_id`, `individual`, `last_paid_on`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
+| `vendors` | object[] | Yes | 1 to 5,000 vendors, each with `name` and optionally `email_domain`, `phone`, `external_id`, `individual`, `last_paid_on`, `routing_number`, `account_number`, `holder_name`, `request_channel`, `request_sender`. Each sender domain is looked up once, up to 50 in one import; the rest are recorded as `not_checked`. |
 
 Request:
 
@@ -1052,6 +1059,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
@@ -1572,6 +1580,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
@@ -3431,6 +3440,7 @@ An agent is software that asks Quarter to check its own payments, with an API ke
 - The agent's key reaches only `POST /v1/payment_checks` and `GET /v1/payment_checks/{check}`. Any other route answers `403 agent_key_refused`, so an agent can never decide its own held payment.
 - `POST /v1/agents/{agent}/disable` stops the agent and revokes its keys at once. A disabled agent cannot be enabled again.
 - An agent that works over MCP can call Quarter as a tool: `POST /mcp` with its key exposes one tool, `check_payment`, which takes the same fields as `POST /v1/payment_checks` and returns the status, findings and release code.
+- A key that acts for the business, not an agent's key, also gets two read-only tools over MCP for an approver's own assistant: `list_held` (held payments waiting for a person, highest score first; `limit` 1 to 50, 20 by default, and `after`) and `get_held_payment_brief` (one held payment's findings, the vendor's call-back number from the vendor record, the [bank change emails](/docs/bank-change-emails.md) behind it, and the latest [case brief](/docs/case-briefs.md) if one exists; takes `payment_item_id`). Neither writes a brief, decides or releases anything. An agent's key still sees only `check_payment`.
 
 ## Card authorizations
 
@@ -6247,6 +6257,528 @@ Runs only on platform payouts.
 
 ---
 
+# Bank change emails
+
+> Forward a vendor's email asking to change bank details. Quarter checks who really sent it and holds payments to the new details when it fails.
+
+> **Note:** Bank change email checks are built and tested. They have not yet been used by a customer. There is no inbound email address yet: send the email through the API.
+
+Most vendor payment fraud starts with an email that asks you to pay a new account. Save that email from your mail client as a `.eml` file, headers and all, and send it to Quarter with the vendor it claims to come from. Quarter checks the sender, the email's authentication results, its wording and the bank details in it, and returns every finding.
+
+> **Warning:** An email never confirms bank details, however clean it looks. Uploading one can hold payments, never release them. Confirm a change with a [verification link](/docs/verification.md) or a [call-back](/docs/verification.md#callbacks) to the number in your vendor record.
+
+## What Quarter checks
+
+Each finding has a `severity`. A `hold` finding sets `flagged: true`, and payments to the bank details the email asked for are then held. A `note` is shown to the reviewer and holds nothing.
+
+| Code | Severity | When |
+| --- | --- | --- |
+| `sender_lookalike` | hold | The sender's domain imitates the vendor's `email_domain`, found the same way as for [the sender's domain](/docs/vendors.md#sender-domain). |
+| `sender_other_domain` | hold | The sender's domain is not the vendor's `email_domain`. |
+| `reply_to_elsewhere` | hold | Replies go to a different domain from the sender's. |
+| `dmarc_failed` | hold | DMARC failed. |
+| `spf_failed` | hold | SPF failed. |
+| `return_path_elsewhere` | note | Bounces go to a different domain from the sender's. Mailing services do this too. |
+| `first_time_sender` | note | The first email from this address uploaded to Quarter for the business. |
+| `authentication_missing` | note | No Authentication-Results header, so whether the sender is who it claims is unknown. |
+| `spf_weak` | note | SPF result `softfail`, `none` or `permerror`. |
+| `dkim_failed` | note | DKIM result other than `pass`. |
+| `urgency` | note | Wording that presses for speed, such as `urgent`, `immediately` or `final notice`. |
+| `secrecy` | note | Wording that asks for secrecy or to avoid a call, such as `confidential`, `do not call` or an old account said to be closed. |
+| `bank_details_differ` | note | The bank details in the email differ from the ones on file. |
+| `account_new` | note | The account in the email has never been on file for any vendor of the business. |
+
+The domain checks need the vendor's `email_domain`. SPF, DKIM and DMARC come from the first Authentication-Results header, the one your own mail server added when the email arrived. Bank details are read from the body only when it gives a valid 9-digit routing number with an account number of 4 to 17 digits.
+
+## The hold on payments
+
+Quarter links the email to the bank change it asked for: the `bank_account_id` you send, or else the vendor's bank details with the account the email gives. While those details are unconfirmed, a payment to them holds as [`request_email_suspicious`](/docs/checks.md#request-email-suspicious), with each hold finding in the message. Once the vendor confirms the details by a verification link or a call-back, the check stops firing.
+
+## What is stored and what is not
+
+- Kept: the headers (up to 200, each up to 2,000 characters), the sender, Reply-To and Return-Path addresses, subject, Message-ID, date, authentication results and the findings.
+- Never kept: the body. Quarter reads it once to find the phrases and bank details, then keeps only the phrases it matched in `matched_phrases`.
+- Bank details in the body are kept as the routing number, the last 4 digits and a fingerprint to compare with other accounts, never the full account number.
+- Each upload is recorded in the audit log with the email, the bank change and the finding codes.
+- The list of emails leaves out the headers; retrieve one email to read them.
+
+## Endpoints
+
+### Upload a bank change email
+
+`POST /v1/bank_change_emails` (auth: API key)
+
+Checks the email and keeps it as evidence on the vendor. An agent's key answers `403 agent_key_refused`.
+
+Errors: `400 vendor_id_required`, `eml_required`, `eml_too_large`, `eml_invalid` (no From header: upload the original, not a forward), `bank_account_invalid`; `404 vendor_not_found`.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor_id` | string | Yes | The vendor the email claims to be from. |
+| `eml` | string | Yes | The raw message as your mail client saves it, headers and all. At most 2 MB. |
+| `bank_account_id` | string | No | The bank change the email asked for, one of this vendor's bank details. |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/bank_change_emails" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"vendor_id":"ven_7Qm2KxR9pLwT4nVb8YcD","eml":"<the raw .eml file>","bank_account_id":"ba_6NcW1rLp8TkQ3vXm9HzB"}'
+```
+
+Response:
+
+```json
+{
+  "id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+  "object": "bank_change_email",
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "bank_account_id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+  "from": "ar@harb0rpoint.example",
+  "reply_to": "payments.harborpoint@mailbox.example",
+  "return_path": "ar@harb0rpoint.example",
+  "subject": "Updated bank details for October invoices",
+  "message_id": "<7f3a9c21@harb0rpoint.example>",
+  "sent_at": "2026-10-22T15:04:11.000Z",
+  "authentication": {
+    "server": "mx.yourcompany.example",
+    "spf": "pass",
+    "dkim": "pass",
+    "dmarc": "pass"
+  },
+  "matched_phrases": [
+    "urgent",
+    "do not call"
+  ],
+  "bank_details": {
+    "routing_number": "<routing number>",
+    "last4": "5508"
+  },
+  "flagged": true,
+  "findings": [
+    {
+      "code": "sender_lookalike",
+      "severity": "hold",
+      "message": "sent from harb0rpoint.example, which looks like harborpoint.example, the vendor's domain: letters swapped for ones that look the same"
+    },
+    {
+      "code": "reply_to_elsewhere",
+      "severity": "hold",
+      "message": "replies go to mailbox.example, not to the sender's harb0rpoint.example"
+    },
+    {
+      "code": "first_time_sender",
+      "severity": "note",
+      "message": "the first email from ar@harb0rpoint.example uploaded to Quarter for this business"
+    },
+    {
+      "code": "urgency",
+      "severity": "note",
+      "message": "presses for speed: urgent"
+    },
+    {
+      "code": "secrecy",
+      "severity": "note",
+      "message": "asks for secrecy or to avoid a call: do not call"
+    },
+    {
+      "code": "bank_details_differ",
+      "severity": "note",
+      "message": "the bank details in the email differ from the ones on file"
+    },
+    {
+      "code": "account_new",
+      "severity": "note",
+      "message": "the account in the email has never been on file for any vendor of this business"
+    }
+  ],
+  "received_by": "dana@yourcompany",
+  "created_at": "2026-10-22T15:20:37.000Z",
+  "headers": [
+    [
+      "authentication-results",
+      "mx.yourcompany.example; spf=pass dkim=pass dmarc=pass"
+    ],
+    [
+      "from",
+      "Harbor Point Accounts <ar@harb0rpoint.example>"
+    ],
+    [
+      "reply-to",
+      "payments.harborpoint@mailbox.example"
+    ],
+    [
+      "subject",
+      "Updated bank details for October invoices"
+    ]
+  ]
+}
+```
+
+### List bank change emails
+
+`GET /v1/bank_change_emails` (auth: API key)
+
+Newest first, without their headers. Errors: `400 limit_invalid`.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `vendor_id` | string | No | Only this vendor's emails. |
+| `limit` | integer | No | 1 to 200, 50 by default. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/bank_change_emails?vendor_id=ven_7Qm2KxR9pLwT4nVb8YcD" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+      "object": "bank_change_email",
+      "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+      "bank_account_id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+      "from": "ar@harb0rpoint.example",
+      "reply_to": "payments.harborpoint@mailbox.example",
+      "return_path": "ar@harb0rpoint.example",
+      "subject": "Updated bank details for October invoices",
+      "message_id": "<7f3a9c21@harb0rpoint.example>",
+      "sent_at": "2026-10-22T15:04:11.000Z",
+      "authentication": {
+        "server": "mx.yourcompany.example",
+        "spf": "pass",
+        "dkim": "pass",
+        "dmarc": "pass"
+      },
+      "matched_phrases": [
+        "urgent",
+        "do not call"
+      ],
+      "bank_details": {
+        "routing_number": "<routing number>",
+        "last4": "5508"
+      },
+      "flagged": true,
+      "findings": [
+        {
+          "code": "sender_lookalike",
+          "severity": "hold",
+          "message": "sent from harb0rpoint.example, which looks like harborpoint.example, the vendor's domain: letters swapped for ones that look the same"
+        },
+        {
+          "code": "reply_to_elsewhere",
+          "severity": "hold",
+          "message": "replies go to mailbox.example, not to the sender's harb0rpoint.example"
+        },
+        {
+          "code": "first_time_sender",
+          "severity": "note",
+          "message": "the first email from ar@harb0rpoint.example uploaded to Quarter for this business"
+        },
+        {
+          "code": "urgency",
+          "severity": "note",
+          "message": "presses for speed: urgent"
+        },
+        {
+          "code": "secrecy",
+          "severity": "note",
+          "message": "asks for secrecy or to avoid a call: do not call"
+        },
+        {
+          "code": "bank_details_differ",
+          "severity": "note",
+          "message": "the bank details in the email differ from the ones on file"
+        },
+        {
+          "code": "account_new",
+          "severity": "note",
+          "message": "the account in the email has never been on file for any vendor of this business"
+        }
+      ],
+      "received_by": "dana@yourcompany",
+      "created_at": "2026-10-22T15:20:37.000Z"
+    }
+  ]
+}
+```
+
+### Retrieve a bank change email
+
+`GET /v1/bank_change_emails/{email}` (auth: API key)
+
+The email with its headers and findings. Unknown: `404 bank_change_email_not_found`.
+
+**Path parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | Yes | The email id, starting with `bce_`. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/bank_change_emails/bce_4RkW9nTq2LpX7vMb3HcZ" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+  "object": "bank_change_email",
+  "vendor_id": "ven_7Qm2KxR9pLwT4nVb8YcD",
+  "bank_account_id": "ba_6NcW1rLp8TkQ3vXm9HzB",
+  "from": "ar@harb0rpoint.example",
+  "reply_to": "payments.harborpoint@mailbox.example",
+  "return_path": "ar@harb0rpoint.example",
+  "subject": "Updated bank details for October invoices",
+  "message_id": "<7f3a9c21@harb0rpoint.example>",
+  "sent_at": "2026-10-22T15:04:11.000Z",
+  "authentication": {
+    "server": "mx.yourcompany.example",
+    "spf": "pass",
+    "dkim": "pass",
+    "dmarc": "pass"
+  },
+  "matched_phrases": [
+    "urgent",
+    "do not call"
+  ],
+  "bank_details": {
+    "routing_number": "<routing number>",
+    "last4": "5508"
+  },
+  "flagged": true,
+  "findings": [
+    {
+      "code": "sender_lookalike",
+      "severity": "hold",
+      "message": "sent from harb0rpoint.example, which looks like harborpoint.example, the vendor's domain: letters swapped for ones that look the same"
+    },
+    {
+      "code": "reply_to_elsewhere",
+      "severity": "hold",
+      "message": "replies go to mailbox.example, not to the sender's harb0rpoint.example"
+    },
+    {
+      "code": "first_time_sender",
+      "severity": "note",
+      "message": "the first email from ar@harb0rpoint.example uploaded to Quarter for this business"
+    },
+    {
+      "code": "urgency",
+      "severity": "note",
+      "message": "presses for speed: urgent"
+    },
+    {
+      "code": "secrecy",
+      "severity": "note",
+      "message": "asks for secrecy or to avoid a call: do not call"
+    },
+    {
+      "code": "bank_details_differ",
+      "severity": "note",
+      "message": "the bank details in the email differ from the ones on file"
+    },
+    {
+      "code": "account_new",
+      "severity": "note",
+      "message": "the account in the email has never been on file for any vendor of this business"
+    }
+  ],
+  "received_by": "dana@yourcompany",
+  "created_at": "2026-10-22T15:20:37.000Z",
+  "headers": [
+    [
+      "authentication-results",
+      "mx.yourcompany.example; spf=pass dkim=pass dmarc=pass"
+    ],
+    [
+      "from",
+      "Harbor Point Accounts <ar@harb0rpoint.example>"
+    ],
+    [
+      "reply-to",
+      "payments.harborpoint@mailbox.example"
+    ],
+    [
+      "subject",
+      "Updated bank details for October invoices"
+    ]
+  ]
+}
+```
+
+---
+
+# Case briefs
+
+> An optional, AI-written brief for a held payment or a bank change email: what happened, the evidence, what to verify and a call-back script.
+
+> **Note:** Case briefs are built and tested. They have not yet been used by a customer, and they are off until an admin turns them on.
+
+A case brief helps the person deciding a held payment, or a [bank change email](/docs/bank-change-emails.md), work faster. Quarter sends the case's facts to Claude, Anthropic's model, which writes four sections: What happened, Evidence, What to verify, and a Call-back script. A brief is written when someone asks for one, not for every hold.
+
+> **Warning:** A brief is advisory. It never changes a check, a hold or a decision, and Quarter's checks never depend on it. People make every decision. Every brief carries `ai_written: true` and this label: Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it.
+
+## Turning briefs on
+
+Briefs are off for every organization by default. A signed-in admin turns them on, or off again, with `ai_briefs` on [`PATCH /v1/organization`](/docs/compliance.md#patch-v1-organization). The change applies at once and is recorded in the audit log. While briefs are off, nothing is sent to Anthropic. `GET /v1/organization` shows `ai_briefs.enabled`, the exact fields sent and the label.
+
+## Exactly what is sent
+
+Only these fields leave Quarter, and each brief stores the list it sent in `fields_sent`.
+
+| Brief for | Fields sent |
+| --- | --- |
+| A held payment (`payment_item`) | `payment.payee_name`, `payment.amount`, `payment.currency`, `payment.rail`, `payment.last4`, `payment.findings`, `vendor.name`, `vendor.email_domain`, `vendor.status`, `vendor.bank_accounts.last4`, `vendor.bank_accounts.status`, `vendor.bank_accounts.added_at`, `vendor.bank_accounts.request_channel`, `vendor.bank_accounts.request_domain`, `emails.from`, `emails.reply_to`, `emails.return_path`, `emails.subject`, `emails.sent_at`, `emails.authentication`, `emails.matched_phrases`, `emails.bank_details.last4`, `emails.findings` |
+| A bank change email (`bank_change_email`) | `vendor.name`, `vendor.email_domain`, `vendor.status`, `vendor.bank_accounts.last4`, `vendor.bank_accounts.status`, `vendor.bank_accounts.added_at`, `vendor.bank_accounts.request_channel`, `vendor.bank_accounts.request_domain`, `emails.from`, `emails.reply_to`, `emails.return_path`, `emails.subject`, `emails.sent_at`, `emails.authentication`, `emails.matched_phrases`, `emails.bank_details.last4`, `emails.findings` |
+
+- Bank accounts appear only as their last 4 digits. A full account number or routing number is never sent; longer numbers in a subject or finding are masked first.
+- Never sent: an email body, a phone number, or the name of a person who acted in Quarter.
+- For a held payment, the vendor's 5 latest bank details and 3 latest bank change emails go with it.
+
+## The call-back number
+
+The call-back number always comes from the vendor record, the vendor's `phone`, never from the model or the email. The model writes a placeholder, and Quarter puts the vendor's `phone` there. Any other phone number the model writes is taken out. When the vendor has no `phone`, the script says to use the number in your vendor record from before the change. The script tells the caller never to use a number, link or contact from the email, and to ask the vendor to confirm the old and new account by their last 4 digits. Set the number with `phone` on [the vendor](/docs/vendors.md#post-v1-vendors).
+
+## Endpoints
+
+### Write a case brief
+
+`POST /v1/case_briefs` (auth: API key)
+
+Writes and stores a brief for one held payment or bank change email. An agent's key answers `403 agent_key_refused`.
+
+Errors: `400 subject_type_invalid`, `subject_id_required`; `404 payment_item_not_found`, `bank_change_email_not_found`; `409 ai_briefs_off` until an admin turns briefs on; `503 ai_briefs_unavailable` when this deployment has no model provider set up; `500 brief_not_written` when the model wrote nothing. On any error the case is unchanged and no brief is stored.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `subject_type` | string | Yes | `payment_item` or `bank_change_email`. |
+| `subject_id` | string | Yes | The payment item (`itm_`) or bank change email (`bce_`). |
+
+Request:
+
+```bash
+curl -X POST "$QUARTER_API_URL/v1/case_briefs" \
+  -H "authorization: Bearer $QUARTER_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{"subject_type":"bank_change_email","subject_id":"bce_4RkW9nTq2LpX7vMb3HcZ"}'
+```
+
+Response:
+
+```json
+{
+  "id": "brf_8TnQ3wLx6RkV2pMb9HcJ",
+  "object": "case_brief",
+  "subject_type": "bank_change_email",
+  "subject_id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+  "ai_written": true,
+  "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it.",
+  "model": "claude-opus-5-5",
+  "text": "<the brief: What happened, Evidence, What to verify, Call-back script>",
+  "fields_sent": [
+    "vendor.name",
+    "vendor.email_domain",
+    "vendor.status",
+    "vendor.bank_accounts.last4",
+    "vendor.bank_accounts.status",
+    "vendor.bank_accounts.added_at",
+    "vendor.bank_accounts.request_channel",
+    "vendor.bank_accounts.request_domain",
+    "emails.from",
+    "emails.reply_to",
+    "emails.return_path",
+    "emails.subject",
+    "emails.sent_at",
+    "emails.authentication",
+    "emails.matched_phrases",
+    "emails.bank_details.last4",
+    "emails.findings"
+  ],
+  "created_by": "dana@yourcompany",
+  "created_at": "2026-10-22T15:24:02.000Z"
+}
+```
+
+### List case briefs
+
+`GET /v1/case_briefs` (auth: API key)
+
+Newest first: the briefs for one subject, or the project's latest 50.
+
+**Query parameters**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `subject_id` | string | No | Only the briefs for this payment item or bank change email. |
+
+Request:
+
+```bash
+curl "$QUARTER_API_URL/v1/case_briefs?subject_id=bce_4RkW9nTq2LpX7vMb3HcZ" \
+  -H "authorization: Bearer $QUARTER_API_KEY"
+```
+
+Response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "brf_8TnQ3wLx6RkV2pMb9HcJ",
+      "object": "case_brief",
+      "subject_type": "bank_change_email",
+      "subject_id": "bce_4RkW9nTq2LpX7vMb3HcZ",
+      "ai_written": true,
+      "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it.",
+      "model": "claude-opus-5-5",
+      "text": "<the brief: What happened, Evidence, What to verify, Call-back script>",
+      "fields_sent": [
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ],
+      "created_by": "dana@yourcompany",
+      "created_at": "2026-10-22T15:24:02.000Z"
+    }
+  ]
+}
+```
+
+---
+
 # Account checks and fraud reports
 
 > Check bank details before you pay them, and report an account used in a fraud against you. The network shares counts, never names.
@@ -7374,7 +7906,7 @@ Payment evidence (runs, payments, decisions, call-backs, verifications and the a
 
 `GET /v1/organization` (auth: Signed-in admin)
 
-How long each kind of record is kept, and who Quarter tells first about a security incident, besides your admins.
+How long each kind of record is kept, who Quarter tells first about a security incident, besides your admins, and whether [case briefs](/docs/case-briefs.md) are on, with the exact fields they send to Anthropic.
 
 Request:
 
@@ -7401,11 +7933,61 @@ Response:
       "email": "sam@yourcompany",
       "phone": "+1 312 555 0110"
     }
-  ]
+  ],
+  "ai_briefs": {
+    "enabled": false,
+    "fields_sent": {
+      "payment_item": [
+        "payment.payee_name",
+        "payment.amount",
+        "payment.currency",
+        "payment.rail",
+        "payment.last4",
+        "payment.findings",
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ],
+      "bank_change_email": [
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ]
+    },
+    "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it."
+  }
 }
 ```
 
-### Change retention or security contacts
+### Change retention, security contacts or case briefs
 
 `PATCH /v1/organization` (auth: Signed-in admin)
 
@@ -7417,6 +7999,7 @@ Fields you leave out are kept. The audit log records which fields changed, never
 | --- | --- | --- | --- |
 | `evidence_retention_years` | integer | No | 7 to 30. How long payment evidence is kept, including after the account closes. |
 | `security_contacts` | object[] | No | Up to 5 people, each with `email` and optionally `name` and `phone`. An empty list leaves only your admins. |
+| `ai_briefs` | boolean | No | `true` turns [case briefs](/docs/case-briefs.md) on, which sends the fields in `ai_briefs.fields_sent` to Anthropic when someone asks for a brief; `false` turns them off. Applies at once. Otherwise `400 ai_briefs_invalid`. |
 
 Request:
 
@@ -7445,7 +8028,57 @@ Response:
       "email": "sam@yourcompany",
       "phone": "+1 312 555 0110"
     }
-  ]
+  ],
+  "ai_briefs": {
+    "enabled": false,
+    "fields_sent": {
+      "payment_item": [
+        "payment.payee_name",
+        "payment.amount",
+        "payment.currency",
+        "payment.rail",
+        "payment.last4",
+        "payment.findings",
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ],
+      "bank_change_email": [
+        "vendor.name",
+        "vendor.email_domain",
+        "vendor.status",
+        "vendor.bank_accounts.last4",
+        "vendor.bank_accounts.status",
+        "vendor.bank_accounts.added_at",
+        "vendor.bank_accounts.request_channel",
+        "vendor.bank_accounts.request_domain",
+        "emails.from",
+        "emails.reply_to",
+        "emails.return_path",
+        "emails.subject",
+        "emails.sent_at",
+        "emails.authentication",
+        "emails.matched_phrases",
+        "emails.bank_details.last4",
+        "emails.findings"
+      ]
+    },
+    "label": "Written by AI (Claude). Advisory only: it never changes a decision, and Quarter’s checks never depend on it."
+  }
 }
 ```
 

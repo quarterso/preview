@@ -23,7 +23,7 @@ Request:
 curl -X POST "$QUARTER_API_URL/v1/vendors" \
   -H "authorization: Bearer $QUARTER_API_KEY" \
   -H "content-type: application/json" \
-  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
+  -d '{"name":"Harbor Point Logistics LLC","email_domain":"harborpoint.example","phone":"+1 312 555 0148","external_id":"V-1042","routing_number":"091408501","account_number":"4021887365","holder_name":"Harbor Point Logistics LLC"}'
 ```
 
 Response:
@@ -34,6 +34,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "unverified",
   "individual": false,
@@ -93,6 +94,7 @@ Response:
   "object": "vendor",
   "name": "Harbor Point Logistics LLC",
   "email_domain": "harborpoint.example",
+  "phone": "+1 312 555 0148",
   "external_id": "V-1042",
   "status": "verified",
   "individual": false,
