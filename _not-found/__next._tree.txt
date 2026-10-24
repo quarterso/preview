@@ -1,5 +1,5 @@
-:HL["/preview/_next/static/chunks/20-5pg7_4f_h0.css","style"]
-:HL["/preview/_next/static/chunks/261etobkpu5-9.css","style"]
+:HL["/preview/_next/static/chunks/0imgq46wpx2ah.css","style"]
+:HL["/preview/_next/static/chunks/3lkc8tmmrj5t-.css","style"]
 :HL["/preview/_next/static/chunks/0gae2u29jjfb2.css","style"]
 :HL["/preview/art/missing-white.svg","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"QEUkVuY30-4FI4EtdbU6x"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"cKfKXhgSxByIYUbN7cosE"}

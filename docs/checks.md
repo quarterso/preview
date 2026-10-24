@@ -1,6 +1,6 @@
 # Checks and settings
 
-> The thirty-two checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
+> The thirty-three checks Quarter runs on payments, the exact message each gives, its points, and the settings that decide whether it holds, warns or is off.
 
 Every payment in a run goes through every check that applies to it. A check that fires adds a finding to the payment: a `code`, a `severity`, a `message` and its `points`. A `hold` finding keeps the payment out of the released file until a person approves it. A `warn` finding is shown to the reviewer and does not hold.
 
@@ -46,6 +46,7 @@ Messages are plain words, written to be shown to the reviewer as they are. In th
 | [`request_domain_lookalike`](/docs/checks.md#request-domain-lookalike) | Warn | 40; 15 (change request came from a domain other than the vendor's) | The request for the unconfirmed bank details came by email from a domain that imitates the vendor's, or from a domain other than the vendor's. |
 | [`request_domain_new`](/docs/checks.md#request-domain-new) | Warn | 30 | The request for the unconfirmed bank details came by email from a domain registered in the 90 days before it, or after the vendor was added. |
 | [`request_domain_no_dmarc`](/docs/checks.md#request-domain-no-dmarc) | Warn | 5 | The request for the unconfirmed bank details came by email from the vendor's own domain, which does not refuse mail forged in its name. |
+| [`request_email_suspicious`](/docs/checks.md#request-email-suspicious) | Hold | 40 | The email asking for these bank details, forwarded to Quarter, failed its checks. |
 | [`second_person_required`](/docs/checks.md#second-person-required) | Hold (always) | 0; 30 (paid by the person who changed the bank details); 0 (payments to one payee add up to the two-person threshold) | The payment is at or above the two-person threshold, it is one of several payments to one payee that together reach it, or the person paying changed the vendor's bank details in the last 90 days. |
 | [`agent_over_limit`](/docs/checks.md#agent-over-limit) | Hold (always) | 40; 40 (over the agent's daily limit) | An AI agent asked to pay more than its limit for one payment, or more than its daily limit. |
 | [`agent_payee_not_allowed`](/docs/checks.md#agent-payee-not-allowed) | Hold (always) | 40 | An AI agent asked to pay a vendor or merchant category that is not on its allowed list. |
@@ -148,6 +149,7 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
+    "request_email_suspicious": "default",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -190,6 +192,7 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
+    "request_email_suspicious": "hold",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -224,6 +227,7 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
+    "request_email_suspicious": "Change request email failed Quarter's checks",
     "second_person_required": "Needs a second person to approve",
     "agent_over_limit": "Over the agent's limit",
     "agent_payee_not_allowed": "Payee not on the agent's allowed list",
@@ -377,6 +381,10 @@ Response:
     },
     "request_domain_no_dmarc": {
       "points": 5,
+      "variants": []
+    },
+    "request_email_suspicious": {
+      "points": 40,
       "variants": []
     },
     "second_person_required": {
@@ -492,6 +500,7 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
+    "request_email_suspicious": "default",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -534,6 +543,7 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
+    "request_email_suspicious": "hold",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -568,6 +578,7 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
+    "request_email_suspicious": "Change request email failed Quarter's checks",
     "second_person_required": "Needs a second person to approve",
     "agent_over_limit": "Over the agent's limit",
     "agent_payee_not_allowed": "Payee not on the agent's allowed list",
@@ -721,6 +732,10 @@ Response:
     },
     "request_domain_no_dmarc": {
       "points": 5,
+      "variants": []
+    },
+    "request_email_suspicious": {
+      "points": 40,
       "variants": []
     },
     "second_person_required": {
@@ -822,6 +837,7 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
+    "request_email_suspicious": "default",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -864,6 +880,7 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
+    "request_email_suspicious": "hold",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -898,6 +915,7 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
+    "request_email_suspicious": "Change request email failed Quarter's checks",
     "second_person_required": "Needs a second person to approve",
     "agent_over_limit": "Over the agent's limit",
     "agent_payee_not_allowed": "Payee not on the agent's allowed list",
@@ -1051,6 +1069,10 @@ Response:
     },
     "request_domain_no_dmarc": {
       "points": 5,
+      "variants": []
+    },
+    "request_email_suspicious": {
+      "points": 40,
       "variants": []
     },
     "second_person_required": {
@@ -1150,6 +1172,7 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
+    "request_email_suspicious": "default",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -1192,6 +1215,7 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
+    "request_email_suspicious": "hold",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -1226,6 +1250,7 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
+    "request_email_suspicious": "Change request email failed Quarter's checks",
     "second_person_required": "Needs a second person to approve",
     "agent_over_limit": "Over the agent's limit",
     "agent_payee_not_allowed": "Payee not on the agent's allowed list",
@@ -1379,6 +1404,10 @@ Response:
     },
     "request_domain_no_dmarc": {
       "points": 5,
+      "variants": []
+    },
+    "request_email_suspicious": {
+      "points": 40,
       "variants": []
     },
     "second_person_required": {
@@ -1780,6 +1809,20 @@ the request came from {domain}, which has a DMARC policy of none, so mail forged
 ```
 
 Fires when the sender's domain is the vendor's, or the vendor has no email domain on file, and the domain's DMARC policy is missing or `none`. Anyone can then send mail that appears to come from it. A weak reason alone, so it scores 5.
+
+### `request_email_suspicious`
+
+**Default: hold. Points: 40.** The email asking for these bank details, forwarded to Quarter, failed its checks.
+
+Message:
+
+```shell
+the email asking for these bank details ({email}) failed Quarter's checks: {reasons}
+```
+
+Runs when an AP team has forwarded the change request email to Quarter. It holds when the sender domain imitates or differs from the vendor's, the Reply-To goes elsewhere, or the email fails DMARC or SPF. Other findings, such as urgent wording, are noted on the email but do not hold.
+
+A forwarded email never confirms bank details. Confirm them by a call-back to the number on file.
 
 ### `second_person_required`
 

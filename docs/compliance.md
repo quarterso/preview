@@ -206,6 +206,7 @@ Response:
     "request_domain_lookalike": "default",
     "request_domain_new": "default",
     "request_domain_no_dmarc": "default",
+    "request_email_suspicious": "default",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -248,6 +249,7 @@ Response:
     "request_domain_lookalike": "warn",
     "request_domain_new": "warn",
     "request_domain_no_dmarc": "warn",
+    "request_email_suspicious": "hold",
     "second_person_required": "hold",
     "agent_over_limit": "hold",
     "agent_payee_not_allowed": "hold",
@@ -282,6 +284,7 @@ Response:
     "request_domain_lookalike": "Change request came from a lookalike domain",
     "request_domain_new": "Change request came from a newly registered domain",
     "request_domain_no_dmarc": "Change request came from a domain anyone can send as",
+    "request_email_suspicious": "Change request email failed Quarter's checks",
     "second_person_required": "Needs a second person to approve",
     "agent_over_limit": "Over the agent's limit",
     "agent_payee_not_allowed": "Payee not on the agent's allowed list",
@@ -435,6 +438,10 @@ Response:
     },
     "request_domain_no_dmarc": {
       "points": 5,
+      "variants": []
+    },
+    "request_email_suspicious": {
+      "points": 40,
       "variants": []
     },
     "second_person_required": {
